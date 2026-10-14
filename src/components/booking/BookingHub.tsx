@@ -942,18 +942,6 @@ export default function BookingHub() {
               </div>
             </div>
 
-            {/* Direct WhatsApp Action Button */}
-            <a
-              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
-                `*Mr./Mrs. ${confirmedAppointment.patientName},*\n\n• তারিখ: ${confirmedAppointment.dateFormattedBn}\n• সময়: ${confirmedAppointment.slotTimeBn}\n• ডাঃ দেবজ্যোতি দত্তের সাথে আপনার অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।\n\n• সিরিয়াল নম্বর: ${confirmedAppointment.serialNo}\n\n>> অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)\nhttps://forms.gle/L6YfWn7Z12nV3aK66\n(পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)\n\n${confirmedAppointment.chamberMode === 'offline' ? `• চেম্বারের ঠিকানা: ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।\n• গুগল ম্যাপ লিঙ্ক: https://maps.app.goo.gl/NgPzAZamW3Ucy8799` : `• কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন`}\n\n• নতুন অ্যাপয়েন্টমেন্ট নির্ধারণ বা পরিবর্তনের জন্য হোয়াটসঅ্যাপে মেসেজ করুন: 01712854941\n\n[!] বিঃদ্রঃ এখানে উল্লেখিত সময়টি আনুমানিক মাত্র। প্রয়োজন অনুযায়ী সময় ও অ্যাপয়েন্টমেন্ট পরিবর্তনের সম্পূর্ণ অধিকার কর্তৃপক্ষ সংরক্ষণ করে।`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all text-center cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4 fill-white" />
-              <span>চেম্বারের হোয়াটসঅ্যাপে সিরিয়াল পাঠান</span>
-            </a>
 
             {/* Action Buttons: Strictly Slip Print & OK */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
