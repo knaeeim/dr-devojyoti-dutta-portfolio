@@ -592,7 +592,7 @@ export default function BookingHub() {
                       required
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
-                      placeholder="যেমন: তানভীর আহমেদ"
+                      placeholder="আপনার নাম লিখুন এখানে"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
