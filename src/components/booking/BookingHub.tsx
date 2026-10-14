@@ -19,7 +19,8 @@ import {
   X,
   MessageCircle,
   ShieldCheck,
-  RotateCw
+  RotateCw,
+  ExternalLink
 } from 'lucide-react';
 import {
   ChamberMode,
@@ -896,6 +897,43 @@ export default function BookingHub() {
                 )}
               </div>
 
+              {/* Patient Intake Google Form */}
+              <div className="p-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
+                <div className="font-bold flex items-center gap-1 text-[11px] sm:text-xs">
+                  <span>👉 অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)</span>
+                </div>
+                <a
+                  href="https://forms.gle/L6YfWn7Z12nV3aK66"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-emerald-800 dark:text-emerald-300 font-bold underline hover:text-emerald-950 text-xs break-all"
+                >
+                  <span>https://forms.gle/L6YfWn7Z12nV3aK66</span>
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                </a>
+                <p className="text-[10px] sm:text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                  (পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)
+                </p>
+              </div>
+
+              {/* Chamber Address & Google Maps Link */}
+              {confirmedAppointment.chamberMode === 'offline' && (
+                <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200 space-y-1">
+                  <div className="text-[11px] font-semibold text-emerald-950 dark:text-emerald-100">
+                    📍 <strong>চেম্বারের ঠিকানা:</strong> ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/NgPzAZamW3Ucy8799"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300 font-bold hover:underline"
+                  >
+                    <span>গুগল ম্যাপে লোকেশন দেখুন</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
               {/* Instructions */}
               <div className="p-2.5 rounded-xl bg-white/70 dark:bg-emerald-950/60 text-[11px] text-emerald-800 dark:text-emerald-300 space-y-1">
                 <p>
@@ -907,14 +945,14 @@ export default function BookingHub() {
             {/* Direct WhatsApp Action Button */}
             <a
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
-                `নমস্কার ডা. দেবজ্যোতি দত্তের চেম্বার,\nআমি ওয়েবসাইটে সফলভাবে সিরিয়াল বুক করেছি।\nসিরিয়াল নং: ${confirmedAppointment.serialNo}\nরোগীর নাম: ${confirmedAppointment.patientName}\nতারিখ: ${confirmedAppointment.dateFormattedBn}\nসময়: ${confirmedAppointment.slotTimeBn}\nচেম্বার: ${confirmedAppointment.chamberTitleBn}\nঅনুগ্রহ করে নিশ্চিত করবেন।`
+                `*Mr./Mrs. ${confirmedAppointment.patientName},*\n\n• তারিখ: ${confirmedAppointment.dateFormattedBn}\n• সময়: ${confirmedAppointment.slotTimeBn}\n• ডাঃ দেবজ্যোতি দত্তের সাথে আপনার অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।\n\n• সিরিয়াল নম্বর: ${confirmedAppointment.serialNo}\n\n>> অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)\nhttps://forms.gle/L6YfWn7Z12nV3aK66\n(পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)\n\n${confirmedAppointment.chamberMode === 'offline' ? `• চেম্বারের ঠিকানা: ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।\n• গুগল ম্যাপ লিঙ্ক: https://maps.app.goo.gl/NgPzAZamW3Ucy8799` : `• কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন`}\n\n• নতুন অ্যাপয়েন্টমেন্ট নির্ধারণ বা পরিবর্তনের জন্য হোয়াটসঅ্যাপে মেসেজ করুন: 01712854941\n\n[!] বিঃদ্রঃ এখানে উল্লেখিত সময়টি আনুমানিক মাত্র। প্রয়োজন অনুযায়ী সময় ও অ্যাপয়েন্টমেন্ট পরিবর্তনের সম্পূর্ণ অধিকার কর্তৃপক্ষ সংরক্ষণ করে।`
               )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all text-center cursor-pointer"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
-              <span>চেম্বারের হোয়াটসঅ্যাপে সিরিয়াল স্লিপ পাঠান</span>
+              <span>চেম্বারের হোয়াটসঅ্যাপে সিরিয়াল পাঠান</span>
             </a>
 
             {/* Action Buttons: Strictly Slip Print & OK */}

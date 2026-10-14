@@ -109,11 +109,29 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
         </tr>
       </table>
 
+      <div style="background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #92400e;">
+        <strong>👉 জরুরি স্বাস্থ্য তথ্য ফর্ম (অবশ্যই পূরণ করতে হবে):</strong>
+        <p style="margin: 6px 0 0 0;">
+          অনুগ্রহ করে এই ফর্মটি পূরণ করুন: <a href="https://forms.gle/L6YfWn7Z12nV3aK66" style="color: #047857; font-weight: bold; text-decoration: underline;">https://forms.gle/L6YfWn7Z12nV3aK66</a>
+        </p>
+        <p style="margin: 4px 0 0 0; font-size: 11px; color: #b45309;">(পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)</p>
+      </div>
+
+      ${appointment.chamberMode === 'offline' ? `
+      <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #064e3b;">
+        <strong>📍 চেম্বারের ঠিকানা:</strong> ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।<br/>
+        <strong>🗺️ গুগল ম্যাপ:</strong> <a href="https://maps.app.goo.gl/NgPzAZamW3Ucy8799" style="color: #047857; font-weight: bold; text-decoration: underline;">https://maps.app.goo.gl/NgPzAZamW3Ucy8799</a>
+      </div>` : `
+      <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #064e3b;">
+        <strong>📱 কনসালটেশন মোড:</strong> অনলাইন ভিডিও কনসালটেশন (হোয়াটসঅ্যাপ ভিডিও কল)<br/>
+        নির্ধারিত সময়ে আপনার মোবাইল নম্বরে হোয়াটসঅ্যাপ ভিডিও কল করা হবে।
+      </div>`}
+
       <div class="instructions">
         <strong>জরুরি নির্দেশনা:</strong>
         <ul style="margin: 6px 0 0 18px; padding: 0;">
-          <li>অনুগ্রহ করে আপনার নির্ধারিত সময়ের অন্তত ১০ মিনিট পূর্বে চেম্বারে উপস্থিত থাকবেন।</li>
-          <li>অনলাইন ভিডিও কলের ক্ষেত্রে নির্ধারিত সময়ের ৫ মিনিট আগে হোয়াটসঅ্যাপ বা জুমে যুক্ত থাকুন।</li>
+          <li>অনুগ্রহ করে আপনার নির্ধারিত সময়ের অন্তত ১০ মিনিট পূর্বে উপস্থিত থাকবেন।</li>
+          <li>অনলাইন ভিডিও কলের ক্ষেত্রে নির্ধারিত সময়ের ৫ মিনিট আগে হোয়াটসঅ্যাপে যুক্ত থাকুন।</li>
           <li>পূর্বে নেওয়া কোনো প্রেসক্রিপশন বা সাম্প্রতিক প্যাথলজিক্যাল রিপোর্ট থাকলে অবশ্যই সাথে রাখবেন।</li>
         </ul>
       </div>
@@ -121,7 +139,8 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
 
     <div class="footer">
       <div>ডা. দেবজ্যোতি দত্ত ক্লিনিক্যাল সার্ভিসেস • ঢাকা চেম্বার ও গ্লোবাল টেলিহেলথ</div>
-      <div style="margin-top: 4px;">যোগাযোগ ও জরুরি সহায়তা: +880 1711-223344</div>
+      <div style="margin-top: 4px;">নতুন অ্যাপয়েন্টমেন্ট নির্ধারণ বা পরিবর্তনের জন্য হোয়াটসঅ্যাপ: <strong>01712854941</strong></div>
+      <div style="margin-top: 6px; font-size: 11px; color: #9ca3af;">[!] বিঃদ্রঃ এখানে উল্লেখিত সময়টি আনুমানিক মাত্র। প্রয়োজন অনুযায়ী সময় ও অ্যাপয়েন্টমেন্ট পরিবর্তনের সম্পূর্ণ অধিকার কর্তৃপক্ষ সংরক্ষণ করে।</div>
     </div>
   </div>
 </body>

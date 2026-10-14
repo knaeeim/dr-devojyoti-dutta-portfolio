@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
         <div className="text-center space-y-3">
           <div className="relative w-20 h-20 mx-auto rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-lg">
             <Image
-              src="/assets/dr-devojyoti-dutta.jpg"
+              src="/assets/dr-devojyoti-dutta.png"
               alt="ডা. দেবজ্যোতি দত্ত"
               fill
               className="object-cover object-top"
