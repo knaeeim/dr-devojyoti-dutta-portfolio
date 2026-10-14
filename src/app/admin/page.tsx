@@ -79,6 +79,75 @@ export type SortOption =
   | 'name_asc'
   | 'name_desc';
 
+export const getSortOptionLabel = (sort: SortOption): string => {
+  switch (sort) {
+    case 'created_desc':
+      return 'সর্বশেষ বুকিং আগে';
+    case 'created_asc':
+      return 'পুরনো বুকিং আগে';
+    case 'date_asc':
+      return 'তারিখ: নিকটবর্তী আগে';
+    case 'date_desc':
+      return 'তারিখ: দূরবর্তী আগে';
+    case 'serial_asc':
+      return 'সিরিয়াল নং: ছোট থেকে বড়';
+    case 'serial_desc':
+      return 'সিরিয়াল নং: বড় থেকে ছোট';
+    case 'name_asc':
+      return 'রোগীর নাম: ক-হ / A-Z';
+    case 'name_desc':
+      return 'রোগীর নাম: হ-ক / Z-A';
+    default:
+      return 'সর্বশেষ বুকিং আগে';
+  }
+};
+
+export const sortAppointmentList = (list: Appointment[], sortCriteria: SortOption): Appointment[] => {
+  return [...list].sort((a, b) => {
+    switch (sortCriteria) {
+      case 'date_asc': {
+        const d = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
+        if (d !== 0) return d;
+        return (a.slotTimeEn || '').localeCompare(b.slotTimeEn || '');
+      }
+      case 'date_desc': {
+        const d = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
+        if (d !== 0) return d;
+        return (b.slotTimeEn || '').localeCompare(a.slotTimeEn || '');
+      }
+      case 'serial_asc': {
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        if (numA !== numB) return numA - numB;
+        return (a.serialNo || '').localeCompare(b.serialNo || '');
+      }
+      case 'serial_desc': {
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        if (numA !== numB) return numB - numA;
+        return (b.serialNo || '').localeCompare(a.serialNo || '');
+      }
+      case 'name_asc': {
+        return (a.patientName || '').localeCompare(b.patientName || '', 'bn');
+      }
+      case 'name_desc': {
+        return (b.patientName || '').localeCompare(a.patientName || '', 'bn');
+      }
+      case 'created_asc': {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeA - timeB;
+      }
+      case 'created_desc':
+      default: {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }
+    }
+  });
+};
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -1021,49 +1090,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
   });
 
   // Sort appointments based on selected criteria
-  const sortedAppointments = [...displayedAppointments].sort((a, b) => {
-    switch (sortBy) {
-      case 'date_asc': {
-        const d = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
-        if (d !== 0) return d;
-        return (a.slotTimeEn || '').localeCompare(b.slotTimeEn || '');
-      }
-      case 'date_desc': {
-        const d = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
-        if (d !== 0) return d;
-        return (b.slotTimeEn || '').localeCompare(a.slotTimeEn || '');
-      }
-      case 'serial_asc': {
-        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
-        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
-        if (numA !== numB) return numA - numB;
-        return (a.serialNo || '').localeCompare(b.serialNo || '');
-      }
-      case 'serial_desc': {
-        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
-        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
-        if (numA !== numB) return numB - numA;
-        return (b.serialNo || '').localeCompare(a.serialNo || '');
-      }
-      case 'name_asc': {
-        return (a.patientName || '').localeCompare(b.patientName || '', 'bn');
-      }
-      case 'name_desc': {
-        return (b.patientName || '').localeCompare(a.patientName || '', 'bn');
-      }
-      case 'created_asc': {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeA - timeB;
-      }
-      case 'created_desc':
-      default: {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
-      }
-    }
-  });
+  const sortedAppointments = sortAppointmentList(displayedAppointments, sortBy);
 
   const totalItems = sortedAppointments.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
@@ -3685,7 +3712,13 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* RECEPTIONIST PRINT SHEET MODAL */}
       {showPrintModal && (() => {
         // Exclude cancelled appointments so reception sheet is always live and clean
-        const receptionAppointments = appointments.filter((apt) => apt.status !== 'cancelled');
+        const baseReceptionList = filterStatus === 'cancelled'
+          ? appointments.filter((apt) => apt.status !== 'cancelled')
+          : displayedAppointments.filter((apt) => apt.status !== 'cancelled');
+
+        // Strictly sort according to active dashboard sort criteria
+        const receptionAppointments = sortAppointmentList(baseReceptionList, sortBy);
+        const activeSortLabel = getSortOptionLabel(sortBy);
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
@@ -3707,7 +3740,10 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       সক্রিয় রোগী: {toBengaliNumber(receptionAppointments.length)} জন
                     </span>
                     <span>•</span>
-                    <span className="text-zinc-500 font-medium">রিয়েলটাইম আপডেট</span>
+                    <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full font-semibold border border-emerald-300 text-[10px] sm:text-[11px]">
+                      <ArrowUpDown className="w-3 h-3 text-emerald-600" />
+                      <span>সর্ট: {activeSortLabel}</span>
+                    </span>
                   </div>
                 </div>
 
@@ -3716,7 +3752,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   {/* PDF Download Button */}
                   <button
                     type="button"
-                    onClick={() => printReceptionSheet(receptionAppointments, true)}
+                    onClick={() => printReceptionSheet(receptionAppointments, true, activeSortLabel)}
                     className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
                     title="রিসিপশন তালিকাটি সরাসরি পিডিএফ (PDF) আকারে সেভ বা ডাউনলোড করুন"
                   >
@@ -3727,7 +3763,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   {/* Print Button */}
                   <button
                     type="button"
-                    onClick={() => printReceptionSheet(receptionAppointments, false)}
+                    onClick={() => printReceptionSheet(receptionAppointments, false, activeSortLabel)}
                     className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
                     title="রিসিপশন ডেস্কের জন্য সরাসরি প্রিন্ট করুন"
                   >
@@ -3753,9 +3789,54 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   <thead className="bg-emerald-50 text-emerald-950 font-bold border-b border-zinc-200">
                     <tr>
                       <th className="py-2.5 px-3 border-r border-zinc-200 text-center w-12">নং</th>
-                      <th className="py-2.5 px-3 border-r border-zinc-200 w-28">সিরিয়াল নং</th>
-                      <th className="py-2.5 px-3 border-r border-zinc-200">রোগীর নাম ও মোবাইল</th>
-                      <th className="py-2.5 px-3 border-r border-zinc-200">তারিখ ও সময় স্লট</th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'serial_asc' ? 'serial_desc' : 'serial_asc')}
+                        className="py-2.5 px-3 border-r border-zinc-200 w-28 cursor-pointer hover:bg-emerald-100/70 select-none transition-colors"
+                        title="সিরিয়াল অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>সিরিয়াল নং</span>
+                          {sortBy === 'serial_asc' ? (
+                            <ArrowUp className="w-3 h-3 text-emerald-700" />
+                          ) : sortBy === 'serial_desc' ? (
+                            <ArrowDown className="w-3 h-3 text-emerald-700" />
+                          ) : (
+                            <ArrowUpDown className="w-2.5 h-2.5 text-zinc-400" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'name_asc' ? 'name_desc' : 'name_asc')}
+                        className="py-2.5 px-3 border-r border-zinc-200 cursor-pointer hover:bg-emerald-100/70 select-none transition-colors"
+                        title="রোগীর নাম অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>রোগীর নাম ও মোবাইল</span>
+                          {sortBy === 'name_asc' ? (
+                            <ArrowUp className="w-3 h-3 text-emerald-700" />
+                          ) : sortBy === 'name_desc' ? (
+                            <ArrowDown className="w-3 h-3 text-emerald-700" />
+                          ) : (
+                            <ArrowUpDown className="w-2.5 h-2.5 text-zinc-400" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'date_asc' ? 'date_desc' : 'date_asc')}
+                        className="py-2.5 px-3 border-r border-zinc-200 cursor-pointer hover:bg-emerald-100/70 select-none transition-colors"
+                        title="তারিখ অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>তারিখ ও সময় স্লট</span>
+                          {sortBy === 'date_asc' ? (
+                            <ArrowUp className="w-3 h-3 text-emerald-700" />
+                          ) : sortBy === 'date_desc' ? (
+                            <ArrowDown className="w-3 h-3 text-emerald-700" />
+                          ) : (
+                            <ArrowUpDown className="w-2.5 h-2.5 text-zinc-400" />
+                          )}
+                        </div>
+                      </th>
                       <th className="py-2.5 px-3 border-r border-zinc-200">চেম্বার</th>
                       <th className="py-2.5 px-3 border-r border-zinc-200 text-center">স্ট্যাটাস</th>
                       <th className="py-2.5 px-3 border-r border-zinc-200 text-right">পরামর্শ ফি</th>

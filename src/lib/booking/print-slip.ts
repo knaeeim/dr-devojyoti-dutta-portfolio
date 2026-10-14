@@ -256,10 +256,10 @@ export function printSinglePageSerialSlip(apt: Appointment) {
  * Dedicated Receptionist Patient Roster Print & PDF Export
  * Automatically filters out any cancelled appointments so only active patients appear.
  */
-export function printReceptionSheet(appointments: Appointment[], isPdfMode = false) {
+export function printReceptionSheet(appointments: Appointment[], isPdfMode = false, sortLabel?: string) {
   if (typeof window === 'undefined') return;
 
-  // Strict filter: Exclude all cancelled appointments
+  // Strict filter: Exclude all cancelled appointments (preserves incoming sorted order)
   const activeApts = appointments.filter((apt) => apt.status !== 'cancelled');
 
   const existingFrame = document.getElementById('print-reception-iframe');
@@ -458,6 +458,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
         <div class="meta-box">
           <div><strong>তারিখ:</strong> ${new Date().toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
           <div><strong>মোট সক্রিয় রোগী:</strong> ${activeApts.length.toLocaleString('bn-BD')} জন</div>
+          ${sortLabel ? `<div style="font-size: 10px; color: #064e3b; font-weight: 700; margin-top: 1px;">সর্ট ক্রম: ${sortLabel}</div>` : ''}
           <div class="active-pill">✓ বাতিলকৃত সিরিয়ালগুলো বাদ দিয়ে হালনাগাদকৃত</div>
         </div>
       </div>
