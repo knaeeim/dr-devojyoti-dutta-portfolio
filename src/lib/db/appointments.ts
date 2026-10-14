@@ -267,7 +267,7 @@ export async function createAppointment(params: {
   );
 
   if (alreadyBooked) {
-    throw new Error('দুঃখিত, এই ১৫ মিনিটের স্লটটি ইতোমধ্যে অন্য রোগী বুক করে ফেলেছেন। অনুগ্রহ করে অন্য সময় বেছে নিন।');
+    throw new Error('দুঃখিত, এই সময় স্লটটি ইতোমধ্যে অন্য রোগী বুক করে ফেলেছেন। অনুগ্রহ করে অন্য সময় বেছে নিন।');
   }
 
   // Count active bookings on same day for serial number calculation

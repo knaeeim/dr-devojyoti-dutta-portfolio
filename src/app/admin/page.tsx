@@ -1341,7 +1341,7 @@ export default function AdminDashboardPage() {
                       <th className="py-3 px-3.5">সিরিয়াল নং</th>
                       <th className="py-3 px-3.5">রোগীর নাম ও যোগাযোগ</th>
                       <th className="py-3 px-3.5">চেম্বার</th>
-                      <th className="py-3 px-3.5">তারিখ ও ১৫ মি. স্লট</th>
+                      <th className="py-3 px-3.5">তারিখ ও সময় স্লট</th>
                       <th className="py-3 px-3.5">সমস্যার বিবরণ</th>
                       <th className="py-3 px-3.5">স্ট্যাটাস</th>
                       <th className="py-3 px-3.5 text-right">অ্যাকশন ও যোগাযোগ</th>
@@ -2064,7 +2064,7 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  ২. নতুন সময় স্লট (১৫ মিনিট) নির্বাচন করুন:
+                  ২. নতুন সময় স্লট নির্বাচন করুন:
                 </label>
                 {rescheduleSlotTimeBn && (
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">

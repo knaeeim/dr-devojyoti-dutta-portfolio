@@ -116,7 +116,7 @@ export async function PATCH(request: NextRequest) {
         ? `অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে এবং ${updatedApt.email} ঠিকানায় ইমেইল পাঠানো হয়েছে।`
         : 'অ্যাপয়েন্টমেন্ট সফলভাবে নিশ্চিত করা হয়েছে।';
     } else if (status === 'cancelled') {
-      successMsg = `সিরিয়ালটি (${updatedApt.serialNo}) সফলভাবে বাতিল করা হয়েছে এবং এই ১৫ মিনিটের স্লটটি (${updatedApt.slotTimeBn}) নতুন রোগীর জন্য উন্মুক্ত করা হয়েছে।`;
+      successMsg = `সিরিয়ালটি (${updatedApt.serialNo}) সফলভাবে বাতিল করা হয়েছে এবং এই সময় স্লটটি (${updatedApt.slotTimeBn}) নতুন রোগীর জন্য উন্মুক্ত করা হয়েছে।`;
     }
 
     return NextResponse.json({

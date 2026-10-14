@@ -95,7 +95,7 @@ export default function Navbar() {
   // Primary 4 links that always sit in a single clean row
   const primaryNavLinks = [
     { href: '#treatments', label: 'চিকিৎসা সেবা' },
-    { href: '#booking', label: '১৫ মি. স্লট বুকিং', isHot: true },
+    { href: '#booking', label: 'সিরিয়াল বুকিং', isHot: true },
     { href: '#prakriti', label: 'প্রকৃতি পরীক্ষা' },
     { href: '#about', label: 'চিকিৎসা দর্শন' },
   ];
@@ -128,7 +128,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-900/80 border border-emerald-700/60 text-emerald-300 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              ১৫ মি. স্মার্ট সিরিয়াল বুকিং চালু
+              স্মার্ট সিরিয়াল বুকিং চালু
             </span>
             <span className="text-emerald-700">•</span>
             <span className="text-emerald-200 font-medium">
@@ -381,7 +381,7 @@ export default function Navbar() {
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-sm shadow-md cursor-pointer"
                 >
                   <Calendar className="w-4 h-4 text-amber-300" />
-                  <span>১৫ মিনিটের সিরিয়াল বুকিং করুন</span>
+                  <span>সিরিয়াল বুকিং করুন</span>
                 </a>
 
                 <a

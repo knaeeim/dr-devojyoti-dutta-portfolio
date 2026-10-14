@@ -78,7 +78,7 @@ export default function HeroSection() {
                 className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-900/20 hover:shadow-xl hover:shadow-emerald-900/30 transition-all transform active:scale-95"
               >
                 <Calendar className="w-5 h-5 text-amber-300" />
-                <span>সিরিয়াল ও ১৫ মি. স্লট বুক করুন</span>
+                <span>সিরিয়াল বুক করুন</span>
               </a>
 
               <a

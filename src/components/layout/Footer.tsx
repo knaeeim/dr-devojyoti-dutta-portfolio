@@ -63,7 +63,7 @@ export default function Footer() {
                 <a href="#treatments" className="hover:text-amber-300 transition-colors">মেটাবলিক ও ক্রনিক রোগ নিরাময়</a>
               </li>
               <li>
-                <a href="#booking" className="hover:text-amber-300 transition-colors">১৫ মিনিটের সিরিয়াল বুকিং</a>
+                <a href="#booking" className="hover:text-amber-300 transition-colors">সিরিয়াল বুকিং</a>
               </li>
               <li>
                 <a href="#prakriti" className="hover:text-amber-300 transition-colors">আয়ুর্বেদিক দোষ ও প্রকৃতি টেস্ট</a>

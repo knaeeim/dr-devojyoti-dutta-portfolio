@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ডা. দেবজ্যোতি দত্ত | আধুনিক আয়ুর্বেদিক পোর্টাল ও ১৫ মি. স্মার্ট স্লট বুকিং',
+  title: 'ডা. দেবজ্যোতি দত্ত | আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট সিরিয়াল বুকিং',
   description:
     'Ayurvedacharya Dr. Devojyoti Dutta (B.A.M.S., NIA Jaipur & B.Sc. Biotechnology, KU) — প্রাচীন শাস্ত্রীয় নাড়ি পরীক্ষা, পঞ্চকর্ম ও আধুনিক এপিজেনেটিক্সের সমন্বয়ে জটিল ও দীর্ঘস্থায়ী রোগ নিরাময় এবং স্মার্ট স্লট বুকিং প্ল্যাটফর্ম।',
   keywords: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ডা. দেবজ্যোতি দত্ত — আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট স্লট বুকিং',
     description:
-      'প্রাচীন শাস্ত্রীয় আয়ুর্বেদ বিজ্ঞান (NIA Jaipur) ও আধুনিক এপিজেনেটিক্স (KU)। ১৫ মিনিটের স্মার্ট স্লট বুকিং ও ডিজিটাল সিরিয়াল সিস্টেম।',
+      'প্রাচীন শাস্ত্রীয় আয়ুর্বেদ বিজ্ঞান (NIA Jaipur) ও আধুনিক এপিজেনেটিক্স (KU)। স্মার্ট স্লট বুকিং ও ডিজিটাল সিরিয়াল সিস্টেম।',
     url: 'https://drdevojyotidutta.com',
     siteName: 'ডা. দেবজ্যোতি দত্ত পোর্টাল',
     locale: 'bn_BD',
