@@ -23,9 +23,12 @@ export const appointmentBookingSchema = z.object({
     .transform(sanitizeInput),
   email: z
     .string()
-    .min(1, 'সঠিক ইমেইল ঠিকানা আবশ্যক, যাতে আমরা কনফার্মেশন ও সময়সূচী পাঠাতে পারি।')
-    .email('সঠিক ইমেইল ঠিকানা দিন (যেমন: patient@example.com)')
-    .transform((val) => sanitizeInput(val).toLowerCase()),
+    .trim()
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val).toLowerCase() : ''))
+    .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+      message: 'সঠিক ইমেইল ঠিকানা দিন (যেমন: patient@example.com)'
+    }),
   chamberMode: z.enum(['offline', 'online']),
   appointmentDate: z
     .string()

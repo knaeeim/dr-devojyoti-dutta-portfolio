@@ -294,7 +294,7 @@ export default function BookingHub() {
         const payload = {
           patientName: patientName.trim(),
           phone: cleanPhone,
-          email: email.trim().toLowerCase(),
+          email: email.trim() ? email.trim().toLowerCase() : undefined,
           chamberMode,
           appointmentDate: selectedDate,
           slotId: selectedSlot!.id,
@@ -620,10 +620,10 @@ export default function BookingHub() {
                 </div>
               </div>
 
-              {/* Email (Required for confirmations) */}
+              {/* Email (Optional) */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                  ইমেইল ঠিকানা
+                  ইমেইল ঠিকানা <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -631,12 +631,12 @@ export default function BookingHub() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="যেমন: example@gmail.com"
+                    placeholder="যেমন: example@gmail.com (যদি থাকে)"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
-                  অ্যাপয়েন্টমেন্ট কনফার্মেশন ও সময় পরিবর্তনের সকল নোটিফিকেশন এই ইমেইলে যাবে
+                  কনফার্মেশন স্লিপ ইমেইলে পেতে চাইলে দিতে পারেন (বাধ্যতামূলক নয়)
                 </span>
               </div>
 

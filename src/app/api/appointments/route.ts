@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const appointment = await createAppointment({
       patientName,
       phone,
-      email,
+      email: email || undefined,
       chamberMode,
       appointmentDate,
       slotId,
