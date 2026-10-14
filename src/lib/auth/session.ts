@@ -71,18 +71,38 @@ export function clearSessionCookie(response: NextResponse) {
 
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 
 const AUTH_FILE_PATH = path.join(process.cwd(), 'data', 'admin-auth.json');
-let inMemoryPasswordOverride: string | null = null;
+const TMP_AUTH_FILE_PATH = path.join(os.tmpdir(), 'dr_dutta_admin_auth.json');
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __drDuttaAdminPassword: string | undefined;
+}
 
 function getStoredPassword(): string | null {
-  if (inMemoryPasswordOverride) return inMemoryPasswordOverride;
+  if (globalThis.__drDuttaAdminPassword) return globalThis.__drDuttaAdminPassword;
+
+  // 1. Try reading from TMP storage
+  try {
+    if (fs.existsSync(TMP_AUTH_FILE_PATH)) {
+      const data = fs.readFileSync(TMP_AUTH_FILE_PATH, 'utf-8');
+      const json = JSON.parse(data);
+      if (json.adminPassword) {
+        globalThis.__drDuttaAdminPassword = json.adminPassword;
+        return json.adminPassword;
+      }
+    }
+  } catch {}
+
+  // 2. Try reading from project data file
   try {
     if (fs.existsSync(AUTH_FILE_PATH)) {
       const data = fs.readFileSync(AUTH_FILE_PATH, 'utf-8');
       const json = JSON.parse(data);
       if (json.adminPassword) {
-        inMemoryPasswordOverride = json.adminPassword;
+        globalThis.__drDuttaAdminPassword = json.adminPassword;
         return json.adminPassword;
       }
     }
@@ -93,7 +113,27 @@ function getStoredPassword(): string | null {
 }
 
 function saveStoredPassword(newPassword: string): boolean {
-  inMemoryPasswordOverride = newPassword;
+  globalThis.__drDuttaAdminPassword = newPassword;
+
+  // Always write to writable TMP storage
+  try {
+    fs.writeFileSync(
+      TMP_AUTH_FILE_PATH,
+      JSON.stringify(
+        {
+          adminPassword: newPassword,
+          updatedAt: new Date().toISOString()
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+  } catch (err) {
+    console.warn('[Auth] Could not write to TMP auth file:', err);
+  }
+
+  // Also attempt writing to project directory if filesystem is writable
   try {
     const dir = path.dirname(AUTH_FILE_PATH);
     if (!fs.existsSync(dir)) {
@@ -111,11 +151,10 @@ function saveStoredPassword(newPassword: string): boolean {
       ),
       'utf-8'
     );
-    return true;
-  } catch (err) {
-    console.error('[Auth] Failed to write password to persistent file:', err);
-    return true; // Still preserved in memory
+  } catch {
+    // Expected on read-only serverless filesystems
   }
+  return true;
 }
 
 // Check admin credentials

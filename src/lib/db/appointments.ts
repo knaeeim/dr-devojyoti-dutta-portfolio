@@ -1,10 +1,63 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { Appointment, AppointmentStatus, ChamberMode } from '@/types/booking';
 import { generateSerialNo, formatDateToBn, defaultSchedules } from '@/lib/booking/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'appointments.json');
+const TMP_DATA_FILE = path.join(os.tmpdir(), 'dr_dutta_appointments.json');
+const TMP_DELETED_FILE = path.join(os.tmpdir(), 'dr_dutta_deleted_ids.json');
+
+// Global in-memory sets to survive hot-reloads and ephemeral executions
+declare global {
+  // eslint-disable-next-line no-var
+  var __drDuttaAppointments: Appointment[] | undefined;
+  // eslint-disable-next-line no-var
+  var __drDuttaDeletedIds: Set<string> | undefined;
+}
+
+if (!globalThis.__drDuttaDeletedIds) {
+  globalThis.__drDuttaDeletedIds = new Set<string>();
+  try {
+    if (fs.existsSync(TMP_DELETED_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_DELETED_FILE, 'utf-8'));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => globalThis.__drDuttaDeletedIds!.add(id));
+      }
+    }
+  } catch {}
+}
+
+function persistDeletedIds() {
+  try {
+    const list = Array.from(globalThis.__drDuttaDeletedIds || []);
+    fs.writeFileSync(TMP_DELETED_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[Storage] Could not persist deleted IDs to tmp', err);
+  }
+}
+
+export function registerDeletedIds(ids: string[]) {
+  if (!globalThis.__drDuttaDeletedIds) {
+    globalThis.__drDuttaDeletedIds = new Set<string>();
+  }
+  let changed = false;
+  for (const id of ids) {
+    if (id && !globalThis.__drDuttaDeletedIds.has(id)) {
+      globalThis.__drDuttaDeletedIds.add(id);
+      changed = true;
+    }
+  }
+  if (changed) {
+    persistDeletedIds();
+    if (globalThis.__drDuttaAppointments) {
+      globalThis.__drDuttaAppointments = globalThis.__drDuttaAppointments.filter(
+        (a) => !globalThis.__drDuttaDeletedIds!.has(a.id)
+      );
+    }
+  }
+}
 
 // Initial seed data if file does not exist yet
 const INITIAL_SEED: Appointment[] = [
@@ -44,35 +97,81 @@ const INITIAL_SEED: Appointment[] = [
   }
 ];
 
-// Helper to safely read from JSON file
+// Helper to safely read appointments with multi-layer fallback
 function readStoredAppointments(): Appointment[] {
+  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+
+  // 1. Check in-memory cache
+  if (globalThis.__drDuttaAppointments && Array.isArray(globalThis.__drDuttaAppointments)) {
+    return globalThis.__drDuttaAppointments.filter((a) => !deleted.has(a.id));
+  }
+
+  // 2. Check writable tmp directory (survives inside lambda/serverless across warm invocations)
+  try {
+    if (fs.existsSync(TMP_DATA_FILE)) {
+      const content = fs.readFileSync(TMP_DATA_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        const filtered = parsed.filter((a) => !deleted.has(a.id));
+        globalThis.__drDuttaAppointments = filtered;
+        return filtered;
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading TMP_DATA_FILE', err);
+  }
+
+  // 3. Check read-only project static seed file
   try {
     if (fs.existsSync(DATA_FILE)) {
       const content = fs.readFileSync(DATA_FILE, 'utf-8');
       const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        const filtered = parsed.filter((a) => !deleted.has(a.id));
+        globalThis.__drDuttaAppointments = filtered;
+        return filtered;
+      }
     } else {
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-      fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_SEED, null, 2), 'utf-8');
-      return [...INITIAL_SEED];
+      try {
+        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+        fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_SEED, null, 2), 'utf-8');
+      } catch {
+        // Ignored on read-only serverless filesystems
+      }
     }
   } catch (err) {
     console.warn('Error reading data/appointments.json, using fallback seed', err);
   }
-  return [...INITIAL_SEED];
+
+  const filtered = INITIAL_SEED.filter((a) => !deleted.has(a.id));
+  globalThis.__drDuttaAppointments = filtered;
+  return filtered;
 }
 
-// Helper to safely write to JSON file
+// Helper to safely write to JSON file with serverless fallback
 function writeStoredAppointments(list: Appointment[]) {
+  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  const sanitized = list.filter((a) => !deleted.has(a.id));
+  globalThis.__drDuttaAppointments = sanitized;
+
+  // Always write to TMP_DATA_FILE (writable in Vercel/AWS Lambda/Render/Node)
+  try {
+    fs.writeFileSync(TMP_DATA_FILE, JSON.stringify(sanitized, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Error writing TMP_DATA_FILE', err);
+  }
+
+  // Also attempt writing to DATA_FILE if local environment allows
   try {
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('Error writing data/appointments.json', err);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(sanitized, null, 2), 'utf-8');
+  } catch {
+    // Expected on read-only serverless filesystems
   }
 }
 
 export async function getAllAppointments(): Promise<Appointment[]> {
+  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
@@ -83,34 +182,37 @@ export async function getAllAppointments(): Promise<Appointment[]> {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          serialNo: row.serial_no,
-          patientName: row.patient_name,
-          phone: row.phone,
-          email: row.email || undefined,
-          chamberMode: row.chamber_mode as ChamberMode,
-          chamberTitleBn: row.chamber_title_bn,
-          appointmentDate: row.appointment_date,
-          dateFormattedBn: row.date_formatted_bn,
-          slotId: row.slot_id,
-          slotTimeBn: row.slot_time_bn,
-          slotTimeEn: row.slot_time_en,
-          complaints: row.complaints,
-          status: row.status as AppointmentStatus,
-          rescheduledReason: row.rescheduled_reason || undefined,
-          rescheduledAt: row.rescheduled_at || undefined,
-          cancellationReason: row.cancellation_reason || undefined,
-          cancelledAt: row.cancelled_at || undefined,
-          createdAt: row.created_at
-        }));
+        return data
+          .filter((row) => !deleted.has(row.id))
+          .map((row) => ({
+            id: row.id,
+            serialNo: row.serial_no,
+            patientName: row.patient_name,
+            phone: row.phone,
+            email: row.email || undefined,
+            chamberMode: row.chamber_mode as ChamberMode,
+            chamberTitleBn: row.chamber_title_bn,
+            appointmentDate: row.appointment_date,
+            dateFormattedBn: row.date_formatted_bn,
+            slotId: row.slot_id,
+            slotTimeBn: row.slot_time_bn,
+            slotTimeEn: row.slot_time_en,
+            complaints: row.complaints,
+            status: row.status as AppointmentStatus,
+            rescheduledReason: row.rescheduled_reason || undefined,
+            rescheduledAt: row.rescheduled_at || undefined,
+            cancellationReason: row.cancellation_reason || undefined,
+            cancelledAt: row.cancelled_at || undefined,
+            createdAt: row.created_at
+          }));
       }
     } catch (e) {
       console.warn('Supabase query failed, falling back to local file store', e);
     }
   }
 
-  return readStoredAppointments();
+  const stored = readStoredAppointments();
+  return stored.filter((a) => !deleted.has(a.id));
 }
 
 /**
@@ -237,6 +339,11 @@ export async function createAppointment(params: {
 }
 
 export async function getAppointmentById(id: string): Promise<Appointment | null> {
+  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  if (deleted.has(id)) {
+    return null;
+  }
+
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
@@ -284,6 +391,11 @@ export async function updateAppointmentStatus(
   newStatus: AppointmentStatus,
   reason?: string
 ): Promise<Appointment | null> {
+  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  if (deleted.has(id)) {
+    return null;
+  }
+
   const nowIso = new Date().toISOString();
   const stored = readStoredAppointments();
   const item = stored.find((a) => a.id === id);
@@ -338,10 +450,19 @@ export async function updateAppointmentStatus(
 }
 
 export async function deleteAppointment(id: string): Promise<boolean> {
+  // 1. Mark ID in deleted set & persist
+  if (!globalThis.__drDuttaDeletedIds) {
+    globalThis.__drDuttaDeletedIds = new Set<string>();
+  }
+  globalThis.__drDuttaDeletedIds.add(id);
+  persistDeletedIds();
+
+  // 2. Remove from active memory list & write to file stores
   const stored = readStoredAppointments();
   const nextList = stored.filter((a) => a.id !== id);
   writeStoredAppointments(nextList);
 
+  // 3. Remove from Supabase if active
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {

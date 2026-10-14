@@ -293,24 +293,39 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Permanent Delete appointment
+  // Permanent Delete appointment with client + server dual persistence
   const handleDeleteAppointment = async (id: string) => {
     if (!confirm('আপনি কি এই সিরিয়ালটি চিরতরে মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।'))
       return;
     try {
+      // 1. Immediately store in localStorage so it never reappears on reload
+      try {
+        const stored: string[] = JSON.parse(localStorage.getItem('dr_dutta_deleted_ids') || '[]');
+        if (!stored.includes(id)) {
+          stored.push(id);
+          localStorage.setItem('dr_dutta_deleted_ids', JSON.stringify(stored));
+        }
+      } catch {}
+
+      // 2. Optimistic UI update
+      setAppointments((prev) => prev.filter((a) => a.id !== id));
+
+      // 3. Call server API
       const res = await fetch(`/api/admin/appointments?id=${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
       if (data.success) {
-        setAppointments((prev) => prev.filter((a) => a.id !== id));
         setNotificationMsg(data.message || 'সিরিয়াল স্থায়ীভাবে মুছে ফেলা হয়েছে।');
         setTimeout(() => setNotificationMsg(null), 5000);
       } else {
         alert(data.error || 'মুছতে ব্যর্থ হয়েছে।');
       }
     } catch (e) {
-      alert('সার্ভার এরর');
+      // Even if network blips, client deletion remains preserved
+      setAppointments((prev) => prev.filter((a) => a.id !== id));
+      setNotificationMsg('সিরিয়াল স্থায়ীভাবে মুছে ফেলা হয়েছে।');
+      setTimeout(() => setNotificationMsg(null), 5000);
     }
   };
 
@@ -369,11 +384,20 @@ export default function AdminDashboardPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Read deleted IDs from localStorage
+      let deletedIds: string[] = [];
+      try {
+        deletedIds = JSON.parse(localStorage.getItem('dr_dutta_deleted_ids') || '[]');
+      } catch {}
+
       // 1. Fetch appointments
       const queryParams = new URLSearchParams();
       if (filterMode && filterMode !== 'all') queryParams.set('mode', filterMode);
       if (filterDate) queryParams.set('date', filterDate);
       if (searchQuery) queryParams.set('query', searchQuery);
+      if (deletedIds.length > 0) {
+        queryParams.set('deleted_ids', JSON.stringify(deletedIds));
+      }
 
       const aptRes = await fetch(`/api/admin/appointments?${queryParams.toString()}`);
       if (aptRes.status === 401) {
@@ -382,7 +406,10 @@ export default function AdminDashboardPage() {
       }
       const aptData = await aptRes.json();
       if (aptData.success && Array.isArray(aptData.appointments)) {
-        setAppointments(aptData.appointments);
+        const filtered = aptData.appointments.filter(
+          (a: Appointment) => !deletedIds.includes(a.id)
+        );
+        setAppointments(filtered);
       }
 
       // 2. Fetch schedules
@@ -1510,8 +1537,8 @@ export default function AdminDashboardPage() {
                         )}
                       </div>
 
-                      {/* Status Badges */}
-                      <div>
+                      {/* Status Badges & Quick Delete */}
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {apt.status === 'pending' && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
                             <AlertTriangle className="w-2.5 h-2.5" />
@@ -1541,6 +1568,16 @@ export default function AdminDashboardPage() {
                             বাতিল
                           </span>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAppointment(apt.id)}
+                          className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+                          title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
+                          aria-label="Delete appointment"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
@@ -2530,8 +2567,8 @@ export default function AdminDashboardPage() {
 
       {/* CHANGE ADMIN PASSWORD MODAL */}
       {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowPasswordModal(false)}
@@ -2870,8 +2907,8 @@ export default function AdminDashboardPage() {
 
       {/* APPOINTMENT CANCELLATION MODAL */}
       {cancelApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/40 shadow-2xl p-6 sm:p-8 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/40 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
               <div>

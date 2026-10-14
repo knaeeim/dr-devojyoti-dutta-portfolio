@@ -3,7 +3,8 @@ import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   getAllAppointments,
   updateAppointmentStatus,
-  deleteAppointment
+  deleteAppointment,
+  registerDeletedIds
 } from '@/lib/db/appointments';
 import { AppointmentStatus } from '@/types/booking';
 import { sendAppointmentConfirmationEmail } from '@/lib/email/service';
@@ -23,6 +24,16 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const status = searchParams.get('status');
     const query = (searchParams.get('query') || '').toLowerCase().trim();
+    const deletedQuery = searchParams.get('deleted_ids');
+
+    if (deletedQuery) {
+      try {
+        const parsed = JSON.parse(deletedQuery);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          registerDeletedIds(parsed);
+        }
+      } catch {}
+    }
 
     let list = await getAllAppointments();
 

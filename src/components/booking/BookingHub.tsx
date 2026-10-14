@@ -733,8 +733,8 @@ export default function BookingHub() {
 
       {/* OTP VERIFICATION MODAL */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
@@ -860,8 +860,8 @@ export default function BookingHub() {
 
       {/* CONFIRMATION MODAL: Instant Digital Serial Slip */}
       {confirmedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={handleCloseModal}

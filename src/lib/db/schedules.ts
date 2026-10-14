@@ -1,10 +1,37 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import { ChamberMode, ChamberSchedule } from '@/types/booking';
 import { defaultSchedules } from '@/lib/booking/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-let localSchedules: Record<ChamberMode, ChamberSchedule> = { ...defaultSchedules };
+const TMP_SCHEDULES_FILE = path.join(os.tmpdir(), 'dr_dutta_schedules.json');
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __drDuttaChamberSchedules: Record<ChamberMode, ChamberSchedule> | undefined;
+}
+
+function loadLocalSchedules(): Record<ChamberMode, ChamberSchedule> {
+  if (globalThis.__drDuttaChamberSchedules) {
+    return globalThis.__drDuttaChamberSchedules;
+  }
+  try {
+    if (fs.existsSync(TMP_SCHEDULES_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(TMP_SCHEDULES_FILE, 'utf-8'));
+      if (parsed && parsed.offline && parsed.online) {
+        globalThis.__drDuttaChamberSchedules = parsed;
+        return parsed;
+      }
+    }
+  } catch {}
+
+  globalThis.__drDuttaChamberSchedules = { ...defaultSchedules };
+  return globalThis.__drDuttaChamberSchedules;
+}
 
 export async function getChamberSchedules(): Promise<Record<ChamberMode, ChamberSchedule>> {
+  const local = loadLocalSchedules();
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
@@ -13,7 +40,7 @@ export async function getChamberSchedules(): Promise<Record<ChamberMode, Chamber
         .select('*');
 
       if (!error && data && data.length > 0) {
-        const result = { ...localSchedules };
+        const result = { ...local };
         for (const row of data) {
           if (row.chamber_id === 'dhaka_chamber') {
             result.offline = row.config;
@@ -21,6 +48,7 @@ export async function getChamberSchedules(): Promise<Record<ChamberMode, Chamber
             result.online = row.config;
           }
         }
+        globalThis.__drDuttaChamberSchedules = result;
         return result;
       }
     } catch (e) {
@@ -28,13 +56,18 @@ export async function getChamberSchedules(): Promise<Record<ChamberMode, Chamber
     }
   }
 
-  return localSchedules;
+  return local;
 }
 
 export async function saveChamberSchedules(
   schedules: Record<ChamberMode, ChamberSchedule>
 ): Promise<boolean> {
-  localSchedules = schedules;
+  globalThis.__drDuttaChamberSchedules = schedules;
+  try {
+    fs.writeFileSync(TMP_SCHEDULES_FILE, JSON.stringify(schedules, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not save schedules to tmp file', err);
+  }
 
   const supabase = await createServerSupabaseClient();
   if (supabase) {
@@ -59,3 +92,4 @@ export async function saveChamberSchedules(
 
   return true;
 }
+
