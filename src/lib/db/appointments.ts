@@ -397,56 +397,69 @@ export async function updateAppointmentStatus(
   }
 
   const nowIso = new Date().toISOString();
-  const stored = readStoredAppointments();
-  const item = stored.find((a) => a.id === id);
 
-  if (!item) {
+  // 1. Fetch current appointment either from Supabase or local store
+  const existing = await getAppointmentById(id);
+  if (!existing) {
     return null;
   }
 
-  // If restoring/un-cancelling a previously cancelled appointment, verify the slot hasn't been taken
-  if (item.status === 'cancelled' && newStatus !== 'cancelled') {
-    const slotTaken = stored.some(
-      (a) =>
-        a.id !== id &&
-        a.appointmentDate === item.appointmentDate &&
-        a.chamberMode === item.chamberMode &&
-        a.slotId === item.slotId &&
-        a.status !== 'cancelled'
-    );
-    if (slotTaken) {
-      throw new Error('এই স্লটটি বাতিল থাকার সময় অন্য একজন রোগী বুক করে ফেলেছেন। অনুগ্রহ করে অন্য তারিখে বা সময়ে রিশিডিউল করুন।');
+  // 2. If restoring/un-cancelling a previously cancelled appointment, verify the slot hasn't been taken
+  if (existing.status === 'cancelled' && newStatus !== 'cancelled') {
+    const booked = await getBookedSlotsForDate(existing.appointmentDate, existing.chamberMode);
+    if (booked.includes(existing.slotId)) {
+      throw new Error(
+        'এই স্লটটি বাতিল থাকার সময় অন্য একজন রোগী বুক করে ফেলেছেন। অনুগ্রহ করে অন্য তারিখে বা সময়ে রিশিডিউল করুন।'
+      );
     }
   }
 
-  item.status = newStatus;
-  if (newStatus === 'cancelled') {
-    item.cancellationReason = reason || 'অ্যাডমিন কর্তৃক বাতিল করা হয়েছে';
-    item.cancelledAt = nowIso;
-  } else if (item.status !== 'cancelled') {
-    // cleared cancellation flag if restored
-    delete item.cancellationReason;
-    delete item.cancelledAt;
-  }
+  const finalCancellationReason =
+    newStatus === 'cancelled' ? reason || 'অ্যাডমিন কর্তৃক বাতিল করা হয়েছে' : undefined;
+  const finalCancelledAt = newStatus === 'cancelled' ? nowIso : undefined;
 
+  const updatedItem: Appointment = {
+    ...existing,
+    status: newStatus,
+    cancellationReason: finalCancellationReason,
+    cancelledAt: finalCancelledAt
+  };
+
+  // 3. Update Supabase if active
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
-      await supabase
+      const { error } = await supabase
         .from('appointments')
         .update({
           status: newStatus,
-          cancellation_reason: item.cancellationReason || null,
-          cancelled_at: item.cancelledAt || null
+          cancellation_reason: finalCancellationReason || null,
+          cancelled_at: finalCancelledAt || null,
+          updated_at: nowIso
         })
         .eq('id', id);
+
+      if (error) {
+        console.warn('Supabase update returned error:', error);
+      }
     } catch (e) {
       console.warn('Supabase update failed', e);
     }
   }
 
-  writeStoredAppointments(stored);
-  return { ...item };
+  // 4. Also update local in-memory & file store to stay consistent
+  try {
+    const stored = readStoredAppointments();
+    const existingIdx = stored.findIndex((a) => a.id === id);
+    if (existingIdx !== -1) {
+      stored[existingIdx] = { ...updatedItem };
+    } else {
+      stored.unshift({ ...updatedItem });
+    }
+    writeStoredAppointments(stored);
+  } catch {}
+
+  return updatedItem;
 }
 
 export async function deleteAppointment(id: string): Promise<boolean> {
@@ -482,24 +495,15 @@ export async function rescheduleAppointment(params: {
   newSlotTimeEn: string;
   reason?: string;
 }): Promise<{ appointment: Appointment; previous: { date: string; time: string } }> {
-  const stored = readStoredAppointments();
-  const existingApt = stored.find((a) => a.id === params.id);
-
+  // 1. Fetch existing appointment from Supabase or local store
+  const existingApt = await getAppointmentById(params.id);
   if (!existingApt) {
     throw new Error('অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।');
   }
 
-  // Check if slot already booked on new date by another active appointment
-  const slotConflict = stored.some(
-    (a) =>
-      a.id !== params.id &&
-      a.appointmentDate === params.newDate &&
-      a.chamberMode === existingApt.chamberMode &&
-      a.slotId === params.newSlotId &&
-      a.status !== 'cancelled'
-  );
-
-  if (slotConflict) {
+  // 2. Check if slot already booked on new date by another active appointment
+  const booked = await getBookedSlotsForDate(params.newDate, existingApt.chamberMode);
+  if (booked.includes(params.newSlotId)) {
     throw new Error('দুঃখিত, নির্বাচিত নতুন স্লটটি ইতোমধ্যে অন্য রোগী বুক করে রেখেছেন। অন্য স্লট নির্বাচন করুন।');
   }
 
@@ -511,19 +515,23 @@ export async function rescheduleAppointment(params: {
   const newDateFormattedBn = formatDateToBn(params.newDate);
   const nowIso = new Date().toISOString();
 
-  existingApt.appointmentDate = params.newDate;
-  existingApt.dateFormattedBn = newDateFormattedBn;
-  existingApt.slotId = params.newSlotId;
-  existingApt.slotTimeBn = params.newSlotTimeBn;
-  existingApt.slotTimeEn = params.newSlotTimeEn;
-  existingApt.status = 'rescheduled';
-  existingApt.rescheduledReason = params.reason;
-  existingApt.rescheduledAt = nowIso;
+  const updatedApt: Appointment = {
+    ...existingApt,
+    appointmentDate: params.newDate,
+    dateFormattedBn: newDateFormattedBn,
+    slotId: params.newSlotId,
+    slotTimeBn: params.newSlotTimeBn,
+    slotTimeEn: params.newSlotTimeEn,
+    status: 'rescheduled',
+    rescheduledReason: params.reason,
+    rescheduledAt: nowIso
+  };
 
+  // 3. Update Supabase if active
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
-      await supabase
+      const { error } = await supabase
         .from('appointments')
         .update({
           appointment_date: params.newDate,
@@ -533,14 +541,30 @@ export async function rescheduleAppointment(params: {
           slot_time_en: params.newSlotTimeEn,
           status: 'rescheduled',
           rescheduled_reason: params.reason || null,
-          rescheduled_at: nowIso
+          rescheduled_at: nowIso,
+          updated_at: nowIso
         })
         .eq('id', params.id);
+
+      if (error) {
+        console.warn('Supabase reschedule update error:', error);
+      }
     } catch (e) {
       console.warn('Supabase reschedule update failed', e);
     }
   }
 
-  writeStoredAppointments(stored);
-  return { appointment: { ...existingApt }, previous };
+  // 4. Also update local in-memory & file store
+  try {
+    const stored = readStoredAppointments();
+    const existingIdx = stored.findIndex((a) => a.id === params.id);
+    if (existingIdx !== -1) {
+      stored[existingIdx] = { ...updatedApt };
+    } else {
+      stored.unshift({ ...updatedApt });
+    }
+    writeStoredAppointments(stored);
+  } catch {}
+
+  return { appointment: updatedApt, previous };
 }
