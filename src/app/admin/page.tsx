@@ -43,7 +43,10 @@ import {
   FileText,
   Send,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import {
   Appointment,
@@ -66,17 +69,28 @@ import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
 import { printSinglePageSerialSlip, printReceptionSheet } from '@/lib/booking/print-slip';
 
+export type SortOption =
+  | 'created_desc'
+  | 'created_asc'
+  | 'date_asc'
+  | 'date_desc'
+  | 'serial_asc'
+  | 'serial_desc'
+  | 'name_asc'
+  | 'name_desc';
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [schedules, setSchedules] = useState<Record<ChamberMode, ChamberSchedule>>(defaultSchedules);
   const [loading, setLoading] = useState(true);
 
-  // Filters
+  // Filters & Sorting
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterDate, setFilterDate] = useState<string>('');
+  const [sortBy, setSortBy] = useState<SortOption>('created_desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
 
@@ -778,13 +792,14 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
   // Export CSV
   const handleExportCSV = () => {
-    if (appointments.length === 0) {
+    const listToExport = sortedAppointments.length > 0 ? sortedAppointments : appointments;
+    if (listToExport.length === 0) {
       showAlert('এক্সপোর্ট করার জন্য কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।', 'তথ্য নেই', 'info');
       return;
     }
 
     let csv = 'Serial No,Patient Name,Phone,Email,Chamber,Date,Slot Time,Complaints,Status\n';
-    appointments.forEach((a) => {
+    listToExport.forEach((a) => {
       csv += `"${a.serialNo}","${a.patientName}","${a.phone}","${a.email || ''}","${
         a.chamberTitleBn
       }","${a.appointmentDate}","${a.slotTimeEn || a.slotTimeBn}","${(a.complaints || '').replace(
@@ -1005,18 +1020,63 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
     return true;
   });
 
-  const totalItems = displayedAppointments.length;
+  // Sort appointments based on selected criteria
+  const sortedAppointments = [...displayedAppointments].sort((a, b) => {
+    switch (sortBy) {
+      case 'date_asc': {
+        const d = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
+        if (d !== 0) return d;
+        return (a.slotTimeEn || '').localeCompare(b.slotTimeEn || '');
+      }
+      case 'date_desc': {
+        const d = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
+        if (d !== 0) return d;
+        return (b.slotTimeEn || '').localeCompare(a.slotTimeEn || '');
+      }
+      case 'serial_asc': {
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        if (numA !== numB) return numA - numB;
+        return (a.serialNo || '').localeCompare(b.serialNo || '');
+      }
+      case 'serial_desc': {
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        if (numA !== numB) return numB - numA;
+        return (b.serialNo || '').localeCompare(a.serialNo || '');
+      }
+      case 'name_asc': {
+        return (a.patientName || '').localeCompare(b.patientName || '', 'bn');
+      }
+      case 'name_desc': {
+        return (b.patientName || '').localeCompare(a.patientName || '', 'bn');
+      }
+      case 'created_asc': {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeA - timeB;
+      }
+      case 'created_desc':
+      default: {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }
+    }
+  });
+
+  const totalItems = sortedAppointments.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
   const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedAppointments = displayedAppointments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedAppointments = sortedAppointments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const startItemNo = totalItems === 0 ? 0 : startIndex + 1;
   const endItemNo = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
 
-  // Reset page to 1 when filters or search change
+  // Reset page to 1 when filters, search, or sort change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterMode, filterStatus, filterDate, searchQuery]);
+  }, [filterMode, filterStatus, filterDate, searchQuery, sortBy]);
 
   // Clamp current page if items decrease
   useEffect(() => {
@@ -1309,8 +1369,30 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             />
           </form>
 
-          {/* Filter Controls: 2x2 grid on mobile, row on desktop */}
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          {/* Filter & Sort Controls: 2x2 grid on mobile, row on desktop */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            {/* Sort Control */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shrink-0 flex items-center gap-1">
+                <ArrowUpDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                সর্ট:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              >
+                <option value="created_desc">সর্বশেষ বুকিং আগে</option>
+                <option value="created_asc">পুরনো বুকিং আগে</option>
+                <option value="date_asc">তারিখ: নিকটবর্তী আগে</option>
+                <option value="date_desc">তারিখ: দূরবর্তী আগে</option>
+                <option value="serial_asc">সিরিয়াল নং: ছোট থেকে বড়</option>
+                <option value="serial_desc">সিরিয়াল নং: বড় থেকে ছোট</option>
+                <option value="name_asc">রোগীর নাম: ক-হ / A-Z</option>
+                <option value="name_desc">রোগীর নাম: হ-ক / Z-A</option>
+              </select>
+            </div>
+
             {/* Chamber Filter */}
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shrink-0">
@@ -1522,10 +1604,55 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-bold border-b border-emerald-900/10 dark:border-emerald-800/40">
                     <tr>
-                      <th className="py-3 px-3.5">সিরিয়াল নং</th>
-                      <th className="py-3 px-3.5">রোগীর নাম ও যোগাযোগ</th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'serial_asc' ? 'serial_desc' : 'serial_asc')}
+                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        title="সিরিয়াল অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>সিরিয়াল নং</span>
+                          {sortBy === 'serial_asc' ? (
+                            <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : sortBy === 'serial_desc' ? (
+                            <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400/70 opacity-60" />
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'name_asc' ? 'name_desc' : 'name_asc')}
+                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        title="রোগীর নাম অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>রোগীর নাম ও যোগাযোগ</span>
+                          {sortBy === 'name_asc' ? (
+                            <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : sortBy === 'name_desc' ? (
+                            <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400/70 opacity-60" />
+                          )}
+                        </div>
+                      </th>
                       <th className="py-3 px-3.5">চেম্বার</th>
-                      <th className="py-3 px-3.5">তারিখ ও সময় স্লট</th>
+                      <th
+                        onClick={() => setSortBy(sortBy === 'date_asc' ? 'date_desc' : 'date_asc')}
+                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        title="তারিখ অনুযায়ী সর্ট করুন"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>তারিখ ও সময় স্লট</span>
+                          {sortBy === 'date_asc' ? (
+                            <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : sortBy === 'date_desc' ? (
+                            <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          ) : (
+                            <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400/70 opacity-60" />
+                          )}
+                        </div>
+                      </th>
                       <th className="py-3 px-3.5">সমস্যার বিবরণ</th>
                       <th className="py-3 px-3.5">স্ট্যাটাস</th>
                       <th className="py-3 px-3.5 text-right">অ্যাকশন ও যোগাযোগ</th>
