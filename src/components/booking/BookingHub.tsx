@@ -688,8 +688,8 @@ export default function BookingHub() {
 
       {/* OTP VERIFICATION MODAL */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
@@ -815,22 +815,22 @@ export default function BookingHub() {
 
       {/* CONFIRMATION MODAL: Instant Digital Serial Slip */}
       {confirmedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={handleCloseModal}
-              className="absolute top-5 right-5 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Header / Verification Notice */}
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 mx-auto flex items-center justify-center text-2xl shadow-inner">
+            <div className="text-center space-y-1.5 sm:space-y-2 pr-6 sm:pr-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 mx-auto flex items-center justify-center text-xl sm:text-2xl shadow-inner">
                 ✅
               </div>
-              <h3 className="font-serif text-2xl font-bold text-emerald-950 dark:text-emerald-50">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-emerald-950 dark:text-emerald-50 leading-snug">
                 অ্যাপয়েন্টমেন্ট সফলভাবে সম্পন্ন হয়েছে!
               </h3>
               <p className="text-xs text-emerald-700 dark:text-emerald-300">
@@ -839,40 +839,38 @@ export default function BookingHub() {
             </div>
 
             {/* Digital Serial Slip Card */}
-            <div id="printable-serial-slip" className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/60 dark:to-emerald-900/30 border-2 border-dashed border-emerald-300 dark:border-emerald-700/60 space-y-4">
-              <div className="flex items-center justify-between border-b border-emerald-200 dark:border-emerald-800/60 pb-3">
+            <div id="printable-serial-slip" className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-amber-50/50 dark:from-emerald-950/60 dark:to-emerald-900/30 border-2 border-dashed border-emerald-300 dark:border-emerald-700/60 space-y-3.5 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-emerald-200 dark:border-emerald-800/60 pb-3">
                 <div>
                   <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block">
                     অফিশিয়াল ডিজিটাল সিরিয়াল
                   </span>
-                  <div className="font-mono text-2xl font-black text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
-                    {confirmedAppointment.serialNo}
+                  <div className="font-mono text-xl sm:text-2xl font-black text-emerald-950 dark:text-emerald-50 flex items-center gap-2 flex-wrap">
+                    <span className="tracking-tight select-all">{confirmedAppointment.serialNo}</span>
                     <button
                       onClick={handleCopySerial}
                       title="সিরিয়াল নম্বর কপি করুন"
-                      className="p-1 rounded text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200/50 cursor-pointer"
+                      className="p-1.5 rounded-lg text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200/50 bg-emerald-100/60 dark:bg-emerald-900/40 cursor-pointer"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
+                    {copiedSerial && (
+                      <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-100 dark:bg-emerald-900 px-1.5 py-0.5 rounded">কপি হয়েছে!</span>
+                    )}
                   </div>
-                  {copiedSerial && (
-                    <span className="text-[10px] text-emerald-600 font-semibold">কপি হয়েছে!</span>
-                  )}
                 </div>
-                <div className="text-right space-y-1">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1.5 flex-wrap">
                   <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-700 text-white">
                     {confirmedAppointment.chamberTitleBn}
                   </span>
-                  <div>
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-emerald-950">
-                      যাচাইকৃত (Verified)
-                    </span>
-                  </div>
+                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-emerald-950">
+                    যাচাইকৃত (Verified)
+                  </span>
                 </div>
               </div>
 
               {/* Patient and Slot Details */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs">
                 <div>
                   <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">রোগীর নাম:</span>
                   <span className="font-bold text-emerald-950 dark:text-emerald-100">{confirmedAppointment.patientName}</span>
@@ -892,7 +890,7 @@ export default function BookingHub() {
                 {confirmedAppointment.email && (
                   <div className="col-span-2">
                     <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">কনফার্মেশন ইমেইল:</span>
-                    <span className="font-bold text-emerald-950 dark:text-emerald-100 font-mono text-[11px]">{confirmedAppointment.email}</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100 font-mono text-[11px] break-all">{confirmedAppointment.email}</span>
                   </div>
                 )}
               </div>
@@ -942,22 +940,21 @@ export default function BookingHub() {
               </div>
             </div>
 
-
             {/* Action Buttons: Strictly Slip Print & OK */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
               <button
                 onClick={handlePrintSlip}
                 type="button"
-                className="py-3 px-4 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all cursor-pointer shadow-sm"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all cursor-pointer shadow-sm text-center"
               >
-                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 <span>স্লিপ প্রিন্ট করুন</span>
               </button>
 
               <button
                 onClick={handleCloseModal}
                 type="button"
-                className="py-3 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm transition-all cursor-pointer shadow-md text-center"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-md text-center"
               >
                 <span>ঠিক আছে (ওকে)</span>
               </button>

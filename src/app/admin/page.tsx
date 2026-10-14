@@ -2319,10 +2319,10 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* RESCHEDULE APPOINTMENT MODAL */}
       {rescheduleApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
-            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
+            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 mb-1">
                   <Clock className="w-3.5 h-3.5" />
@@ -2481,11 +2481,11 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-emerald-900/10 dark:border-emerald-800/40">
+            <div className="grid grid-cols-1 sm:flex sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-emerald-900/10 dark:border-emerald-800/40">
               <button
                 type="button"
                 onClick={() => setRescheduleApt(null)}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-800 text-center cursor-pointer"
               >
                 বাতিল করুন
               </button>
@@ -2493,7 +2493,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 type="button"
                 onClick={handleConfirmReschedule}
                 disabled={rescheduleLoading || !rescheduleSlotId}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all cursor-pointer text-center"
               >
                 {rescheduleLoading ? (
                   <>
@@ -2514,75 +2514,75 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* COMPREHENSIVE SCHEDULE & DAY-SPECIFIC / DATE-SPECIFIC SETTINGS MODAL */}
       {showScheduleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-5xl rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto overflow-x-hidden">
-            <div className="flex justify-between items-center border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto">
+            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
               <div>
-                <h3 className="font-serif font-bold text-xl text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
-                  <CalendarDays className="w-5 h-5 text-amber-500" />
-                  চেম্বার শিডিউলার — সার্বজনীন ও ডে-স্পেসিফিক ইঞ্জিন
+                <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5 text-amber-500 shrink-0" />
+                  <span>চেম্বার শিডিউলার — সার্বজনীন ও ডে-স্পেসিফিক ইঞ্জিন</span>
                 </h3>
-                <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
                   সার্বজনীন সময়ের পাশাপাশি প্রতিটি বারের জন্য আলাদা সময়সূচী বা নির্দিষ্ট তারিখের বিশেষ শিডিউল কনফিগার করুন
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowScheduleModal(false)}
-                className="p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="p-1.5 sm:p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Chamber Tab Switch */}
-            <div className="flex rounded-2xl bg-emerald-100/70 dark:bg-emerald-950 p-1.5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 rounded-2xl bg-emerald-100/70 dark:bg-emerald-950 p-1.5 gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={() => setScheduleActiveChamber('offline')}
-                className={`flex-1 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                className={`py-2.5 sm:py-3 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   scheduleActiveChamber === 'offline'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50'
                 }`}
               >
-                <MapPin className="w-4 h-4 text-amber-300" />
+                <MapPin className="w-4 h-4 text-amber-300 shrink-0" />
                 <span>ঢাকা চেম্বার (সরাসরি)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setScheduleActiveChamber('online')}
-                className={`flex-1 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                className={`py-2.5 sm:py-3 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   scheduleActiveChamber === 'online'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50'
                 }`}
               >
-                <Video className="w-4 h-4 text-amber-300" />
+                <Video className="w-4 h-4 text-amber-300 shrink-0" />
                 <span>অনলাইন ভিডিও কনসালটেশন</span>
               </button>
             </div>
 
             {/* TIMING TYPE SELECTOR (General vs Day-Specific) */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50/50 dark:from-emerald-950/50 dark:to-emerald-900/30 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50/50 dark:from-emerald-950/50 dark:to-emerald-900/30 border border-emerald-200 dark:border-emerald-800/60 space-y-2.5 sm:space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
                 <div>
                   <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-100 uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     সময়সূচীর ধরন নির্ধারণ করুন
                   </h4>
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
                     {currentChamber.timingType === 'day_specific'
                       ? 'দিনভিত্তিক মোড সক্রিয়: সপ্তাহের প্রতিটি বারের জন্য আলাদা শুরুর সময়, সমাপ্তি ও বিরতি প্রযোজ্য।'
                       : 'সার্বজনীন মোড সক্রিয়: সপ্তাহের সকল সক্রিয় দিনের জন্য একই সময় প্রযোজ্য।'}
                   </p>
                 </div>
 
-                <div className="flex rounded-xl bg-white dark:bg-[#101e17] p-1 border border-emerald-300 dark:border-emerald-700 shrink-0">
+                <div className="grid grid-cols-2 sm:flex rounded-xl bg-white dark:bg-[#101e17] p-1 border border-emerald-300 dark:border-emerald-700 shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => handleUpdateTimingType('general')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
                       currentChamber.timingType === 'general'
                         ? 'bg-emerald-800 text-white shadow'
                         : 'text-emerald-900 dark:text-emerald-200'
@@ -2593,7 +2593,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   <button
                     type="button"
                     onClick={() => handleUpdateTimingType('day_specific')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-2 sm:py-1.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
                       currentChamber.timingType === 'day_specific'
                         ? 'bg-emerald-800 text-white shadow'
                         : 'text-emerald-900 dark:text-emerald-200'
@@ -2780,7 +2780,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             ) : (
               /* VIEW B: DAY-SPECIFIC TIMINGS (SEPARATE HOURS FOR EACH DAY OF WEEK) */
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-emerald-900/10 dark:border-emerald-800/20 pb-2">
                   <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-100 uppercase tracking-wider">
                     সপ্তাহের ৭ দিনের পৃথক পৃথক সময়সূচী ও স্লট কনফিগারেশন
                   </h4>
@@ -3213,16 +3213,16 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             )}
 
             {/* Save Buttons */}
-            <div className="flex justify-between items-center pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 sm:pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
               <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
                 পরিবর্তনগুলো রোগীর বুকিং ইঞ্জিনে তাৎক্ষণিকভাবে কার্যকর হবে।
               </span>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowScheduleModal(false)}
-                  className="px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-center cursor-pointer"
                 >
                   বন্ধ করুন
                 </button>
@@ -3230,7 +3230,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   type="button"
                   disabled={isPending}
                   onClick={handleSaveSchedule}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isPending ? (
                     <>
@@ -3249,8 +3249,8 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* CHANGE ADMIN PASSWORD MODAL */}
       {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowPasswordModal(false)}
@@ -3387,8 +3387,8 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* CUSTOMIZABLE MESSAGE / NOTIFICATION MODAL */}
       {messageModalApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
               <div>
@@ -3544,12 +3544,12 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-emerald-900/10 dark:border-emerald-800/40">
-              <div className="flex items-center gap-2">
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-t border-emerald-900/10 dark:border-emerald-800/40">
+              <div className="grid grid-cols-2 sm:flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleCopyMessage}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer text-center"
                 >
                   {copiedToast ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedToast ? 'কপি হয়েছে!' : 'কপি করুন'}</span>
@@ -3563,19 +3563,19 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       setTimeout(() => setCopiedToast(false), 2000);
                     } catch {}
                   }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 text-center"
                   title="মোবাইল বা কম্পিউটারের এসএমএস অ্যাপে সরাসরি নম্বর ও টেমপ্লেট পাঠান"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>এসএমএস অ্যাপে পাঠান</span>
+                  <span>এসএমএস অ্যাপ</span>
                 </a>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 sm:flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setMessageModalApt(null)}
-                  className="py-2 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-center"
                 >
                   বন্ধ করুন
                 </button>
@@ -3583,10 +3583,10 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   href={getWhatsAppUrl(messageModalApt.phone, customMessage)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95 text-center"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
-                  <span>হোয়াটসঅ্যাপে পাঠান</span>
+                  <span>হোয়াটসঅ্যাপ</span>
                 </a>
               </div>
             </div>
@@ -3596,8 +3596,8 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* APPOINTMENT CANCELLATION MODAL */}
       {cancelApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/40 shadow-2xl p-6 sm:p-8 space-y-5 max-h-[92vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
               <div>
@@ -3920,8 +3920,8 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
       {/* CUSTOM DELETE CONFIRMATION MODAL */}
       {deleteTargetApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/50 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/50 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
               <div className="flex items-center gap-3">
