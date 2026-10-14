@@ -1,5 +1,10 @@
 import crypto from 'node:crypto';
 
+const OTP_SECRET =
+  process.env.ADMIN_SESSION_SECRET ||
+  process.env.ADMIN_PASSWORD ||
+  'dr-dutta-otp-secret-token-key-2026';
+
 interface OtpEntry {
   code: string;
   expiresAt: number;
@@ -8,7 +13,7 @@ interface OtpEntry {
   token?: string;
 }
 
-// In-memory OTP storage with automatic expiry
+// In-memory OTP storage with automatic expiry (used as local fallback)
 const otpStore = new Map<string, OtpEntry>();
 
 // Clean up expired OTPs periodically
@@ -32,12 +37,37 @@ export function normalizePhoneNumber(rawPhone: string): string {
 }
 
 /**
+ * Creates a stateless HMAC challenge token for serverless multi-container verification
+ */
+export function createOtpChallenge(phone: string, code: string, expiresAt: number): string {
+  const normalized = normalizePhoneNumber(phone);
+  const payload = `${normalized}:${expiresAt}`;
+  const hmac = crypto
+    .createHmac('sha256', OTP_SECRET)
+    .update(`${normalized}:${code}:${expiresAt}`)
+    .digest('hex');
+  return `${Buffer.from(payload).toString('base64url')}.${hmac}`;
+}
+
+/**
+ * Creates a stateless signed token proving the phone was verified via OTP
+ */
+export function createVerifiedPhoneToken(phone: string): string {
+  const normalized = normalizePhoneNumber(phone);
+  const validUntil = Date.now() + 25 * 60 * 1000; // 25 mins validity for booking completion
+  const payload = `verified:${normalized}:${validUntil}`;
+  const hmac = crypto.createHmac('sha256', OTP_SECRET).update(payload).digest('hex');
+  return `${Buffer.from(payload).toString('base64url')}.${hmac}`;
+}
+
+/**
  * Generates a 6-digit OTP code and dispatches SMS if provider credentials exist
  */
 export async function sendOtp(phone: string, patientName?: string): Promise<{
   success: boolean;
   message: string;
   expiresInSeconds: number;
+  challengeToken?: string;
   debugCode?: string;
 }> {
   const normalized = normalizePhoneNumber(phone);
@@ -155,32 +185,78 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
   console.log(`📡 Status: ${smsSent ? 'Delivered via SMS Gateway' : 'Sandbox Demo Mode'}`);
   console.log(`============================================================\n`);
 
+  const challengeToken = createOtpChallenge(normalized, code, expiresAt);
+
   return {
     success: true,
     message: smsSent
       ? `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`
       : `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি পাঠানো হয়েছে।`,
     expiresInSeconds: 300,
+    challengeToken,
     // Provide debugCode for instant demo/testing if real SMS provider isn't configured
     debugCode: !smsSent ? code : undefined
   };
 }
 
 /**
- * Validates the entered OTP code
+ * Validates the entered OTP code with stateless HMAC token support
  */
-export function verifyOtpCode(phone: string, inputCode: string): {
+export function verifyOtpCode(
+  phone: string,
+  inputCode: string,
+  challengeToken?: string
+): {
   success: boolean;
   message: string;
   token?: string;
 } {
   const normalized = normalizePhoneNumber(phone);
-  const entry = otpStore.get(normalized);
+  const trimmedCode = inputCode.trim();
 
+  // 1. Try stateless cryptographic challenge token verification (100% serverless safe)
+  if (challengeToken && challengeToken.includes('.')) {
+    try {
+      const [b64Data, hmac] = challengeToken.split('.');
+      const payload = Buffer.from(b64Data, 'base64url').toString('utf-8');
+      const [tokenPhone, expStr] = payload.split(':');
+      const expTime = Number(expStr);
+
+      if (tokenPhone === normalized && expTime > Date.now()) {
+        const expectedHmac = crypto
+          .createHmac('sha256', OTP_SECRET)
+          .update(`${normalized}:${trimmedCode}:${expStr}`)
+          .digest('hex');
+
+        if (crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
+          const token = createVerifiedPhoneToken(normalized);
+          // Also set in local map for warm container fallback
+          otpStore.set(normalized, {
+            code: trimmedCode,
+            expiresAt: Date.now() + 25 * 60 * 1000,
+            attempts: 0,
+            verified: true,
+            token
+          });
+
+          return {
+            success: true,
+            message: 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
+            token
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[OTP] Challenge token verification error:', err);
+    }
+  }
+
+  // 2. Fallback to in-memory store
+  const entry = otpStore.get(normalized);
   if (!entry) {
     return {
       success: false,
-      message: 'কোনো সক্রিয় ওটিপি কোড পাওয়া যায়নি। অনুগ্রহ করে নতুন কোড পাঠান।'
+      message: 'কোনো সক্রিয় ওটিপি কোড পাওয়া যায়নি। অনুগ্রহ করে পুনরায় কোড পাঠান।'
     };
   }
 
@@ -201,19 +277,17 @@ export function verifyOtpCode(phone: string, inputCode: string): {
     };
   }
 
-  if (entry.code.trim() !== inputCode.trim()) {
+  if (entry.code.trim() !== trimmedCode) {
     return {
       success: false,
       message: 'ভুল ওটিপি কোড! অনুগ্রহ করে সঠিক ৬-সংখ্যার কোডটি দিন।'
     };
   }
 
-  // Generate a random verification token valid for final appointment creation
-  const token = crypto.randomBytes(16).toString('hex');
+  const token = createVerifiedPhoneToken(normalized);
   entry.verified = true;
   entry.token = token;
-  // Extend lifetime so user has 10 minutes to submit the final booking
-  entry.expiresAt = Date.now() + 10 * 60 * 1000;
+  entry.expiresAt = Date.now() + 25 * 60 * 1000;
 
   return {
     success: true,
@@ -223,15 +297,40 @@ export function verifyOtpCode(phone: string, inputCode: string): {
 }
 
 /**
- * Checks if a phone was verified via OTP
+ * Checks if a phone was verified via OTP (supports stateless HMAC token)
  */
 export function isPhoneVerified(phone: string, token?: string): boolean {
-  // If in demo or bypass mode, permit if valid
+  if (!token) return false;
   const normalized = normalizePhoneNumber(phone);
+
+  // 1. Verify stateless HMAC cryptographic token (survives any serverless cold-start)
+  if (token.includes('.')) {
+    try {
+      const [b64Data, signature] = token.split('.');
+      const payload = Buffer.from(b64Data, 'base64url').toString('utf-8');
+      const [prefix, tokenPhone, validUntilStr] = payload.split(':');
+
+      if (prefix === 'verified' && tokenPhone === normalized) {
+        const validUntil = Number(validUntilStr);
+        if (validUntil > Date.now()) {
+          const expected = crypto
+            .createHmac('sha256', OTP_SECRET)
+            .update(`verified:${tokenPhone}:${validUntilStr}`)
+            .digest('hex');
+
+          if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+            return true;
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 2. In-memory fallback
   const entry = otpStore.get(normalized);
-  if (!entry) return false;
-  if (Date.now() > entry.expiresAt) return false;
-  if (!entry.verified) return false;
-  if (token && entry.token && entry.token !== token) return false;
-  return true;
+  if (entry && entry.verified && Date.now() <= entry.expiresAt) {
+    if (!token || !entry.token || entry.token === token) return true;
+  }
+
+  return false;
 }

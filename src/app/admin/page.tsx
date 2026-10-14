@@ -133,6 +133,27 @@ export default function AdminDashboardPage() {
   const [cancelCustomReason, setCancelCustomReason] = useState<string>('');
   const [cancelLoading, setCancelLoading] = useState(false);
 
+  // Custom Confirmation & Alert Modal States (No default browser popups)
+  const [deleteTargetApt, setDeleteTargetApt] = useState<Appointment | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const [restoreTargetApt, setRestoreTargetApt] = useState<Appointment | null>(null);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+
+  const [alertModal, setAlertModal] = useState<{
+    title?: string;
+    message: string;
+    type?: 'error' | 'info' | 'warning' | 'success';
+  } | null>(null);
+
+  const showAlert = (
+    message: string,
+    title?: string,
+    type: 'error' | 'info' | 'warning' | 'success' = 'info'
+  ) => {
+    setAlertModal({ message, title, type });
+  };
+
   const [isPending, startTransition] = useTransition();
 
   // Helper to build default notification messages
@@ -245,35 +266,30 @@ export default function AdminDashboardPage() {
         setTimeout(() => setNotificationMsg(null), 6000);
         setCancelApt(null);
       } else {
-        alert(data.error || 'বাতিল করতে সমস্যা হয়েছে।');
+        showAlert(data.error || 'বাতিল করতে সমস্যা হয়েছে।', 'বাতিল ব্যর্থ', 'error');
       }
     } catch (err) {
-      alert('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে।');
+      showAlert('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে।', 'সংযোগ ত্রুটি', 'error');
     } finally {
       setCancelLoading(false);
     }
   };
 
-  // Restore cancelled appointment
-  const handleRestoreAppointment = async (apt: Appointment) => {
-    if (
-      !confirm(
-        `আপনি কি "${apt.patientName}"-এর বাতিলকৃত সিরিয়ালটি (${apt.serialNo}) পুনরায় সক্রিয় করতে চান?`
-      )
-    )
-      return;
-
+  // Restore cancelled appointment confirmation handler
+  const executeConfirmedRestore = async () => {
+    if (!restoreTargetApt) return;
+    setRestoreLoading(true);
     try {
       const res = await fetch('/api/admin/appointments', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: apt.id, status: 'confirmed' })
+        body: JSON.stringify({ id: restoreTargetApt.id, status: 'confirmed' })
       });
       const data = await res.json();
       if (data.success) {
         setAppointments((prev) =>
           prev.map((a) =>
-            a.id === apt.id
+            a.id === restoreTargetApt.id
               ? {
                   ...a,
                   status: 'confirmed',
@@ -283,20 +299,22 @@ export default function AdminDashboardPage() {
               : a
           )
         );
-        setNotificationMsg('সিরিয়ালটি সফলভাবে পুনরায় সক্রিয় করা হয়েছে।');
+        setNotificationMsg(`"${restoreTargetApt.patientName}"-এর সিরিয়ালটি সফলভাবে পুনরায় সক্রিয় করা হয়েছে।`);
         setTimeout(() => setNotificationMsg(null), 5000);
+        setRestoreTargetApt(null);
       } else {
-        alert(data.error || 'পুনরায় সক্রিয় করতে ব্যর্থ হয়েছে।');
+        showAlert(data.error || 'পুনরায় সক্রিয় করতে ব্যর্থ হয়েছে।', 'সক্রিয়করণ ব্যর্থ', 'error');
       }
     } catch (e) {
-      alert('সার্ভার এরর');
+      showAlert('সার্ভার এরর: পুনরায় সক্রিয় করতে ব্যর্থ হয়েছে।', 'ত্রুটি', 'error');
+    } finally {
+      setRestoreLoading(false);
     }
   };
 
-  // Permanent Delete appointment with client + server dual persistence
-  const handleDeleteAppointment = async (id: string) => {
-    if (!confirm('আপনি কি এই সিরিয়ালটি চিরতরে মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।'))
-      return;
+  // Permanent Delete appointment execution with dual persistence
+  const executeDeleteById = async (id: string) => {
+    setDeleteLoading(true);
     try {
       // 1. Immediately store in localStorage so it never reappears on reload
       try {
@@ -318,15 +336,24 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setNotificationMsg(data.message || 'সিরিয়াল স্থায়ীভাবে মুছে ফেলা হয়েছে।');
         setTimeout(() => setNotificationMsg(null), 5000);
+        setDeleteTargetApt(null);
       } else {
-        alert(data.error || 'মুছতে ব্যর্থ হয়েছে।');
+        showAlert(data.error || 'মুছতে ব্যর্থ হয়েছে।', 'মুছে ফেলা ব্যর্থ', 'error');
       }
     } catch (e) {
       // Even if network blips, client deletion remains preserved
       setAppointments((prev) => prev.filter((a) => a.id !== id));
       setNotificationMsg('সিরিয়াল স্থায়ীভাবে মুছে ফেলা হয়েছে।');
       setTimeout(() => setNotificationMsg(null), 5000);
+      setDeleteTargetApt(null);
+    } finally {
+      setDeleteLoading(false);
     }
+  };
+
+  const executeConfirmedDelete = async () => {
+    if (!deleteTargetApt) return;
+    await executeDeleteById(deleteTargetApt.id);
   };
 
   // Password change submission
@@ -476,10 +503,10 @@ export default function AdminDashboardPage() {
           setTimeout(() => setNotificationMsg(null), 6000);
         }
       } else {
-        alert(data.error || 'স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে।');
+        showAlert(data.error || 'স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে।', 'স্ট্যাটাস পরিবর্তন ত্রুটি', 'error');
       }
     } catch (err) {
-      alert('স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে।');
+      showAlert('স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে। সার্ভারের সাথে সংযোগে সমস্যা।', 'ত্রুটি', 'error');
     }
   };
 
@@ -564,7 +591,7 @@ export default function AdminDashboardPage() {
   // Export CSV
   const handleExportCSV = () => {
     if (appointments.length === 0) {
-      alert('এক্সপোর্ট করার জন্য কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।');
+      showAlert('এক্সপোর্ট করার জন্য কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।', 'তথ্য নেই', 'info');
       return;
     }
 
@@ -671,7 +698,7 @@ export default function AdminDashboardPage() {
   // Add Date-Specific Override
   const handleAddDateOverride = () => {
     if (!overrideDate) {
-      alert('অনুগ্রহ করে একটি নির্দিষ্ট তারিখ নির্বাচন করুন।');
+      showAlert('অনুগ্রহ করে একটি নির্দিষ্ট তারিখ নির্বাচন করুন।', 'তারিখ নির্বাচন আবশ্যক', 'warning');
       return;
     }
     setSchedules((prev) => {
@@ -1417,7 +1444,7 @@ export default function AdminDashboardPage() {
                                 {/* 3. Restore Appointment */}
                                 <button
                                   type="button"
-                                  onClick={() => handleRestoreAppointment(apt)}
+                                  onClick={() => setRestoreTargetApt(apt)}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                                   title="বাতিল সিরিয়ালটি পুনরায় সক্রিয় করুন (যদি স্লটটি ফাঁকা থাকে)"
                                 >
@@ -1428,7 +1455,7 @@ export default function AdminDashboardPage() {
                                 {/* 4. Delete Permanently */}
                                 <button
                                   type="button"
-                                  onClick={() => handleDeleteAppointment(apt.id)}
+                                  onClick={() => setDeleteTargetApt(apt)}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
                                   title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
                                 >
@@ -1571,7 +1598,7 @@ export default function AdminDashboardPage() {
 
                         <button
                           type="button"
-                          onClick={() => handleDeleteAppointment(apt.id)}
+                          onClick={() => setDeleteTargetApt(apt)}
                           className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
                           title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
                           aria-label="Delete appointment"
@@ -1705,7 +1732,7 @@ export default function AdminDashboardPage() {
                           {/* 3. Restore */}
                           <button
                             type="button"
-                            onClick={() => handleRestoreAppointment(apt)}
+                            onClick={() => setRestoreTargetApt(apt)}
                             className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg bg-emerald-700 text-white text-xs font-bold shadow-xs active:scale-95"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
@@ -1715,7 +1742,7 @@ export default function AdminDashboardPage() {
                           {/* 4. Delete */}
                           <button
                             type="button"
-                            onClick={() => handleDeleteAppointment(apt.id)}
+                            onClick={() => setDeleteTargetApt(apt)}
                             className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold shadow-xs active:scale-95"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -3174,6 +3201,249 @@ export default function AdminDashboardPage() {
           </div>
         );
       })()}
+
+      {/* CUSTOM DELETE CONFIRMATION MODAL */}
+      {deleteTargetApt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/50 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 flex items-center justify-center shrink-0 shadow-inner">
+                  <Trash2 className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-50">
+                    স্থায়ীভাবে মুছে ফেলবেন?
+                  </h3>
+                  <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                    এই সিদ্ধান্ত আর পরিবর্তন করা যাবে না
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeleteTargetApt(null)}
+                className="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Target Patient Summary */}
+            <div className="p-3.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-zinc-500">রোগীর নাম:</span>
+                <span className="font-bold text-emerald-950 dark:text-emerald-100">
+                  {deleteTargetApt.patientName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">সিরিয়াল নং:</span>
+                <span className="font-mono font-bold text-rose-700 dark:text-rose-400">
+                  {deleteTargetApt.serialNo}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">তারিখ ও স্লট:</span>
+                <span className="font-semibold text-emerald-950 dark:text-emerald-100">
+                  {deleteTargetApt.dateFormattedBn} • {deleteTargetApt.slotTimeBn}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">মোবাইল নম্বর:</span>
+                <span className="font-mono text-emerald-800 dark:text-emerald-300">
+                  {deleteTargetApt.phone}
+                </span>
+              </div>
+            </div>
+
+            {/* Warning Callout */}
+            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>সতর্কতা: ডেটাবেজ ও ক্লাউড সিঙ্ক</span>
+              </div>
+              <p className="leading-relaxed">
+                এই সিরিয়ালটি ডেটাবেজ থেকে চিরতরে মুছে যাবে। এমনকি পৃষ্ঠা রিলোড দিলেও বা অন্য কোনো ব্রাউজার থেকেও এটি আর কখনোই দেখা যাবে না।
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetApt(null)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                বাতিল করুন
+              </button>
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={executeConfirmedDelete}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+              >
+                {deleteLoading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>মুছে ফেলা হচ্ছে...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>হ্যাঁ, চিরতরে মুছুন</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM RESTORE CONFIRMATION MODAL */}
+      {restoreTargetApt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/50 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center shrink-0 shadow-inner">
+                  <RotateCcw className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-50">
+                    সিরিয়াল পুনরায় সক্রিয় করবেন?
+                  </h3>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    সক্রিয় অ্যাপয়েন্টমেন্ট তালিকায় ফেরত যাবে
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRestoreTargetApt(null)}
+                className="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Target Patient Summary */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-zinc-500">রোগীর নাম:</span>
+                <span className="font-bold text-emerald-950 dark:text-emerald-100">
+                  {restoreTargetApt.patientName}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">সিরিয়াল নং:</span>
+                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                  {restoreTargetApt.serialNo}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">তারিখ ও স্লট:</span>
+                <span className="font-semibold text-emerald-950 dark:text-emerald-100">
+                  {restoreTargetApt.dateFormattedBn} • {restoreTargetApt.slotTimeBn}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">মোবাইল নম্বর:</span>
+                <span className="font-mono text-emerald-800 dark:text-emerald-300">
+                  {restoreTargetApt.phone}
+                </span>
+              </div>
+            </div>
+
+            {/* Info Notice */}
+            <p className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
+              এই সিরিয়ালটি সফলভাবে পুনরায় সক্রিয় করা হলে তা সক্রিয় অ্যাপয়েন্টমেন্ট তালিকা এবং রিসিপশন শিটে আবার অন্তর্ভুক্ত হবে।
+            </p>
+
+            {/* Actions */}
+            <div className="pt-2 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setRestoreTargetApt(null)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                না, ফিরিয়ে দিন
+              </button>
+              <button
+                type="button"
+                disabled={restoreLoading}
+                onClick={executeConfirmedRestore}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+              >
+                {restoreLoading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>সক্রিয় হচ্ছে...</span>
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>হ্যাঁ, পুনরায় সক্রিয় করুন</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM BEAUTIFUL ALERT / MESSAGE MODAL */}
+      {alertModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 space-y-4 animate-scale-up text-center my-auto">
+            {/* Icon */}
+            <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center shadow-inner ${
+              alertModal.type === 'error'
+                ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400'
+                : alertModal.type === 'warning'
+                ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400'
+                : 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400'
+            }`}>
+              {alertModal.type === 'error' ? (
+                <Ban className="w-6 h-6" />
+              ) : alertModal.type === 'warning' ? (
+                <AlertTriangle className="w-6 h-6" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
+            </div>
+
+            {/* Title & Message */}
+            <div className="space-y-1.5">
+              <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-50">
+                {alertModal.title || (alertModal.type === 'error' ? 'দৃষ্টি আকর্ষণ' : 'বিজ্ঞপ্তি')}
+              </h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                {alertModal.message}
+              </p>
+            </div>
+
+            {/* Action */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setAlertModal(null)}
+                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs shadow-md transition-all cursor-pointer ${
+                  alertModal.type === 'error'
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                    : alertModal.type === 'warning'
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                    : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                }`}
+              >
+                ঠিক আছে
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -66,6 +66,7 @@ export default function BookingHub() {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpTimer, setOtpTimer] = useState(0);
   const [otpToken, setOtpToken] = useState<string | null>(null);
+  const [otpChallengeToken, setOtpChallengeToken] = useState<string | null>(null);
   const [otpDebugCode, setOtpDebugCode] = useState<string | null>(null);
 
   // Countdown timer for OTP
@@ -145,10 +146,23 @@ export default function BookingHub() {
   const activeSchedule = schedules[chamberMode] || defaultSchedules[chamberMode];
   const activeDateObj = calendarDates.find((d) => d.dateStr === selectedDate);
 
-  // Group slots by period
-  const afternoonSlots = availableSlots.filter((s) => s.period === 'afternoon');
-  const eveningSlots = availableSlots.filter((s) => s.period === 'evening');
-  const nightSlots = availableSlots.filter((s) => s.period === 'night');
+  // Dynamic session grouping: automatically groups by morning, noon, afternoon, evening, and night
+  const PERIOD_METADATA: Record<string, { title: string; icon: string }> = {
+    morning: { title: 'সকাল সেশন', icon: '🌅' },
+    noon: { title: 'দুপুর সেশন', icon: '☀️' },
+    afternoon: { title: 'বিকাল সেশন', icon: '🌤️' },
+    evening: { title: 'সান্ধ্যকালীন সেশন', icon: '🌆' },
+    night: { title: 'নৈশ সেশন', icon: '🌙' }
+  };
+
+  const groupedSlots = (['morning', 'noon', 'afternoon', 'evening', 'night'] as const)
+    .map((p) => ({
+      period: p,
+      title: PERIOD_METADATA[p].title,
+      icon: PERIOD_METADATA[p].icon,
+      slots: availableSlots.filter((s) => s.period === p)
+    }))
+    .filter((g) => g.slots.length > 0);
 
   // Step 1: User clicks booking -> Trigger OTP dispatch
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -170,7 +184,8 @@ export default function BookingHub() {
       return;
     }
 
-    if (!phone.trim()) {
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    if (!cleanPhone) {
       setErrorMsg('সচল মোবাইল/হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।');
       return;
     }
@@ -182,7 +197,7 @@ export default function BookingHub() {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim(), patientName: patientName.trim() })
+        body: JSON.stringify({ phone: cleanPhone, patientName: patientName.trim() })
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -190,6 +205,7 @@ export default function BookingHub() {
         setOtpPending(false);
         return;
       }
+      setOtpChallengeToken(data.challengeToken || null);
       setOtpTimer(60);
       setOtpDebugCode(data.debugCode || null);
       setShowOtpModal(true);
@@ -210,12 +226,17 @@ export default function BookingHub() {
       return;
     }
 
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     setOtpPending(true);
     try {
       const res = await fetch('/api/appointments/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim() })
+        body: JSON.stringify({
+          phone: cleanPhone,
+          code: otpCode.trim(),
+          challengeToken: otpChallengeToken
+        })
       });
       const data = await res.json();
 
@@ -243,14 +264,16 @@ export default function BookingHub() {
     if (otpTimer > 0) return;
     setOtpError(null);
     setOtpPending(true);
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     try {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim(), patientName: patientName.trim() })
+        body: JSON.stringify({ phone: cleanPhone, patientName: patientName.trim() })
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        setOtpChallengeToken(data.challengeToken || null);
         setOtpTimer(60);
         setOtpDebugCode(data.debugCode || null);
       } else {
@@ -267,10 +290,11 @@ export default function BookingHub() {
   const executeFinalBooking = (token: string) => {
     startTransition(async () => {
       try {
+        const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
         const payload = {
           patientName: patientName.trim(),
-          phone: phone.trim(),
-          email: email.trim() || undefined,
+          phone: cleanPhone,
+          email: email.trim().toLowerCase(),
           chamberMode,
           appointmentDate: selectedDate,
           slotId: selectedSlot!.id,
@@ -303,6 +327,7 @@ export default function BookingHub() {
         setOtpCode('');
         setOtpDebugCode(null);
         setOtpToken(null);
+        setOtpChallengeToken(null);
       } catch (err: any) {
         setErrorMsg('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
       }
@@ -483,53 +508,21 @@ export default function BookingHub() {
                   এই তারিখে কোনো সক্রিয় অ্যাপয়েন্টমেন্ট স্লট খালি নেই।
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {/* Afternoon Slots */}
-                  {afternoonSlots.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5">
-                        ☀️ বিকাল সেশন ({toBengaliNumber(afternoonSlots.length)}টি স্লট)
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                        {afternoonSlots.map((slot) => {
-                          const isBooked = bookedSlotIds.includes(slot.id);
-                          const isSelected = selectedSlot?.id === slot.id;
-                          return (
-                            <button
-                              key={slot.id}
-                              type="button"
-                              disabled={isBooked}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
-                                isSelected
-                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500'
-                                  : isBooked
-                                  ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50'
-                              }`}
-                            >
-                              <span className="text-xs font-semibold">{slot.shortBn}</span>
-                              <span className="text-[10px] opacity-75 font-mono">{slot.shortEn}</span>
-                              {isBooked ? (
-                                <span className="text-[10px] font-bold text-red-500">বুকড</span>
-                              ) : isSelected ? (
-                                <span className="text-[10px] font-bold text-amber-300">নির্বাচিত</span>
-                              ) : null}
-                            </button>
-                          );
-                        })}
+                <div className="space-y-6">
+                  {groupedSlots.map((group) => (
+                    <div key={group.period} className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 bg-emerald-100/70 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200/60 dark:border-emerald-800/60">
+                          <span>{group.icon}</span>
+                          <span>{group.title}</span>
+                          <span className="text-amber-700 dark:text-amber-400 font-mono text-[11px]">
+                            ({toBengaliNumber(group.slots.length)}টি স্লট)
+                          </span>
+                        </span>
                       </div>
-                    </div>
-                  )}
 
-                  {/* Evening Slots */}
-                  {eveningSlots.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5">
-                        🌆 সান্ধ্যকালীন সেশন ({toBengaliNumber(eveningSlots.length)}টি স্লট)
-                      </span>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                        {eveningSlots.map((slot) => {
+                        {group.slots.map((slot) => {
                           const isBooked = bookedSlotIds.includes(slot.id);
                           const isSelected = selectedSlot?.id === slot.id;
                           return (
@@ -538,12 +531,12 @@ export default function BookingHub() {
                               type="button"
                               disabled={isBooked}
                               onClick={() => setSelectedSlot(slot)}
-                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95 ${
                                 isSelected
                                   ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500'
                                   : isBooked
                                   ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50'
+                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
                               }`}
                             >
                               <span className="text-xs font-semibold">{slot.shortBn}</span>
@@ -558,45 +551,7 @@ export default function BookingHub() {
                         })}
                       </div>
                     </div>
-                  )}
-
-                  {/* Night Slots */}
-                  {nightSlots.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5">
-                        🌙 নৈশ সেশন ({toBengaliNumber(nightSlots.length)}টি স্লট)
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                        {nightSlots.map((slot) => {
-                          const isBooked = bookedSlotIds.includes(slot.id);
-                          const isSelected = selectedSlot?.id === slot.id;
-                          return (
-                            <button
-                              key={slot.id}
-                              type="button"
-                              disabled={isBooked}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
-                                isSelected
-                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500'
-                                  : isBooked
-                                  ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50'
-                              }`}
-                            >
-                              <span className="text-xs font-semibold">{slot.shortBn}</span>
-                              <span className="text-[10px] opacity-75 font-mono">{slot.shortEn}</span>
-                              {isBooked ? (
-                                <span className="text-[10px] font-bold text-red-500">বুকড</span>
-                              ) : isSelected ? (
-                                <span className="text-[10px] font-bold text-amber-300">নির্বাচিত</span>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
@@ -668,13 +623,12 @@ export default function BookingHub() {
               {/* Email (Required for confirmations) */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                  ইমেইল ঠিকানা <span className="text-red-500">*</span>
+                  ইমেইল ঠিকানা
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
-                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="যেমন: example@gmail.com"

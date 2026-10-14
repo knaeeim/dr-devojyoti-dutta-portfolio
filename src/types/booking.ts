@@ -33,6 +33,8 @@ export interface ChamberSchedule {
   feeBn: string;
 }
 
+export type SlotPeriod = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night';
+
 export interface Slot {
   id: string;
   startMinutes: number;
@@ -41,7 +43,8 @@ export interface Slot {
   timeBn: string;
   shortEn: string;
   shortBn: string;
-  period?: 'afternoon' | 'evening' | 'night';
+  period?: SlotPeriod;
+  periodTitleBn?: string;
 }
 
 export interface CalendarDay {

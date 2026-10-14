@@ -2,6 +2,7 @@ import {
   ChamberMode,
   ChamberSchedule,
   Slot,
+  SlotPeriod,
   CalendarDay,
   DayScheduleConfig
 } from '@/types/booking';
@@ -46,18 +47,47 @@ export function formatTime12h(totalMinutes: number) {
   const padHours = hours < 10 ? '0' + hours : String(hours);
 
   const timeEn = `${padHours}:${padMinutes} ${ampm}`;
-  const timeBn = `${toBengaliNumber(padHours)}:${toBengaliNumber(padMinutes)} ${ampm === 'PM' ? 'অপরাহ্ন' : 'পূর্বাহ্ন'}`;
 
-  let period: 'afternoon' | 'evening' | 'night' = 'evening';
-  if (totalMinutes < 17 * 60) {
+  // Dynamically assign period based on time of day (সকাল, দুপুর, বিকাল, সন্ধ্যা, রাত)
+  let period: SlotPeriod = 'morning';
+  let periodTitleBn = 'সকাল সেশন';
+  let periodLabelBn = 'সকাল';
+
+  if (totalMinutes < 12 * 60) {
+    period = 'morning';
+    periodTitleBn = 'সকাল সেশন';
+    periodLabelBn = 'সকাল';
+  } else if (totalMinutes < 15 * 60) {
+    period = 'noon';
+    periodTitleBn = 'দুপুর সেশন';
+    periodLabelBn = 'দুপুর';
+  } else if (totalMinutes < 18 * 60) {
     period = 'afternoon';
+    periodTitleBn = 'বিকাল সেশন';
+    periodLabelBn = 'বিকাল';
   } else if (totalMinutes < 20 * 60) {
     period = 'evening';
+    periodTitleBn = 'সন্ধ্যা সেশন';
+    periodLabelBn = 'সন্ধ্যা';
   } else {
     period = 'night';
+    periodTitleBn = 'রাতের সেশন';
+    periodLabelBn = 'রাত';
   }
 
-  return { timeEn, timeBn, totalMinutes, hour12: String(padHours), minute: String(padMinutes), ampm, period };
+  const timeBn = `${toBengaliNumber(padHours)}:${toBengaliNumber(padMinutes)} ${periodLabelBn}`;
+
+  return {
+    timeEn,
+    timeBn,
+    totalMinutes,
+    hour12: String(padHours),
+    minute: String(padMinutes),
+    ampm,
+    period,
+    periodTitleBn,
+    periodLabelBn
+  };
 }
 
 export function time24ToComponents(time24: string) {
@@ -217,7 +247,8 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
         timeBn: `${startFormatted.timeBn} - ${endFormatted.timeBn}`,
         shortEn: startFormatted.timeEn,
         shortBn: startFormatted.timeBn,
-        period: startFormatted.period
+        period: startFormatted.period,
+        periodTitleBn: startFormatted.periodTitleBn
       });
     }
 

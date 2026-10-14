@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, code } = body;
+    const { phone, code, challengeToken } = body;
 
     if (!phone || !code) {
       return NextResponse.json(
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = verifyOtpCode(phone, code);
+    const result = verifyOtpCode(phone, code, challengeToken);
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: result.message,
-      token: result.token
+      token: result.token,
+      verifiedToken: result.token
     });
   } catch (error: any) {
     return NextResponse.json(
