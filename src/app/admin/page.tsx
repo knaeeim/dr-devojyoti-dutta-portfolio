@@ -40,7 +40,9 @@ import {
   Ban,
   Share2,
   FileText,
-  Send
+  Send,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   Appointment,
@@ -74,6 +76,7 @@ export default function AdminDashboardPage() {
   const [filterMode, setFilterMode] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterDate, setFilterDate] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
 
   // Modals & Panels
@@ -775,12 +778,54 @@ export default function AdminDashboardPage() {
   const offlineCount = appointments.filter((a) => a.chamberMode === 'offline' && a.status !== 'cancelled').length;
   const onlineCount = appointments.filter((a) => a.chamberMode === 'online' && a.status !== 'cancelled').length;
 
+  // 10 items per page limit
+  const ITEMS_PER_PAGE = 10;
+
   const displayedAppointments = appointments.filter((a) => {
     if (filterStatus && filterStatus !== 'all') {
-      return a.status === filterStatus;
+      if (a.status !== filterStatus) return false;
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = a.patientName?.toLowerCase().includes(q);
+      const matchPhone = a.phone?.toLowerCase().includes(q);
+      const matchEmail = a.email?.toLowerCase().includes(q);
+      const matchSerial = a.serialNo?.toLowerCase().includes(q);
+      const matchId = a.id?.toLowerCase().includes(q);
+      if (!matchName && !matchPhone && !matchEmail && !matchSerial && !matchId) {
+        return false;
+      }
     }
     return true;
   });
+
+  const totalItems = displayedAppointments.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedAppointments = displayedAppointments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const startItemNo = totalItems === 0 ? 0 : startIndex + 1;
+  const endItemNo = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+
+  // Reset page to 1 when filters or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterMode, filterStatus, filterDate, searchQuery]);
+
+  // Clamp current page if items decrease
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const tableEl = document.getElementById('appointments-section');
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const currentChamber = schedules[scheduleActiveChamber];
   const rescheduleChamber = rescheduleApt ? schedules[rescheduleApt.chamberMode] : null;
@@ -1234,7 +1279,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Appointments Table */}
-        <div className="rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm overflow-hidden">
+        <div id="appointments-section" className="rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-emerald-900/10 dark:border-emerald-800/40 flex flex-wrap justify-between items-center gap-3">
             <h2 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
@@ -1281,7 +1326,7 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-900/5 dark:divide-emerald-800/30">
-                    {displayedAppointments.map((apt) => (
+                    {paginatedAppointments.map((apt) => (
                       <tr
                         key={apt.id}
                         className={`transition-colors ${
@@ -1533,7 +1578,7 @@ export default function AdminDashboardPage() {
 
               {/* MOBILE & TABLET PATIENT CARDS VIEW (Shown on Mobile screens: block lg:hidden) */}
               <div className="block lg:hidden divide-y divide-emerald-900/10 dark:divide-emerald-800/20">
-                {displayedAppointments.map((apt) => (
+                {paginatedAppointments.map((apt) => (
                   <div
                     key={apt.id}
                     className={`p-3.5 sm:p-4 transition-colors ${
@@ -1808,6 +1853,103 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* PAGINATION CONTROLS */}
+              <div className="border-t border-emerald-900/10 dark:border-emerald-800/40 p-3.5 sm:p-4 bg-emerald-50/40 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+                {/* Summary / Range indicator */}
+                <div className="text-xs text-emerald-800 dark:text-emerald-300 font-medium text-center sm:text-left">
+                  মোট <span className="font-bold text-emerald-950 dark:text-emerald-100">{toBengaliNumber(totalItems)}</span>টি সিরিয়ালের মধ্যে{' '}
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">{toBengaliNumber(startItemNo)}</span>–
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">{toBengaliNumber(endItemNo)}</span> নম্বর প্রদর্শিত হচ্ছে
+                  {totalPages > 1 && (
+                    <span className="ml-1 text-emerald-700 dark:text-emerald-400 font-semibold">
+                      (পৃষ্ঠা {toBengaliNumber(validCurrentPage)}/{toBengaliNumber(totalPages)})
+                    </span>
+                  )}
+                </div>
+
+                {/* Page Navigation Buttons */}
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                    {/* Previous Button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(validCurrentPage - 1)}
+                      disabled={validCurrentPage <= 1}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                        validCurrentPage <= 1
+                          ? 'border-emerald-200/50 dark:border-emerald-900/40 text-emerald-400 dark:text-emerald-600 cursor-not-allowed opacity-40'
+                          : 'border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 bg-white dark:bg-emerald-900/40 hover:bg-emerald-50 dark:hover:bg-emerald-800/50 active:scale-95 shadow-xs cursor-pointer'
+                      }`}
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>পূর্ববর্তী</span>
+                    </button>
+
+                    {/* Numbered Page Buttons */}
+                    {(() => {
+                      const pages: (number | string)[] = [];
+                      if (totalPages <= 7) {
+                        for (let i = 1; i <= totalPages; i++) pages.push(i);
+                      } else {
+                        if (validCurrentPage <= 4) {
+                          pages.push(1, 2, 3, 4, 5, '...', totalPages);
+                        } else if (validCurrentPage >= totalPages - 3) {
+                          pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                        } else {
+                          pages.push(1, '...', validCurrentPage - 1, validCurrentPage, validCurrentPage + 1, '...', totalPages);
+                        }
+                      }
+
+                      return pages.map((p, idx) => {
+                        if (p === '...') {
+                          return (
+                            <span
+                              key={`ellipsis-${idx}`}
+                              className="px-2 py-1 text-xs text-emerald-600 dark:text-emerald-400 select-none font-bold"
+                            >
+                              •••
+                            </span>
+                          );
+                        }
+
+                        const pageNum = p as number;
+                        const isActive = pageNum === validCurrentPage;
+
+                        return (
+                          <button
+                            key={`page-${pageNum}`}
+                            type="button"
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`min-w-[32px] h-8 px-2 rounded-xl text-xs font-bold transition-all ${
+                              isActive
+                                ? 'bg-gradient-to-r from-emerald-800 to-emerald-900 text-amber-300 shadow-md scale-105'
+                                : 'bg-white dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-800/60 active:scale-95'
+                            }`}
+                          >
+                            {toBengaliNumber(pageNum)}
+                          </button>
+                        );
+                      });
+                    })()}
+
+                    {/* Next Button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(validCurrentPage + 1)}
+                      disabled={validCurrentPage >= totalPages}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                        validCurrentPage >= totalPages
+                          ? 'border-emerald-200/50 dark:border-emerald-900/40 text-emerald-400 dark:text-emerald-600 cursor-not-allowed opacity-40'
+                          : 'border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 bg-white dark:bg-emerald-900/40 hover:bg-emerald-50 dark:hover:bg-emerald-800/50 active:scale-95 shadow-xs cursor-pointer'
+                      }`}
+                    >
+                      <span>পরবর্তী</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           )}
