@@ -123,9 +123,6 @@ export default function AdminLoginPage() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <div className="flex justify-between text-[11px] text-emerald-600 dark:text-emerald-400 pt-1">
-              <span>ডিফল্ট পাসওয়ার্ড: <strong>drdutta2026</strong></span>
-            </div>
           </div>
 
           <button

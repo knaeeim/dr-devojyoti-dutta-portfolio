@@ -198,23 +198,91 @@ export default function AdminDashboardPage() {
     setCopiedToast(false);
   };
 
+  // Phone normalization & communication helpers
+  const normalizePhoneDigits = (phone?: string): string => {
+    if (!phone) return '';
+    const bnToEnMap: Record<string, string> = {
+      '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+      '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+    };
+    return phone.replace(/[০-৯]/g, (d) => bnToEnMap[d] || d);
+  };
+
+  const getCleanWhatsAppNumber = (phone?: string): string => {
+    if (!phone) return '';
+    const normalized = normalizePhoneDigits(phone);
+    let digits = normalized.replace(/\D/g, '');
+    if (digits.startsWith('01') && digits.length === 11) {
+      digits = '88' + digits;
+    } else if (digits.startsWith('1') && digits.length === 10) {
+      digits = '880' + digits;
+    }
+    return digits;
+  };
+
+  const getCleanSmsNumber = (phone?: string): string => {
+    if (!phone) return '';
+    const normalized = normalizePhoneDigits(phone);
+    let digits = normalized.replace(/\D/g, '');
+    if (digits.startsWith('8801') && digits.length === 13) {
+      return '01' + digits.slice(4);
+    }
+    if (digits.startsWith('01') && digits.length === 11) {
+      return digits;
+    }
+    return digits;
+  };
+
+  const isAppleDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+  };
+
+  const getSmsUrl = (phone: string, message: string) => {
+    const cleanPhone = getCleanSmsNumber(phone);
+    const separator = isAppleDevice() ? '&' : '?';
+    return `sms:${cleanPhone}${separator}body=${encodeURIComponent(message)}`;
+  };
+
+  const getWhatsAppUrl = (phone: string, message: string) => {
+    const cleanPhone = getCleanWhatsAppNumber(phone);
+    if (!cleanPhone) {
+      return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    }
+    return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+  };
+
   // Send via WhatsApp
   const handleSendCustomWhatsApp = () => {
     if (!messageModalApt) return;
-    let clean = messageModalApt.phone.replace(/[^0-9]/g, '');
-    if (clean.startsWith('01') && clean.length === 11) {
-      clean = '88' + clean;
-    }
-    const url = `https://wa.me/${clean}?text=${encodeURIComponent(customMessage)}`;
-    window.open(url, '_blank');
+    const url = getWhatsAppUrl(messageModalApt.phone, customMessage);
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
   };
 
   // Send via SMS app
   const handleSendCustomSms = () => {
     if (!messageModalApt) return;
-    let clean = messageModalApt.phone.replace(/[^0-9+]/g, '');
-    const url = `sms:${clean}?body=${encodeURIComponent(customMessage)}`;
-    window.open(url, '_blank');
+    try {
+      navigator.clipboard.writeText(customMessage);
+      setCopiedToast(true);
+      setTimeout(() => setCopiedToast(false), 2000);
+    } catch {}
+    const url = getSmsUrl(messageModalApt.phone, customMessage);
+    const link = document.createElement('a');
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
   };
 
   // Copy message to clipboard
@@ -1706,9 +1774,10 @@ export default function AdminDashboardPage() {
                           <Phone className="w-4 h-4" />
                         </a>
                         <a
-                          href={`https://wa.me/${apt.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                          href={getWhatsAppUrl(
+                            apt.phone,
                             `নমস্কার ${apt.patientName}, ডা. দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
-                          )}`}
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-8 h-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center hover:bg-[#20bd5a] transition-colors shadow-xs active:scale-90"
@@ -3215,15 +3284,21 @@ export default function AdminDashboardPage() {
                   {copiedToast ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedToast ? 'কপি হয়েছে!' : 'কপি করুন'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSendCustomSms}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 text-xs font-bold transition-all cursor-pointer"
-                  title="মোবাইল বা কম্পিউটারের ডিফল্ট এসএমএস অ্যাপে বার্তা খুলুন"
+                <a
+                  href={getSmsUrl(messageModalApt.phone, customMessage)}
+                  onClick={() => {
+                    try {
+                      navigator.clipboard.writeText(customMessage);
+                      setCopiedToast(true);
+                      setTimeout(() => setCopiedToast(false), 2000);
+                    } catch {}
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="মোবাইল বা কম্পিউটারের এসএমএস অ্যাপে সরাসরি নম্বর ও টেমপ্লেট পাঠান"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>এসএমএস অ্যাপে খুলুন</span>
-                </button>
+                  <span>এসএমএস অ্যাপে পাঠান</span>
+                </a>
               </div>
 
               <div className="flex items-center gap-2">
@@ -3234,14 +3309,15 @@ export default function AdminDashboardPage() {
                 >
                   বন্ধ করুন
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSendCustomWhatsApp}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+                <a
+                  href={getWhatsAppUrl(messageModalApt.phone, customMessage)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
                   <span>হোয়াটসঅ্যাপে পাঠান</span>
-                </button>
+                </a>
               </div>
             </div>
           </div>
