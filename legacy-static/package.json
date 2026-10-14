@@ -1,0 +1,20 @@
+{
+  "name": "dr-devojyoti-dutta-portfolio",
+  "version": "1.0.0",
+  "description": "Modern portfolio website for Ayurvedacharya Dr. Devojyoti Dutta (B.A.M.S., NIA Jaipur & B.Sc. Biotechnology)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "ayurveda",
+    "doctor-portfolio",
+    "devojyoti-dutta",
+    "nia-jaipur",
+    "biotechnology",
+    "epigenetics",
+    "light-dark-mode"
+  ],
+  "author": "Dr. Devojyoti Dutta",
+  "license": "MIT"
+}

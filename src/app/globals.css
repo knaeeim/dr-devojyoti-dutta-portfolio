@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Hind Siliguri', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Noto Serif Bengali', Georgia, serif;
+
+  --color-emerald-deep: #0f3826;
+  --color-emerald-main: #1b4332;
+  --color-emerald-mid: #2d6a4f;
+  --color-emerald-light: #52b788;
+  --color-emerald-soft: #d8f3dc;
+  --color-emerald-glow: #e8f8ed;
+
+  --color-gold-deep: #84600e;
+  --color-gold-main: #c59b27;
+  --color-gold-light: #fef9e7;
+  --color-gold-glow: #fdf2c6;
+}
+
+:root {
+  --background: #f8faf8;
+  --foreground: #15291e;
+  --primary: #1b4332;
+  --primary-foreground: #ffffff;
+  --secondary: #eaf6ee;
+  --secondary-foreground: #1b4332;
+  --muted: #f0f5f2;
+  --muted-foreground: #71887c;
+  --accent: #e8f8ed;
+  --accent-foreground: #1b4332;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: rgba(27, 67, 50, 0.12);
+  --input: rgba(27, 67, 50, 0.16);
+  --ring: #2d6a4f;
+  --radius: 0.75rem;
+
+  --bg-page: #f8faf8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f0f5f2;
+  --text-primary: #15291e;
+  --text-secondary: #4a6356;
+  --text-muted: #71887c;
+  --border-subtle: rgba(27, 67, 50, 0.12);
+  --border-focus: #2d6a4f;
+  --accent-primary: #1b4332;
+  --accent-secondary: #2d6a4f;
+  --accent-gold: #c59b27;
+  --badge-bg: #eaf6ee;
+  --badge-text: #1b4332;
+  --card-shadow: 0 10px 30px -10px rgba(27, 67, 50, 0.08), 0 4px 6px -2px rgba(27, 67, 50, 0.04);
+}
+
+.dark,
+[data-theme="dark"] {
+  --background: #0a130f;
+  --foreground: #edfbf3;
+  --primary: #52b788;
+  --primary-foreground: #081a11;
+  --secondary: #162a21;
+  --secondary-foreground: #edfbf3;
+  --muted: #0d1a13;
+  --muted-foreground: #6f8d7f;
+  --accent: #162a21;
+  --accent-foreground: #95d5b2;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(82, 183, 136, 0.18);
+  --input: rgba(82, 183, 136, 0.22);
+  --ring: #52b788;
+
+  --bg-page: #0a130f;
+  --bg-surface: #101e17;
+  --bg-surface-elevated: #162a21;
+  --bg-surface-subtle: #0d1a13;
+  --text-primary: #edfbf3;
+  --text-secondary: #a3c2b2;
+  --text-muted: #6f8d7f;
+  --border-subtle: rgba(82, 183, 136, 0.18);
+  --border-focus: #52b788;
+  --accent-primary: #52b788;
+  --accent-secondary: #74c69d;
+  --accent-gold: #e2ba49;
+  --badge-bg: rgba(82, 183, 136, 0.16);
+  --badge-text: #95d5b2;
+  --card-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings font */
+h1, h2, h3, .font-bengali-serif {
+  font-family: var(--font-serif);
+  line-height: 1.4;
+}
+
+/* Ambient glow orbs */
+.ambient-glow-1 {
+  position: absolute;
+  top: -100px;
+  right: -80px;
+  width: 500px;
+  height: 500px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(45, 106, 79, 0.15) 0%, transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-glow-2 {
+  position: absolute;
+  bottom: -150px;
+  left: -100px;
+  width: 550px;
+  height: 550px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(197, 155, 39, 0.12) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
