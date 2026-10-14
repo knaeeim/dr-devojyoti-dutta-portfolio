@@ -218,14 +218,21 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
 
   const startMin = parseTimeToMinutes(timing.startTime);
   const endMin = parseTimeToMinutes(timing.endTime);
+  if (isNaN(startMin) || isNaN(endMin) || startMin >= endMin) return [];
+
+  const rawDuration = Number(timing.slotDuration);
+  const duration = isNaN(rawDuration) || rawDuration < 1 ? 15 : Math.max(1, Math.min(240, rawDuration));
+
+  const validBreakDuration = Math.max(0, Number(timing.breakDuration) || 0);
   const breakStartMin = timing.breakStart ? parseTimeToMinutes(timing.breakStart) : -1;
-  const breakEndMin = breakStartMin >= 0 ? breakStartMin + (timing.breakDuration || 0) : -1;
-  const duration = timing.slotDuration || 15;
+  const breakEndMin = breakStartMin >= 0 ? breakStartMin + validBreakDuration : -1;
 
   const slots: Slot[] = [];
   let cur = startMin;
+  let iterations = 0;
+  const MAX_SLOTS = 200; // Physical safety limit
 
-  while (cur + duration <= endMin) {
+  while (cur + duration <= endMin && iterations++ < MAX_SLOTS) {
     const slotEnd = cur + duration;
 
     // Check if slot overlaps break window

@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   ExternalLink,
   Plus,
+  Minus,
   Trash2,
   CalendarCheck,
   CalendarDays,
@@ -678,7 +679,13 @@ export default function AdminDashboardPage() {
         breakDuration: 30,
         slotDuration: 15
       };
-      daySchedules[dayIndex] = { ...currentDay, [field]: value };
+      let safeVal = value;
+      if (field === 'slotDuration') {
+        if (value !== '' && (isNaN(Number(value)) || Number(value) < 1)) {
+          safeVal = 15;
+        }
+      }
+      daySchedules[dayIndex] = { ...currentDay, [field]: safeVal };
       return {
         ...prev,
         [scheduleActiveChamber]: { ...chamber, daySchedules }
@@ -690,7 +697,13 @@ export default function AdminDashboardPage() {
   const handleUpdateGeneralTiming = (field: string, value: any) => {
     setSchedules((prev) => {
       const chamber = { ...prev[scheduleActiveChamber] };
-      const generalTiming = { ...chamber.generalTiming, [field]: value };
+      let safeVal = value;
+      if (field === 'slotDuration') {
+        if (value !== '' && (isNaN(Number(value)) || Number(value) < 1)) {
+          safeVal = 15;
+        }
+      }
+      const generalTiming = { ...chamber.generalTiming, [field]: safeVal };
       return {
         ...prev,
         [scheduleActiveChamber]: { ...chamber, generalTiming }
@@ -713,8 +726,8 @@ export default function AdminDashboardPage() {
         startTime: overrideStart,
         endTime: overrideEnd,
         breakStart: overrideBreakStart,
-        breakDuration: Number(overrideBreakDuration),
-        slotDuration: Number(overrideSlotDuration)
+        breakDuration: Math.max(0, Number(overrideBreakDuration) || 0),
+        slotDuration: Math.max(5, Math.min(240, Number(overrideSlotDuration) || 15))
       };
       return {
         ...prev,
@@ -738,30 +751,39 @@ export default function AdminDashboardPage() {
     });
   };
 
-  // Slot count helper
+  // Slot count helper - bulletproof against 0, NaN, negative, or infinite loops
   const calcSlotCount = (
     startTime: string,
     endTime: string,
     breakStart?: string,
-    breakDuration = 0,
-    slotDuration = 15
+    breakDuration: number | string = 0,
+    slotDuration: number | string = 15
   ): number => {
     if (!startTime || !endTime) return 0;
     const startMin = parseTimeToMinutes(startTime);
     const endMin = parseTimeToMinutes(endTime);
+    if (isNaN(startMin) || isNaN(endMin) || startMin >= endMin) return 0;
+
+    const rawSlot = Number(slotDuration);
+    const validDuration = isNaN(rawSlot) || rawSlot < 1 ? 15 : Math.max(1, Math.min(240, rawSlot));
+    const validBreakDuration = Math.max(0, Number(breakDuration) || 0);
+
     const breakStartMin = breakStart ? parseTimeToMinutes(breakStart) : -1;
-    const breakEndMin = breakStartMin >= 0 ? breakStartMin + breakDuration : -1;
+    const breakEndMin = breakStartMin >= 0 ? breakStartMin + validBreakDuration : -1;
     let count = 0;
     let cur = startMin;
-    while (cur + slotDuration <= endMin) {
-      const slotEnd = cur + slotDuration;
+    let iterations = 0;
+    const MAX_SLOTS = 200;
+
+    while (cur + validDuration <= endMin && iterations++ < MAX_SLOTS) {
+      const slotEnd = cur + validDuration;
       const overlapsBreak =
         breakStartMin >= 0 &&
         ((cur >= breakStartMin && cur < breakEndMin) ||
           (slotEnd > breakStartMin && slotEnd <= breakEndMin) ||
           (cur <= breakStartMin && slotEnd >= breakEndMin));
       if (!overlapsBreak) count++;
-      cur += slotDuration;
+      cur += validDuration;
     }
     return count;
   };
@@ -2307,20 +2329,74 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
-                          প্রতি রোগীর স্লট সময়কাল (মিনিট)
-                        </label>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                            প্রতি রোগীর স্লট সময়কাল
+                          </label>
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                            {toBengaliNumber(currentChamber.generalTiming.slotDuration || 15)} মিনিট
+                          </span>
+                        </div>
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = Number(currentChamber.generalTiming.slotDuration) || 15;
+                              handleUpdateGeneralTiming('slotDuration', Math.max(5, cur - 5));
+                            }}
+                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                            title="৫ মিনিট কমান"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
                           <input
                             type="number"
                             min="5"
+                            max="120"
                             step="5"
-                            value={currentChamber.generalTiming.slotDuration}
-                            onChange={(e) =>
-                              handleUpdateGeneralTiming('slotDuration', Number(e.target.value))
-                            }
-                            className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            value={currentChamber.generalTiming.slotDuration ?? 15}
+                            onChange={(e) => {
+                              const v = e.target.value === '' ? '' : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
+                              handleUpdateGeneralTiming('slotDuration', v);
+                            }}
+                            onBlur={(e) => {
+                              if (!e.target.value || Number(e.target.value) < 5) {
+                                handleUpdateGeneralTiming('slotDuration', 15);
+                              }
+                            }}
+                            className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = Number(currentChamber.generalTiming.slotDuration) || 15;
+                              handleUpdateGeneralTiming('slotDuration', Math.min(120, cur + 5));
+                            }}
+                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                            title="৫ মিনিট বাড়ান"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {/* Quick preset chips */}
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          {[10, 15, 20, 30].map((mins) => {
+                            const isSelected = (currentChamber.generalTiming.slotDuration || 15) === mins;
+                            return (
+                              <button
+                                key={mins}
+                                type="button"
+                                onClick={() => handleUpdateGeneralTiming('slotDuration', mins)}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                    : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
+                                }`}
+                              >
+                                {toBengaliNumber(mins)} মি.
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -2475,24 +2551,70 @@ export default function AdminDashboardPage() {
                                 </div>
                               </div>
                               <div>
-                                <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
-                                  প্রতি স্লটের সময় (মিনিট)
-                                </label>
-                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                                <div className="flex items-center justify-between mb-1">
+                                  <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                    প্রতি স্লটের সময়
+                                  </label>
+                                  <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                                    {toBengaliNumber(dayObj.slotDuration ?? 15)} মিনিট
+                                  </span>
+                                </div>
+                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cur = Number(dayObj.slotDuration) || 15;
+                                      handleUpdateDayTiming(dayIdx, 'slotDuration', Math.max(5, cur - 5));
+                                    }}
+                                    className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                    title="৫ মিনিট কমান"
+                                  >
+                                    <Minus className="w-3.5 h-3.5" />
+                                  </button>
                                   <input
                                     type="number"
                                     min="5"
+                                    max="120"
                                     step="5"
                                     value={dayObj.slotDuration ?? 15}
-                                    onChange={(e) =>
-                                      handleUpdateDayTiming(
-                                        dayIdx,
-                                        'slotDuration',
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                    onChange={(e) => {
+                                      const v = e.target.value === '' ? '' : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
+                                      handleUpdateDayTiming(dayIdx, 'slotDuration', v);
+                                    }}
+                                    onBlur={(e) => {
+                                      if (!e.target.value || Number(e.target.value) < 5) {
+                                        handleUpdateDayTiming(dayIdx, 'slotDuration', 15);
+                                      }
+                                    }}
+                                    className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                   />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cur = Number(dayObj.slotDuration) || 15;
+                                      handleUpdateDayTiming(dayIdx, 'slotDuration', Math.min(120, cur + 5));
+                                    }}
+                                    className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                    title="৫ মিনিট বাড়ান"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                  {[10, 15, 20, 30].map((mins) => (
+                                    <button
+                                      key={mins}
+                                      type="button"
+                                      onClick={() => handleUpdateDayTiming(dayIdx, 'slotDuration', mins)}
+                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                        (dayObj.slotDuration ?? 15) === mins
+                                          ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                          : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
+                                      }`}
+                                    >
+                                      {toBengaliNumber(mins)} মি.
+                                    </button>
+                                  ))}
                                 </div>
                               </div>
                             </div>
@@ -2601,18 +2723,70 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
-                          প্রতি স্লটের সময় (মিনিট)
-                        </label>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                            প্রতি স্লটের সময়
+                          </label>
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                            {toBengaliNumber(overrideSlotDuration || 15)} মিনিট
+                          </span>
+                        </div>
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = Number(overrideSlotDuration) || 15;
+                              setOverrideSlotDuration(Math.max(5, cur - 5));
+                            }}
+                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                            title="৫ মিনিট কমান"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
                           <input
                             type="number"
                             min="5"
+                            max="120"
                             step="5"
                             value={overrideSlotDuration}
-                            onChange={(e) => setOverrideSlotDuration(Number(e.target.value))}
-                            className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            onChange={(e) => {
+                              const v = e.target.value === '' ? 15 : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
+                              setOverrideSlotDuration(v);
+                            }}
+                            onBlur={(e) => {
+                              if (!e.target.value || Number(e.target.value) < 5) {
+                                setOverrideSlotDuration(15);
+                              }
+                            }}
+                            className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = Number(overrideSlotDuration) || 15;
+                              setOverrideSlotDuration(Math.min(120, cur + 5));
+                            }}
+                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                            title="৫ মিনিট বাড়ান"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          {[10, 15, 20, 30].map((mins) => (
+                            <button
+                              key={mins}
+                              type="button"
+                              onClick={() => setOverrideSlotDuration(mins)}
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                (overrideSlotDuration || 15) === mins
+                                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                  : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
+                              }`}
+                            >
+                              {toBengaliNumber(mins)} মি.
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>

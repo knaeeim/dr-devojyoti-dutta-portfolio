@@ -494,7 +494,7 @@ export default function BookingHub() {
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
                     ২
                   </span>
-                  ১৫ মিনিটের সময় স্লট পছন্দ করুন
+                  স্লট পছন্দ করুন
                 </h3>
                 {activeDateObj && (
                   <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-medium">
