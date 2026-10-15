@@ -55,31 +55,31 @@ export default function HeroSection() {
               </span>
             </div>
 
-            {/* PRIMARY CTAs - Prominent, Unmissable & Clear */}
-            <div className="space-y-2.5 pt-1">
-              <div className="flex flex-wrap items-center gap-3">
+            {/* PRIMARY CTAs - Prominent, Full-Width on Mobile & Unmissable */}
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 {/* Big Eye-catching Booking Button */}
                 <a
                   href="#booking"
-                  className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/35 transition-all transform active:scale-95 ring-2 ring-emerald-500/30 group"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/35 transition-all transform active:scale-95 ring-2 ring-emerald-500/30 group text-center cursor-pointer"
                 >
-                  <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
+                  <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
                   <span>সিরিয়াল বুক করুন</span>
-                  <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform shrink-0" />
                 </a>
 
                 {/* Secondary Prakriti Quiz CTA */}
                 <a
                   href="#prakriti"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow transition-all text-center cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                   <span>আপনার প্রকৃতি (দোষ) জানুন</span>
                 </a>
               </div>
 
               {/* Booking reassurance sub-caption */}
-              <p className="text-[11px] sm:text-xs text-emerald-700/90 dark:text-emerald-400/90 flex items-center gap-1.5 font-medium">
+              <p className="text-[11px] sm:text-xs text-emerald-700/90 dark:text-emerald-400/90 flex items-center justify-center sm:justify-start gap-1.5 font-medium pt-0.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                 <span>সহজ ৩ ধাপে দ্রুত সিরিয়াল • এসএমএস ও হোয়াটসঅ্যাপ কনফার্মেশন স্লিপ</span>
               </p>
