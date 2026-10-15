@@ -1,108 +1,92 @@
 'use client';
 
 import Image from 'next/image';
-import { Award, BookOpen, Calendar, CheckCircle2, ChevronRight, Dna, HeartPulse, Sparkles } from 'lucide-react';
+import { Award, Calendar, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react';
 
 export default function HeroSection() {
   const stats = [
     { number: '১০+', label: 'বছর গবেষণা ও চিকিৎসা' },
     { number: '৫,০০০+', label: 'রোগীর সুস্থতা লাভ' },
     { number: '১০০%', label: 'রুট-কজ নিরাময় দর্শন' },
-    { number: '৫০+', label: 'স্বাস্থ্য সেমিনার ও ওয়ার্কশপ' }
+    { number: '৪.৯ ★', label: 'রোগীদের আস্থা ও রিভিউ' }
   ];
 
   return (
-    <section className="relative overflow-hidden pt-8 pb-16 lg:pt-16 lg:pb-24">
+    <section className="relative overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-16 lg:pt-14 lg:pb-20">
       {/* Background ambient orbs */}
       <div className="ambient-glow-1" />
       <div className="ambient-glow-2" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          {/* Left Column: Copy & CTAs (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/40 dark:border-emerald-700/50 shadow-sm">
-                <Award className="w-3.5 h-3.5 text-amber-500" />
-                NIA জয়পুর প্রাক্তনী • Apex AYUSH Institute
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-100/70 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 border border-amber-300/40 dark:border-amber-700/50 shadow-sm">
-                <Dna className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                বায়োটেকনোলজি ও এপিজেনেটিক্স গবেষক
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+          {/* Left Column: Focused Copy & Prominent Booking CTA (7 cols) */}
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+            {/* Trust Pill Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 border border-emerald-300/50 dark:border-emerald-700/50 shadow-xs">
+              <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA) জয়পুর প্রাক্তনী</span>
+              <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              <span className="text-amber-700 dark:text-amber-300 font-bold">BAMS • B.Sc</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 leading-tight">
-              প্রাচীন <span className="text-emerald-700 dark:text-emerald-400 decoration-amber-400 decoration-2">আয়ুর্বেদ বিজ্ঞান</span> ও আধুনিক <span className="text-amber-600 dark:text-amber-400">এপিজেনেটিক্স</span>
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 leading-[1.2]">
+              প্রাচীন <span className="text-emerald-700 dark:text-emerald-400">আয়ুর্বেদ বিজ্ঞান</span> ও আধুনিক <span className="text-amber-600 dark:text-amber-400">এপিজেনেটিক্স</span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-base sm:text-lg text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed max-w-2xl">
-              লক্ষণ চেপে রাখা নয়, রোগের গভীর শিকড় থেকে স্থায়ী আরোগ্য। <strong>আয়ুর্বেদাচার্য ডা. দেবজ্যোতি দত্ত</strong> ৫,০০০ বছরের বৈদিক চিকিৎসা দর্শনের সাথে একুশ শতকের মলিকিউলার বায়োলজি, গাট মাইক্রোবায়োম ও সার্কাডিয়ান জীবনচর্যার সমন্বয়ে দীর্ঘস্থায়ী জটিল রোগ নিরাময় করেন।
+            {/* Subtitle: Short, clean & punchy */}
+            <p className="text-sm sm:text-base lg:text-lg text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed max-w-xl">
+              লক্ষণ চেপে রাখা নয়, রোগের গভীর শিকড় থেকে স্থায়ী আরোগ্য। <strong>আয়ুর্বেদাচার্য ডা. দেবজ্যোতি দত্তের</strong> বৈজ্ঞানিক চিকিৎসা দর্শনে ফিরে পান প্রাকৃতিক সুস্থতা ও দীর্ঘস্থায়ী নিরাময়।
             </p>
 
-            {/* Highlights Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/70 dark:bg-emerald-950/40 border border-emerald-900/10 dark:border-emerald-700/20 shadow-sm backdrop-blur-sm">
-                <span className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-bold shrink-0">🏛️</span>
-                <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-100">
-                  <strong>B.A.M.S.</strong> — ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA), জয়পুর
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/70 dark:bg-emerald-950/40 border border-emerald-900/10 dark:border-emerald-700/20 shadow-sm backdrop-blur-sm">
-                <span className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold shrink-0">🔬</span>
-                <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-100">
-                  <strong>B.Sc.</strong> — বায়োটেকনোলজি ও জেনেটিক্স (খুলনা বিশ্ববিদ্যালয়)
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/70 dark:bg-emerald-950/40 border border-emerald-900/10 dark:border-emerald-700/20 shadow-sm backdrop-blur-sm">
-                <span className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-bold shrink-0">🩺</span>
-                <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-100">
-                  <strong>নাড়ি পরীক্ষা</strong> — ক্লাসিক্যাল নির্ভুল আয়ুর্বেদিক ডায়াগনস্টিক
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/70 dark:bg-emerald-950/40 border border-emerald-900/10 dark:border-emerald-700/20 shadow-sm backdrop-blur-sm">
-                <span className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold shrink-0">📖</span>
-                <span className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-100">
-                  <strong>লেখক</strong> — জননন্দিত স্বাস্থ্যগ্রন্থ <em>"স্বাস্থ্য দর্পণ"</em>
-                </span>
-              </div>
+            {/* Quick Trust Highlights (Minimal, Sleek Pills) */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-emerald-900/90 dark:text-emerald-200/90 font-medium">
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ক্লাসিক্যাল নাড়ি পরীক্ষা
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ঢাকা চেম্বার ও ভিডিও কনসালটেশন
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                "স্বাস্থ্য দর্পণ" গ্রন্থের প্রণেতা
+              </span>
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-4">
-              <a
-                href="#booking"
-                className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-900/20 hover:shadow-xl hover:shadow-emerald-900/30 transition-all transform active:scale-95"
-              >
-                <Calendar className="w-5 h-5 text-amber-300" />
-                <span>সিরিয়াল বুক করুন</span>
-              </a>
+            {/* PRIMARY CTAs - Prominent, Unmissable & Clear */}
+            <div className="space-y-2.5 pt-1">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Big Eye-catching Booking Button */}
+                <a
+                  href="#booking"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/35 transition-all transform active:scale-95 ring-2 ring-emerald-500/30 group"
+                >
+                  <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform" />
+                  <span>সিরিয়াল বুক করুন</span>
+                  <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" />
+                </a>
 
-              <a
-                href="#prakriti"
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 font-semibold text-base transition-all"
-              >
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                <span>আপনার প্রকৃতি (দোষ) জানুন</span>
-              </a>
+                {/* Secondary Prakriti Quiz CTA */}
+                <a
+                  href="#prakriti"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>আপনার প্রকৃতি (দোষ) জানুন</span>
+                </a>
+              </div>
 
-              <a
-                href="https://www.facebook.com/devojyoti.dutta"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] dark:text-blue-400 border border-[#1877F2]/20 font-medium text-sm transition-all"
-                title="অফিসিয়াল ফেসবুক পেজ"
-              >
-                <span className="font-bold text-base">f</span>
-                <span>ফেসবুক</span>
-              </a>
+              {/* Booking reassurance sub-caption */}
+              <p className="text-[11px] sm:text-xs text-emerald-700/90 dark:text-emerald-400/90 flex items-center gap-1.5 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span>সহজ ৩ ধাপে দ্রুত সিরিয়াল • এসএমএস ও হোয়াটসঅ্যাপ কনফার্মেশন স্লিপ</span>
+              </p>
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-emerald-900/10 dark:border-emerald-800/40">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
               {stats.map((s, idx) => (
                 <div key={idx} className="space-y-0.5">
                   <div className="font-serif font-black text-2xl sm:text-3xl text-emerald-800 dark:text-emerald-300">
