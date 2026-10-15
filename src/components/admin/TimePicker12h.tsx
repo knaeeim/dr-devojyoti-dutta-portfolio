@@ -61,7 +61,7 @@ export default function TimePicker12h({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-1 p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm w-full min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between gap-1 p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm w-full min-w-0 overflow-hidden">
         <div className="flex items-center gap-1 min-w-0">
           {/* Hour Select */}
           <select

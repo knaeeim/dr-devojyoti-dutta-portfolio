@@ -30,7 +30,7 @@ export default function FaqSection() {
   ];
 
   return (
-    <section id="faq" className="py-20 bg-white dark:bg-[#0a130f] relative">
+    <section id="faq" className="py-20 bg-white dark:bg-[#0c1511] relative">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
@@ -51,7 +51,7 @@ export default function FaqSection() {
             return (
               <div
                 key={idx}
-                className="rounded-2xl border border-emerald-900/10 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-[#101e17] overflow-hidden transition-all duration-200"
+                className="rounded-2xl border border-emerald-900/10 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-[#13201a] overflow-hidden transition-all duration-200"
               >
                 <button
                   type="button"

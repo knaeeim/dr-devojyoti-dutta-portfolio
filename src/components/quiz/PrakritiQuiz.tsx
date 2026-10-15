@@ -47,7 +47,7 @@ export default function PrakritiQuiz() {
   const progressPercent = Math.round(((currentStep + 1) / totalQuestions) * 100);
 
   return (
-    <section id="prakriti" className="py-20 bg-white dark:bg-[#0a130f] relative overflow-hidden">
+    <section id="prakriti" className="py-20 bg-white dark:bg-[#0c1511] relative overflow-hidden">
       {/* Background ambient orbs */}
       <div className="ambient-glow-2" />
 
@@ -67,7 +67,7 @@ export default function PrakritiQuiz() {
         </div>
 
         {/* Quiz Container Card */}
-        <div className="rounded-3xl bg-emerald-50/40 dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 p-6 sm:p-10 shadow-xl relative backdrop-blur-sm">
+        <div className="rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 p-6 sm:p-10 shadow-xl relative backdrop-blur-sm">
           {!result ? (
             /* ACTIVE QUESTION VIEW */
             <div className="space-y-8">

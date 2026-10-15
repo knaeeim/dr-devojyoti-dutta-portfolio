@@ -51,7 +51,7 @@ export default function TestimonialsSection() {
           {reviews.map((item, idx) => (
             <div
               key={idx}
-              className="p-8 rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 relative"
+              className="p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-6 relative"
             >
               <Quote className="w-10 h-10 text-emerald-200 dark:text-emerald-900 absolute top-6 right-6 -z-0 opacity-60" />
 

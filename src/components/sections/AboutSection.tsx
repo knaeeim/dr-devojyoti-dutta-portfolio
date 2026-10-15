@@ -44,7 +44,7 @@ export default function AboutSection() {
           {pillars.map((pillar, idx) => (
             <div
               key={idx}
-              className="p-8 rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-xl transition-all duration-300 space-y-4 group hover:-translate-y-1"
+              className="p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-xl transition-all duration-300 space-y-4 group hover:-translate-y-1"
             >
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
                 {pillar.icon}

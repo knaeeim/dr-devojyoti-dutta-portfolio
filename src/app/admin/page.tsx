@@ -1130,9 +1130,9 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
   const rescheduleSlots = generateSlotsFromTiming(rescheduleTiming);
 
   return (
-    <div className="min-h-screen bg-[#f8faf8] dark:bg-[#08120d] text-emerald-950 dark:text-emerald-50">
+    <div className="min-h-screen bg-[#fafbf9] dark:bg-[#0c1511] text-emerald-950 dark:text-emerald-50">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0e1a14]/95 backdrop-blur-md border-b border-emerald-900/10 dark:border-emerald-800/40">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border-b border-emerald-900/10 dark:border-emerald-800/40">
         <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Brand */}
@@ -1250,7 +1250,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           <button
             type="button"
             onClick={() => setShowPrintModal(true)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#14261d] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
           >
             <Printer className="w-3.5 h-3.5 text-emerald-600" />
             <span>রিসিপশন প্রিন্ট</span>
@@ -1259,7 +1259,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#14261d] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
           >
             <Download className="w-3.5 h-3.5 text-emerald-600" />
             <span>CSV</span>
@@ -1282,7 +1282,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
           <Link
             href="/"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#14261d] border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold whitespace-nowrap shadow-xs"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold whitespace-nowrap shadow-xs"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>ওয়েবসাইট</span>
@@ -1312,7 +1312,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
         {/* Metric Cards Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
           {/* Card 1 */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
               সর্বমোট বুকিং
             </span>
@@ -1343,7 +1343,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           </div>
 
           {/* Card 3 */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
               আজকের সিরিয়াল
             </span>
@@ -1356,7 +1356,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           </div>
 
           {/* Card 4 */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
               ঢাকা চেম্বার রোগী
             </span>
@@ -1369,7 +1369,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           </div>
 
           {/* Card 5 */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1 col-span-2 sm:col-span-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1 col-span-2 sm:col-span-1">
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
               অনলাইন ভিডিও রোগী
             </span>
@@ -1383,7 +1383,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3.5">
+        <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3.5">
           {/* Search */}
           <form onSubmit={handleSearchSubmit} className="w-full sm:flex-1 sm:min-w-[240px] relative">
             <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -1407,7 +1407,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="created_desc">সর্বশেষ বুকিং আগে</option>
                 <option value="created_asc">পুরনো বুকিং আগে</option>
@@ -1428,7 +1428,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               <select
                 value={filterMode}
                 onChange={(e) => setFilterMode(e.target.value)}
-                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="all">সব চেম্বার ({toBengaliNumber(totalCount)})</option>
                 <option value="offline">ঢাকা চেম্বার (সরাসরি)</option>
@@ -1444,7 +1444,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full sm:w-auto py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="all">সব স্ট্যাটাস</option>
                 <option value="pending">অপেক্ষমাণ</option>
@@ -1464,7 +1464,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="flex-1 sm:flex-initial py-1.5 px-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="flex-1 sm:flex-initial py-1.5 px-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               {filterDate && (
                 <button
@@ -1594,7 +1594,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
         </div>
 
         {/* Appointments Table */}
-        <div id="appointments-section" className="rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm overflow-hidden">
+        <div id="appointments-section" className="rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-emerald-900/10 dark:border-emerald-800/40 flex flex-wrap justify-between items-center gap-3">
             <h2 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
               <Users className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
@@ -1805,7 +1805,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                               onChange={(e) =>
                                 handleUpdateStatus(apt.id, e.target.value as AppointmentStatus)
                               }
-                              className="py-1 px-2 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#14261d] text-emerald-950 dark:text-emerald-100 focus:outline-none"
+                              className="py-1 px-2 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none"
                             >
                               <option value="pending">অপেক্ষমাণ (Pending)</option>
                               <option value="confirmed">নিশ্চিত করুন (Confirm & Mail)</option>
@@ -2096,7 +2096,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                         <select
                           value={apt.status}
                           onChange={(e) => handleUpdateStatus(apt.id, e.target.value as AppointmentStatus)}
-                          className="py-1 px-2.5 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#14261d] text-emerald-950 dark:text-emerald-100 focus:outline-none"
+                          className="py-1 px-2.5 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none"
                         >
                           <option value="pending">অপেক্ষমাণ (Pending)</option>
                           <option value="confirmed">নিশ্চিত করুন</option>
@@ -2320,7 +2320,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* RESCHEDULE APPOINTMENT MODAL */}
       {rescheduleApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
               <div>
@@ -2385,7 +2385,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
                         isSelected
                           ? 'border-emerald-600 bg-emerald-800 text-white shadow-md'
-                          : 'border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#14261d] hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-950 dark:text-emerald-100'
+                          : 'border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-950 dark:text-emerald-100'
                       }`}
                     >
                       <div className="font-bold">{day.fullBn}</div>
@@ -2436,7 +2436,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                             ? 'opacity-40 bg-gray-100 dark:bg-gray-800/40 border-gray-300 cursor-not-allowed text-gray-500 line-through'
                             : isSelected
                             ? 'bg-amber-500 text-white border-amber-600 shadow-md font-bold'
-                            : 'bg-white dark:bg-[#14261d] border-emerald-200 dark:border-emerald-800 hover:border-emerald-500 text-emerald-950 dark:text-emerald-100'
+                            : 'bg-white dark:bg-[#192a23] border-emerald-200 dark:border-emerald-800 hover:border-emerald-500 text-emerald-950 dark:text-emerald-100'
                         }`}
                       >
                         <div>{slot.shortBn || slot.timeBn}</div>
@@ -2458,7 +2458,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 value={rescheduleReason}
                 onChange={(e) => setRescheduleReason(e.target.value)}
                 placeholder="যেমন: সার্জারির কারণে সময় সমন্বয় অথবা ডাক্তারের পরামর্শ"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#14261d] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -2515,7 +2515,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* COMPREHENSIVE SCHEDULE & DAY-SPECIFIC / DATE-SPECIFIC SETTINGS MODAL */}
       {showScheduleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto">
+          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto">
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
               <div>
                 <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
@@ -2578,7 +2578,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:flex rounded-xl bg-white dark:bg-[#101e17] p-1 border border-emerald-300 dark:border-emerald-700 shrink-0 w-full sm:w-auto">
+                <div className="grid grid-cols-2 sm:flex rounded-xl bg-white dark:bg-[#13201a] p-1 border border-emerald-300 dark:border-emerald-700 shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => handleUpdateTimingType('general')}
@@ -2608,7 +2608,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             {/* VIEW A: UNIVERSAL GENERAL TIMING */}
             {currentChamber.timingType === 'general' ? (
               <div className="space-y-5">
-                <div className="p-5 rounded-2xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 space-y-4 shadow-sm">
+                <div className="p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-100 uppercase tracking-wider">
                       সার্বজনীন চেম্বার সময়সূচী (সকল সক্রিয় বারের জন্য)
@@ -2654,7 +2654,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                         <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
                           বিরতির সময়কাল (মিনিট)
                         </label>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
                           <input
                             type="number"
                             min="0"
@@ -2676,7 +2676,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                             {toBengaliNumber(currentChamber.generalTiming.slotDuration || 15)} মিনিট
                           </span>
                         </div>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => {
@@ -2816,7 +2816,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                         key={dayIdx}
                         className={`p-4 rounded-2xl border transition-all space-y-3 ${
                           isEnabled
-                            ? 'border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#101e17] shadow-sm'
+                            ? 'border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#13201a] shadow-sm'
                             : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/20 opacity-70'
                         }`}
                       >
@@ -2872,7 +2872,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                                 <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
                                   বিরতির সময় (মিনিট)
                                 </label>
-                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
                                   <input
                                     type="number"
                                     min="0"
@@ -2898,7 +2898,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                                     {toBengaliNumber(dayObj.slotDuration ?? 15)} মিনিট
                                   </span>
                                 </div>
-                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -2967,7 +2967,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             )}
 
             {/* SECTION: DATE-SPECIFIC SPECIAL SCHEDULES (ONE-OFF DATES / OVERRIDES) */}
-            <div className="p-5 rounded-2xl bg-amber-50/60 dark:bg-[#13221b] border border-amber-300/60 dark:border-amber-800/40 space-y-4">
+            <div className="p-5 rounded-2xl bg-amber-50/60 dark:bg-[#192a23] border border-amber-300/60 dark:border-amber-800/40 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 dark:border-amber-900/40 pb-3">
                 <div>
                   <h4 className="text-xs font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
@@ -2981,7 +2981,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               </div>
 
               {/* Add Date Override Form */}
-              <div className="p-4 rounded-xl bg-white/80 dark:bg-[#0e1a14]/80 border border-amber-200 dark:border-amber-900/40 space-y-3">
+              <div className="p-4 rounded-xl bg-white/80 dark:bg-[#13201a]/80 border border-amber-200 dark:border-amber-900/40 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div>
                     <label className="block text-[11px] font-semibold text-emerald-900 dark:text-emerald-200 mb-1">
@@ -2991,7 +2991,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       type="date"
                       value={overrideDate}
                       onChange={(e) => setOverrideDate(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-mono"
+                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-mono"
                     />
                   </div>
 
@@ -3004,7 +3004,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       placeholder="যেমন: বিশেষ সান্ধ্যকালীন চেম্বার"
                       value={overrideLabel}
                       onChange={(e) => setOverrideLabel(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs"
+                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs"
                     />
                   </div>
 
@@ -3015,7 +3015,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                     <select
                       value={overrideEnabled ? 'open' : 'closed'}
                       onChange={(e) => setOverrideEnabled(e.target.value === 'open')}
-                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] text-xs font-semibold"
+                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-semibold"
                     >
                       <option value="open">সক্রিয় চেম্বার (Open for Booking)</option>
                       <option value="closed">ছুটি / বন্ধ (Closed)</option>
@@ -3050,7 +3050,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                         <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
                           বিরতির সময় (মিনিট)
                         </label>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm">
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
                           <input
                             type="number"
                             min="0"
@@ -3070,7 +3070,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                             {toBengaliNumber(overrideSlotDuration || 15)} মিনিট
                           </span>
                         </div>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#101e17] shadow-sm flex items-center gap-1">
+                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => {
@@ -3151,7 +3151,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                     <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200 block">
                       সক্রিয় বিশেষ তারিখসমূহ ({toBengaliNumber(Object.keys(currentChamber.dateOverrides).length)}টি):
                     </span>
-                    <div className="divide-y divide-amber-200 dark:divide-amber-900/40 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-white dark:bg-[#0e1a14] overflow-hidden text-xs">
+                    <div className="divide-y divide-amber-200 dark:divide-amber-900/40 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-white dark:bg-[#13201a] overflow-hidden text-xs">
                       {Object.entries(currentChamber.dateOverrides).map(([dStr, cfg]) => {
                         const slots = cfg.enabled
                           ? calcSlotCount(
@@ -3250,7 +3250,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* CHANGE ADMIN PASSWORD MODAL */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-amber-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowPasswordModal(false)}
@@ -3388,7 +3388,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* CUSTOMIZABLE MESSAGE / NOTIFICATION MODAL */}
       {messageModalApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
               <div>
@@ -3539,7 +3539,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 placeholder="এখানে আপনার বার্তা লিখুন বা সম্পাদনা করুন..."
-                className="w-full p-3.5 rounded-2xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#14261d] text-emerald-950 dark:text-emerald-50 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
+                className="w-full p-3.5 rounded-2xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-50 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
               />
             </div>
 
@@ -3597,7 +3597,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* APPOINTMENT CANCELLATION MODAL */}
       {cancelApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-rose-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
               <div>
@@ -3657,7 +3657,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               <select
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-white dark:bg-[#14261d] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="w-full p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-white dark:bg-[#192a23] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
               >
                 <option value="রোগীর পক্ষ থেকে বাতিল করতে অনুরোধ করা হয়েছে">রোগীর পক্ষ থেকে বাতিল করতে অনুরোধ করা হয়েছে</option>
                 <option value="রোগীর সাথে ফোনে যোগাযোগ করা সম্ভব হয়নি">রোগীর সাথে ফোনে যোগাযোগ করা সম্ভব হয়নি</option>
@@ -3672,7 +3672,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   value={cancelCustomReason}
                   onChange={(e) => setCancelCustomReason(e.target.value)}
                   placeholder="নির্দিষ্ট কারণ লিখুন..."
-                  className="w-full p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-white dark:bg-[#14261d] text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 mt-2"
+                  className="w-full p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-white dark:bg-[#192a23] text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 mt-2"
                 />
               )}
             </div>
@@ -3921,7 +3921,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* CUSTOM DELETE CONFIRMATION MODAL */}
       {deleteTargetApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-rose-500/50 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-rose-500/50 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-rose-900/10 dark:border-rose-800/40 pb-4">
               <div className="flex items-center gap-3">
@@ -4020,7 +4020,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* CUSTOM RESTORE CONFIRMATION MODAL */}
       {restoreTargetApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/50 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/50 shadow-2xl p-6 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
             {/* Header */}
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
               <div className="flex items-center gap-3">
@@ -4113,7 +4113,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
       {/* CUSTOM BEAUTIFUL ALERT / MESSAGE MODAL */}
       {alertModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-6 space-y-4 animate-scale-up text-center my-auto">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-6 space-y-4 animate-scale-up text-center my-auto">
             {/* Icon */}
             <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center shadow-inner ${
               alertModal.type === 'error'

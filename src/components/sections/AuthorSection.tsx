@@ -9,7 +9,7 @@ export default function AuthorSection() {
   ];
 
   return (
-    <section id="research" className="py-20 bg-white dark:bg-[#0a130f] relative overflow-hidden">
+    <section id="research" className="py-20 bg-white dark:bg-[#0c1511] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Book Details (7 cols) */}
@@ -32,7 +32,7 @@ export default function AuthorSection() {
               {chapters.map((ch, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-800/40 space-y-1"
+                  className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-800/40 space-y-1"
                 >
                   <h4 className="font-serif font-bold text-sm text-emerald-950 dark:text-emerald-100">
                     {ch.title}
@@ -66,7 +66,7 @@ export default function AuthorSection() {
 
           {/* Right Column: Book Visual Card (5 cols) */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-sm rounded-3xl p-8 bg-gradient-to-br from-amber-100/80 via-emerald-50 to-emerald-100/60 dark:from-[#12241b] dark:via-[#101e17] dark:to-emerald-950/80 border border-amber-300/50 dark:border-emerald-700/50 shadow-2xl space-y-6 text-center">
+            <div className="relative w-full max-w-sm rounded-3xl p-8 bg-gradient-to-br from-amber-100/80 via-emerald-50 to-emerald-100/60 dark:from-[#172922] dark:via-[#13201a] dark:to-emerald-950/80 border border-amber-300/50 dark:border-emerald-700/50 shadow-2xl space-y-6 text-center">
               <div className="w-20 h-28 mx-auto rounded-xl bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white p-3 shadow-xl flex flex-col justify-between transform -rotate-3 hover:rotate-0 transition-transform duration-300">
                 <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">Health Book</span>
                 <span className="font-serif font-black text-sm leading-tight">স্বাস্থ্য দর্পণ</span>

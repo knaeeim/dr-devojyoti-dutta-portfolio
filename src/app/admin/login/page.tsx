@@ -47,13 +47,13 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-[#0c1a13] to-[#08120d] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-[#101e18] to-[#0c1511] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background ambient orbs */}
       <div className="ambient-glow-1" />
       <div className="ambient-glow-2" />
 
       {/* Login Card */}
-      <div className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#101e17]/95 backdrop-blur-xl border border-emerald-500/30 shadow-2xl p-8 space-y-6 relative z-10">
+      <div className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-xl border border-emerald-500/30 shadow-2xl p-8 space-y-6 relative z-10">
         {/* Top return link */}
         <div className="flex justify-between items-center text-xs">
           <Link

@@ -422,7 +422,7 @@ export default function BookingHub() {
         </div>
 
         {/* Step-by-Step Interactive Booking Card */}
-        <div className="max-w-4xl mx-auto rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-xl overflow-hidden p-6 sm:p-8 space-y-8">
+        <div className="max-w-4xl mx-auto rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-xl overflow-hidden p-6 sm:p-8 space-y-8">
           {/* STEP 1: Choose Date */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -689,7 +689,7 @@ export default function BookingHub() {
       {/* OTP VERIFICATION MODAL */}
       {showOtpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
@@ -816,7 +816,7 @@ export default function BookingHub() {
       {/* CONFIRMATION MODAL: Instant Digital Serial Slip */}
       {confirmedAppointment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
+          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={handleCloseModal}

@@ -163,8 +163,8 @@ export default function Navbar() {
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 dark:bg-[#0a130f]/95 backdrop-blur-xl shadow-lg shadow-emerald-950/5 dark:shadow-black/40 border-b border-emerald-900/10 dark:border-emerald-500/15 py-2'
-            : 'bg-white/90 dark:bg-[#0a130f]/85 backdrop-blur-md py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
+            ? 'bg-white/95 dark:bg-[#0c1511]/95 backdrop-blur-xl shadow-lg shadow-emerald-950/5 dark:shadow-black/40 border-b border-emerald-900/10 dark:border-emerald-500/15 py-2'
+            : 'bg-white/90 dark:bg-[#0c1511]/85 backdrop-blur-md py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -179,7 +179,7 @@ export default function Navbar() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 flex items-center justify-center text-amber-300 font-bold text-base shadow-sm group-hover:scale-105 transition-all duration-200 border border-amber-400/30">
                   <span>DD</span>
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0a130f]" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c1511]" />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
@@ -246,7 +246,7 @@ export default function Navbar() {
 
                 {/* Dropdown Card */}
                 <div
-                  className={`absolute top-full right-0 mt-1.5 w-72 rounded-2xl bg-white/98 dark:bg-[#101e17]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1 transition-all duration-200 z-50 ${
+                  className={`absolute top-full right-0 mt-1.5 w-72 rounded-2xl bg-white/98 dark:bg-[#13201a]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1 transition-all duration-200 z-50 ${
                     isDropdownOpen
                       ? 'opacity-100 visible translate-y-0'
                       : 'opacity-0 invisible -translate-y-2 pointer-events-none'
@@ -335,7 +335,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {isOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-white/95 dark:bg-[#0a130f]/95 backdrop-blur-2xl border-b border-emerald-900/10 dark:border-emerald-500/15 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
+          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-white/95 dark:bg-[#0c1511]/95 backdrop-blur-2xl border-b border-emerald-900/10 dark:border-emerald-500/15 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
             <div className="p-5 space-y-4">
               {/* Mobile notice banner */}
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-between text-xs">

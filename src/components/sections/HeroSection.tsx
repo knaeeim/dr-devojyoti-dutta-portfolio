@@ -120,7 +120,7 @@ export default function HeroSection() {
           <div className="lg:col-span-5 relative flex justify-center">
             <div className="relative w-full max-w-md">
               {/* Doctor Frame */}
-              <div className="relative rounded-3xl p-3 bg-gradient-to-b from-emerald-100 via-white to-amber-50 dark:from-emerald-900/50 dark:via-[#12241b] dark:to-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 shadow-2xl overflow-hidden group">
+              <div className="relative rounded-3xl p-3 bg-gradient-to-b from-emerald-100 via-white to-amber-50 dark:from-emerald-900/50 dark:via-[#13201a] dark:to-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 shadow-2xl overflow-hidden group">
                 <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-emerald-950">
                   <Image
                     src="/assets/dr-devojyoti-dutta.png"
@@ -152,7 +152,7 @@ export default function HeroSection() {
               </div>
 
               {/* Floating Badge Top Left */}
-              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl bg-white/95 dark:bg-[#12241b]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center gap-3 animate-bounce-subtle z-10">
+              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center gap-3 animate-bounce-subtle z-10">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-800 dark:text-emerald-300 font-bold text-lg">
                   🏛️
                 </div>
@@ -167,7 +167,7 @@ export default function HeroSection() {
               </div>
 
               {/* Floating Badge Bottom Right */}
-              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl bg-white/95 dark:bg-[#12241b]/95 backdrop-blur-md border border-amber-200 dark:border-amber-900/60 shadow-xl flex items-center gap-3 z-10">
+              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-amber-200 dark:border-amber-900/60 shadow-xl flex items-center gap-3 z-10">
                 <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold text-lg">
                   🧬
                 </div>

@@ -60,7 +60,7 @@ export default function TreatmentsSection() {
           {treatments.map((item, idx) => (
             <div
               key={idx}
-              className="p-8 rounded-3xl bg-white dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-5 group hover:-translate-y-1"
+              className="p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-5 group hover:-translate-y-1"
             >
               <div className="space-y-3">
                 <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">

@@ -35,7 +35,7 @@ export default function ExpertiseSection() {
   ];
 
   return (
-    <section id="skills" className="py-20 bg-white dark:bg-[#0a130f] relative">
+    <section id="skills" className="py-20 bg-white dark:bg-[#0c1511] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
@@ -54,7 +54,7 @@ export default function ExpertiseSection() {
           {skills.map((item, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#101e17] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all duration-300 space-y-3 group hover:shadow-lg"
+              className="p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all duration-300 space-y-3 group hover:shadow-lg"
             >
               <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-950/80 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
                 {item.icon}

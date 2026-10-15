@@ -7,87 +7,116 @@
   --font-sans: 'Hind Siliguri', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Noto Serif Bengali', Georgia, serif;
 
-  --color-emerald-deep: #0f3826;
-  --color-emerald-main: #1b4332;
-  --color-emerald-mid: #2d6a4f;
-  --color-emerald-light: #52b788;
-  --color-emerald-soft: #d8f3dc;
-  --color-emerald-glow: #e8f8ed;
+  /* Modern Sage & Clinical Mint Spectrum */
+  --color-emerald-950: #0e2219;
+  --color-emerald-900: #153527;
+  --color-emerald-850: #1b4231;
+  --color-emerald-800: #21503c;
+  --color-emerald-750: #295f47;
+  --color-emerald-700: #2e694f;
+  --color-emerald-650: #36795b;
+  --color-emerald-600: #3e8867;
+  --color-emerald-500: #549f7c;
+  --color-emerald-400: #71b897;
+  --color-emerald-300: #97d2b6;
+  --color-emerald-200: #c1e8d4;
+  --color-emerald-100: #e0f4ea;
+  --color-emerald-50: #f0f9f4;
 
-  --color-gold-deep: #84600e;
-  --color-gold-main: #c59b27;
-  --color-gold-light: #fef9e7;
-  --color-gold-glow: #fdf2c6;
+  /* Warm Copper, Sandalwood & Refined Bronze Spectrum */
+  --color-amber-950: #281408;
+  --color-amber-900: #4a270f;
+  --color-amber-800: #743b17;
+  --color-amber-700: #9e5320;
+  --color-amber-600: #be6829;
+  --color-amber-500: #d67f37;
+  --color-amber-400: #e4995a;
+  --color-amber-300: #efb788;
+  --color-amber-200: #f7d5b8;
+  --color-amber-100: #fbeee1;
+  --color-amber-50: #fdf7f1;
+
+  --color-emerald-deep: #0e2219;
+  --color-emerald-main: #21503c;
+  --color-emerald-mid: #2e694f;
+  --color-emerald-light: #549f7c;
+  --color-emerald-soft: #e0f4ea;
+  --color-emerald-glow: #f0f9f4;
+
+  --color-gold-deep: #743b17;
+  --color-gold-main: #be6829;
+  --color-gold-light: #fbeee1;
+  --color-gold-glow: #f7d5b8;
 }
 
 :root {
-  --background: #f8faf8;
-  --foreground: #15291e;
-  --primary: #1b4332;
+  --background: #fafbf9;
+  --foreground: #13271e;
+  --primary: #21503c;
   --primary-foreground: #ffffff;
-  --secondary: #eaf6ee;
-  --secondary-foreground: #1b4332;
-  --muted: #f0f5f2;
-  --muted-foreground: #71887c;
-  --accent: #e8f8ed;
-  --accent-foreground: #1b4332;
+  --secondary: #e6f3ec;
+  --secondary-foreground: #183e2f;
+  --muted: #edf4f0;
+  --muted-foreground: #5e7a6d;
+  --accent: #e3f1ea;
+  --accent-foreground: #1c4534;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: rgba(27, 67, 50, 0.12);
-  --input: rgba(27, 67, 50, 0.16);
-  --ring: #2d6a4f;
-  --radius: 0.75rem;
+  --border: rgba(33, 80, 60, 0.1);
+  --input: rgba(33, 80, 60, 0.14);
+  --ring: #2e694f;
+  --radius: 0.85rem;
 
-  --bg-page: #f8faf8;
+  --bg-page: #fafbf9;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
-  --bg-surface-subtle: #f0f5f2;
-  --text-primary: #15291e;
-  --text-secondary: #4a6356;
-  --text-muted: #71887c;
-  --border-subtle: rgba(27, 67, 50, 0.12);
-  --border-focus: #2d6a4f;
-  --accent-primary: #1b4332;
-  --accent-secondary: #2d6a4f;
-  --accent-gold: #c59b27;
-  --badge-bg: #eaf6ee;
-  --badge-text: #1b4332;
-  --card-shadow: 0 10px 30px -10px rgba(27, 67, 50, 0.08), 0 4px 6px -2px rgba(27, 67, 50, 0.04);
+  --bg-surface-subtle: #f1f8f4;
+  --text-primary: #13271e;
+  --text-secondary: #3d594c;
+  --text-muted: #678678;
+  --border-subtle: rgba(33, 80, 60, 0.1);
+  --border-focus: #2e694f;
+  --accent-primary: #21503c;
+  --accent-secondary: #2e694f;
+  --accent-gold: #be6829;
+  --badge-bg: #e6f3ec;
+  --badge-text: #183e2f;
+  --card-shadow: 0 10px 30px -10px rgba(33, 80, 60, 0.07), 0 4px 6px -2px rgba(33, 80, 60, 0.03);
 }
 
 .dark,
 [data-theme="dark"] {
-  --background: #0a130f;
-  --foreground: #edfbf3;
-  --primary: #52b788;
-  --primary-foreground: #081a11;
-  --secondary: #162a21;
-  --secondary-foreground: #edfbf3;
-  --muted: #0d1a13;
-  --muted-foreground: #6f8d7f;
-  --accent: #162a21;
-  --accent-foreground: #95d5b2;
+  --background: #0c1511;
+  --foreground: #ecf7f1;
+  --primary: #549f7c;
+  --primary-foreground: #07150e;
+  --secondary: #15251f;
+  --secondary-foreground: #ecf7f1;
+  --muted: #101c16;
+  --muted-foreground: #769888;
+  --accent: #172922;
+  --accent-foreground: #8cd2b1;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(82, 183, 136, 0.18);
-  --input: rgba(82, 183, 136, 0.22);
-  --ring: #52b788;
+  --border: rgba(84, 159, 124, 0.16);
+  --input: rgba(84, 159, 124, 0.2);
+  --ring: #549f7c;
 
-  --bg-page: #0a130f;
-  --bg-surface: #101e17;
-  --bg-surface-elevated: #162a21;
-  --bg-surface-subtle: #0d1a13;
-  --text-primary: #edfbf3;
-  --text-secondary: #a3c2b2;
-  --text-muted: #6f8d7f;
-  --border-subtle: rgba(82, 183, 136, 0.18);
-  --border-focus: #52b788;
-  --accent-primary: #52b788;
-  --accent-secondary: #74c69d;
-  --accent-gold: #e2ba49;
-  --badge-bg: rgba(82, 183, 136, 0.16);
-  --badge-text: #95d5b2;
-  --card-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --bg-page: #0c1511;
+  --bg-surface: #13201a;
+  --bg-surface-elevated: #192a23;
+  --bg-surface-subtle: #0f1a14;
+  --text-primary: #ecf7f1;
+  --text-secondary: #a1c6b4;
+  --text-muted: #769888;
+  --border-subtle: rgba(84, 159, 124, 0.16);
+  --border-focus: #549f7c;
+  --accent-primary: #549f7c;
+  --accent-secondary: #6cb894;
+  --accent-gold: #e4995a;
+  --badge-bg: rgba(84, 159, 124, 0.14);
+  --badge-text: #8cd2b1;
+  --card-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.45), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
 }
 
 html {
@@ -118,7 +147,7 @@ h1, h2, h3, .font-bengali-serif {
   width: 500px;
   height: 500px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(45, 106, 79, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(46, 105, 79, 0.12) 0%, transparent 70%);
   filter: blur(50px);
   pointer-events: none;
   z-index: 0;
@@ -131,7 +160,7 @@ h1, h2, h3, .font-bengali-serif {
   width: 550px;
   height: 550px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(197, 155, 39, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(190, 104, 41, 0.08) 0%, transparent 70%);
   filter: blur(60px);
   pointer-events: none;
   z-index: 0;
