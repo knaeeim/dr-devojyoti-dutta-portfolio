@@ -13,7 +13,7 @@ export async function GET() {
       );
     }
 
-    const templates = getSavedTemplates();
+    const templates = await getSavedTemplates();
     return NextResponse.json({
       success: true,
       templates,
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Reset to defaults if requested
     if (action === 'reset') {
-      const resetSuccess = saveTemplates(DEFAULT_SMS_TEMPLATES);
+      const resetSuccess = await saveTemplates(DEFAULT_SMS_TEMPLATES);
       if (!resetSuccess) {
         return NextResponse.json(
           { error: 'ডিফল্ট টেমপ্লেটে রিসেট করতে সমস্যা হয়েছে।' },
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const saved = saveTemplates(templates as ChamberTemplatesConfig);
+    const saved = await saveTemplates(templates as ChamberTemplatesConfig);
     if (!saved) {
       return NextResponse.json(
         { error: 'টেমপ্লেট ফাইল সংরক্ষণে সমস্যা হয়েছে।' },
