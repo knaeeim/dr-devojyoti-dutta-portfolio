@@ -1184,15 +1184,15 @@ export default function AdminDashboardPage() {
 
             {/* Mobile Header Quick Right Controls (Theme + Logout) */}
             <div className="flex sm:hidden items-center gap-1.5 shrink-0">
-              <ThemeToggle />
+              <ThemeToggle size="sm" />
               <button
                 type="button"
                 onClick={handleLogout}
-                className="p-2 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200 transition-colors"
+                className="h-8 w-8 flex items-center justify-center rounded-xl bg-red-100 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/70 hover:text-red-900 dark:hover:text-red-100 transition-colors cursor-pointer"
                 title="লগআউট"
                 aria-label="লগআউট"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -1202,7 +1202,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowScheduleModal(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-200/70 border border-emerald-300 dark:border-emerald-800 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-200/70 dark:hover:bg-emerald-900/80 hover:text-emerald-950 dark:hover:text-emerald-100 border border-emerald-300 dark:border-emerald-800 dark:hover:border-emerald-700 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                 title="চেম্বার শিডিউল ও ডে-স্পেসিফিক এডিটর"
               >
                 <Settings className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -1216,7 +1216,7 @@ export default function AdminDashboardPage() {
                   setTemplateSaveFeedback(null);
                   setShowTemplateModal(true);
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/90 hover:text-emerald-950 dark:hover:text-emerald-100 dark:hover:border-emerald-600 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                 title="অনলাইন ও অফলাইন এসএমএস ও মেসেজ টেমপ্লেট পরিবর্তন করুন"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -1226,7 +1226,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowPrintModal(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/60 hover:text-emerald-950 dark:hover:text-emerald-100 dark:hover:border-emerald-700 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                 title="রিসিপশন প্রিন্ট"
               >
                 <Printer className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
@@ -1247,18 +1247,18 @@ export default function AdminDashboardPage() {
                   setNewPassword('');
                   setConfirmPassword('');
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/60 hover:text-amber-950 dark:hover:text-amber-100 dark:hover:border-amber-700 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
                 title="ডাক্তার পোর্টালের পাসওয়ার্ড পরিবর্তন করুন"
               >
                 <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span className="hidden lg:inline">পাসওয়ার্ড</span>
               </button>
 
-              <ThemeToggle />
+              <ThemeToggle size="sm" />
 
               <Link
                 href="/"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors whitespace-nowrap"
                 title="মূল ওয়েবসাইট দেখুন"
               >
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
@@ -1268,7 +1268,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold hover:bg-red-200 transition-colors cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-xl bg-red-100 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs font-semibold hover:bg-red-200 dark:hover:bg-red-900/70 hover:text-red-900 dark:hover:text-red-100 transition-colors cursor-pointer whitespace-nowrap"
                 title="পোর্টাল থেকে লগআউট করুন"
               >
                 <LogOut className="w-3.5 h-3.5 shrink-0" />
@@ -1296,9 +1296,9 @@ export default function AdminDashboardPage() {
               setTemplateSaveFeedback(null);
               setShowTemplateModal(true);
             }}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 hover:text-emerald-950 dark:hover:text-emerald-100 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
-            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>টেমপ্লেট</span>
           </button>
 
@@ -4442,7 +4442,7 @@ export default function AdminDashboardPage() {
                         }
                       });
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1a2e24] border border-amber-300 dark:border-amber-800/70 hover:border-amber-500 text-amber-900 dark:text-amber-200 font-mono text-[11px] font-semibold hover:bg-amber-100/50 transition-colors cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs"
+                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1a2e24] border border-amber-300 dark:border-amber-800/70 hover:border-amber-500 dark:hover:border-amber-600 text-amber-900 dark:text-amber-200 hover:text-amber-950 dark:hover:text-amber-100 font-mono text-[11px] font-semibold hover:bg-amber-100/60 dark:hover:bg-amber-900/60 transition-colors cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs"
                   >
                     <span>+ {pill.tag}</span>
                     <span className="text-[10px] text-zinc-400 font-sans">({pill.desc})</span>
