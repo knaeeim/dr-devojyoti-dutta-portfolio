@@ -45,7 +45,7 @@ export default function AboutSection() {
         {/* 3 Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {pillars.map((pillar, idx) => (
-            <ScrollReveal key={idx} delay={idx * 140} direction="up">
+            <ScrollReveal key={idx} delay={idx * 140} direction="up" className="h-full">
               <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 space-y-4 group h-full">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
                   {pillar.icon}

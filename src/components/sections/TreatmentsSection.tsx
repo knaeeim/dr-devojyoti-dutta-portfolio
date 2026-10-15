@@ -61,7 +61,7 @@ export default function TreatmentsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {treatments.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 110} direction="up">
+            <ScrollReveal key={idx} delay={idx * 110} direction="up" className="h-full">
               <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 flex flex-col justify-between space-y-5 group h-full">
                 <div className="space-y-3">
                   <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">

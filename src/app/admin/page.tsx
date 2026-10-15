@@ -2510,7 +2510,7 @@ export default function AdminDashboardPage() {
                             setRescheduleSlotTimeEn(slot.timeEn);
                           }
                         }}
-                        className={`p-2 rounded-xl border text-xs font-mono font-medium transition-all ${
+                        className={`min-h-[58px] h-full p-2 rounded-xl border text-xs font-mono font-medium transition-all flex flex-col items-center justify-center ${
                           isBooked
                             ? 'opacity-40 bg-gray-100 dark:bg-gray-800/40 border-gray-300 cursor-not-allowed text-gray-500 line-through'
                             : isPast

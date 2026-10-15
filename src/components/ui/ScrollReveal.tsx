@@ -78,7 +78,7 @@ export default function ScrollReveal({
         transitionDelay: `${delay}ms`,
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
       }}
-      className={`transition-all ${getDirectionClasses()} ${className}`}
+      className={`transition-all ${getDirectionClasses()} ${className.includes('h-full') && !className.includes('flex') ? 'flex flex-col' : ''} ${className}`}
     >
       {children}
     </div>

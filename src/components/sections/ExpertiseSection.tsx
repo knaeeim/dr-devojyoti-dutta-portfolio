@@ -55,7 +55,7 @@ export default function ExpertiseSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {skills.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 100} direction="up">
+            <ScrollReveal key={idx} delay={idx * 100} direction="up" className="h-full">
               <div className="card-butter p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-xl space-y-3 group h-full">
                 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-950/80 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
                   {item.icon}

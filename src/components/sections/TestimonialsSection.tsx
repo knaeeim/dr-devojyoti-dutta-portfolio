@@ -52,7 +52,7 @@ export default function TestimonialsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {reviews.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 120} direction="up">
+            <ScrollReveal key={idx} delay={idx * 120} direction="up" className="h-full">
               <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 flex flex-col justify-between space-y-6 relative h-full">
                 <Quote className="w-10 h-10 text-emerald-200 dark:text-emerald-900 absolute top-6 right-6 -z-0 opacity-60" />
 

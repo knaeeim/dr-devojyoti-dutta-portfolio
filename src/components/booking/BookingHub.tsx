@@ -511,7 +511,7 @@ export default function BookingHub() {
                       type="button"
                       disabled={!item.isBookingOpen}
                       onClick={() => handleDateSelect(item.dateStr)}
-                      className={`relative p-3.5 rounded-2xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-1 ${
+                      className={`relative min-h-[112px] h-full p-3.5 rounded-2xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-1 ${
                         isSelected
                           ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50 scale-[1.02] cursor-pointer'
                           : item.isBookingOpen
@@ -606,7 +606,7 @@ export default function BookingHub() {
                               onClick={() => {
                                 if (!isDisabled) handleSlotSelect(slot);
                               }}
-                              className={`p-3 rounded-xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-0.5 ${
+                              className={`min-h-[76px] h-full p-2.5 sm:p-3 rounded-xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
                                   ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500 cursor-pointer active:scale-95 scale-[1.02]'
                                   : isBooked
@@ -616,19 +616,21 @@ export default function BookingHub() {
                                   : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 cursor-pointer hover:-translate-y-0.5 hover:shadow-sm active:scale-95'
                               }`}
                             >
-                              <span className={`text-xs font-semibold ${isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}`}>
+                              <span className={`text-xs font-semibold leading-tight ${isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}`}>
                                 {slot.shortBn}
                               </span>
-                              <span className="text-[10px] opacity-75 font-mono">{slot.shortEn}</span>
+                              <span className="text-[10px] opacity-75 font-mono leading-tight">{slot.shortEn}</span>
                               {isBooked ? (
-                                <span className="text-[10px] font-bold text-red-500">বুকড</span>
+                                <span className="text-[10px] font-bold text-red-500 dark:text-red-400 leading-tight">বুকড</span>
                               ) : isPast ? (
-                                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-0.5">
+                                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-0.5 leading-tight">
                                   <span>⏱️</span> টাইম ওভার
                                 </span>
                               ) : isSelected ? (
-                                <span className="text-[10px] font-bold text-amber-300">নির্বাচিত</span>
-                              ) : null}
+                                <span className="text-[10px] font-bold text-amber-300 leading-tight">✓ নির্বাচিত</span>
+                              ) : (
+                                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight">খালি আছে</span>
+                              )}
                             </button>
                           );
                         })}
