@@ -211,6 +211,9 @@ export default function BookingHub() {
       setOtpTimer(60);
       setOtpDebugCode(data.debugCode || null);
       setOtpGatewayNotice(data.gatewayError || null);
+      if (data.debugCode) {
+        setOtpCode(data.debugCode);
+      }
       setShowOtpModal(true);
       setOtpPending(false);
     } catch (err) {
@@ -280,6 +283,9 @@ export default function BookingHub() {
         setOtpTimer(60);
         setOtpDebugCode(data.debugCode || null);
         setOtpGatewayNotice(data.gatewayError || null);
+        if (data.debugCode) {
+          setOtpCode(data.debugCode);
+        }
       } else {
         setOtpError(data.error || 'পুনরায় ওটিপি পাঠাতে ব্যর্থ হয়েছে।');
       }
@@ -756,11 +762,21 @@ export default function BookingHub() {
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={6}
                   required
                   autoFocus
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const bnMap: Record<string, string> = {
+                      '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+                      '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+                    };
+                    const converted = val.replace(/[০-৯]/g, (d) => bnMap[d] || d).replace(/[^0-9]/g, '');
+                    setOtpCode(converted);
+                  }}
                   placeholder="• • • • • •"
                   className="w-full text-center tracking-[0.5em] font-mono text-2xl font-bold py-3 px-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-50 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/40"
                 />

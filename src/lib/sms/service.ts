@@ -50,9 +50,28 @@ export async function sendDirectSms(
   recipientPhone: string,
   messageText: string
 ): Promise<SendSmsResult> {
-  const apiKey = (process.env.SMS_API_KEY || 'BYlhH7cFVn46tY8lvlcY').trim();
-  const senderId = (process.env.SMS_SENDER_ID || '8809617643375').trim();
-  const gatewayUrl = (process.env.SMS_GATEWAY_URL || 'https://bulksmsbd.net/api/smsapi').trim();
+  let apiKey = (process.env.SMS_API_KEY || '').trim();
+  if (!apiKey || apiKey === 'YOUR_SMS_API_KEY') {
+    apiKey = 'BYlhH7cFVn46tY8lvlcY';
+  }
+
+  // Ensure the verified BulkSMSBD Sender ID 8809617643375 is always used.
+  // Overrides old unapproved text masking (like DrDevojyotiDutta) configured in Vercel,
+  // which causes BulkSMSBD error 1005: "Attempt to read property 'is_masking' on null".
+  let senderId = (process.env.SMS_SENDER_ID || '').trim();
+  if (
+    !senderId ||
+    !/^\d+$/.test(senderId) ||
+    senderId.toLowerCase().includes('dutta') ||
+    senderId.toLowerCase().includes('devojyoti')
+  ) {
+    senderId = '8809617643375';
+  }
+
+  let gatewayUrl = (process.env.SMS_GATEWAY_URL || 'https://bulksmsbd.net/api/smsapi').trim();
+  if (!gatewayUrl.includes('bulksmsbd.net')) {
+    gatewayUrl = 'https://bulksmsbd.net/api/smsapi';
+  }
 
   const formattedNumber = formatBdPhoneNumber(recipientPhone);
 
@@ -115,8 +134,8 @@ export async function sendDirectSms(
       };
     }
 
-    // Sender ID error code: 1002 / 1013
-    if (data && (data.response_code === 1002 || data.response_code === 1013)) {
+    // Sender ID error code: 1002 / 1005 / 1013
+    if (data && (data.response_code === 1002 || data.response_code === 1005 || data.response_code === 1013 || data?.error_message?.includes('is_masking'))) {
       return {
         success: false,
         error: `Sender ID (${senderId}) অনুমোদন বা একাউন্টের সাথে সংযুক্ত পাওয়া যায়নি (Error: ${data.response_code})।`,
