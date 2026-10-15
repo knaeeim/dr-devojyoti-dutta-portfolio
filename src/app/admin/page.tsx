@@ -173,6 +173,7 @@ export default function AdminDashboardPage() {
   const [sortBy, setSortBy] = useState<SortOption>('created_desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
+  const [confirmPromptApt, setConfirmPromptApt] = useState<Appointment | null>(null);
 
   // Modals & Panels
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -394,6 +395,9 @@ export default function AdminDashboardPage() {
   // Send via WhatsApp
   const handleSendCustomWhatsApp = () => {
     if (!messageModalApt) return;
+    if (messageModalApt.status === 'pending') {
+      handleUpdateStatus(messageModalApt.id, 'confirmed');
+    }
     const url = getWhatsAppUrl(messageModalApt.phone, customMessage);
     const link = document.createElement('a');
     link.href = url;
@@ -530,6 +534,9 @@ export default function AdminDashboardPage() {
           text: data?.error || 'এসএমএস পাঠাতে ব্যর্থ হয়েছে।'
         });
       } else {
+        if (messageModalApt.status === 'pending') {
+          handleUpdateStatus(messageModalApt.id, 'confirmed');
+        }
         setSmsStatusMsg({
           type: 'success',
           text: data?.message || `সফলভাবে রোগীর মোবাইলে (${messageModalApt.phone}) এসএমএস পাঠানো হয়েছে!`
@@ -811,7 +818,7 @@ export default function AdminDashboardPage() {
   };
 
   // Status changer (sends confirmation email if confirmed)
-  const handleUpdateStatus = async (id: string, newStatus: AppointmentStatus) => {
+  const handleUpdateStatus = async (id: string, newStatus: AppointmentStatus): Promise<boolean> => {
     try {
       const res = await fetch('/api/admin/appointments', {
         method: 'PATCH',
@@ -827,11 +834,25 @@ export default function AdminDashboardPage() {
           setNotificationMsg(data.message);
           setTimeout(() => setNotificationMsg(null), 6000);
         }
+        return true;
       } else {
         showAlert(data.error || 'স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে।', 'স্ট্যাটাস পরিবর্তন ত্রুটি', 'error');
+        return false;
       }
     } catch (err) {
       showAlert('স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে। সার্ভারের সাথে সংযোগে সমস্যা।', 'ত্রুটি', 'error');
+      return false;
+    }
+  };
+
+  // Handle Confirm and prompt instant messaging option
+  const handleConfirmAndNotifyPrompt = async (apt: Appointment) => {
+    const success = await handleUpdateStatus(apt.id, 'confirmed');
+    if (success) {
+      setConfirmPromptApt({ ...apt, status: 'confirmed' });
+      setTimeout(() => {
+        setConfirmPromptApt((curr) => (curr?.id === apt.id ? null : curr));
+      }, 12000);
     }
   };
 
@@ -1352,6 +1373,39 @@ export default function AdminDashboardPage() {
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {/* Interactive Confirm & Send Message Action Prompt Banner */}
+        {confirmPromptApt && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-950 text-white text-xs sm:text-sm font-semibold flex flex-wrap items-center justify-between gap-3 shadow-lg border border-emerald-600/80 animate-slide-down">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-amber-300 shrink-0" />
+              <span>
+                <strong>{confirmPromptApt.patientName}</strong>-এর সিরিয়াল (#{confirmPromptApt.serialNo}) সফলভাবে নিশ্চিত হয়েছে! আপনি কি রোগীকে এখনই কনফার্মেশন বার্তা পাঠাতে চান?
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const apt = confirmPromptApt;
+                  setConfirmPromptApt(null);
+                  handleOpenMessageModal(apt, 'confirm');
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+              >
+                <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                <span>হ্যাঁ, মেসেজ পাঠান</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmPromptApt(null)}
+                className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-medium cursor-pointer"
+              >
+                পরে পাঠাব
+              </button>
+            </div>
           </div>
         )}
 
@@ -1920,12 +1974,12 @@ export default function AdminDashboardPage() {
                                 {apt.status === 'pending' && (
                                   <button
                                     type="button"
-                                    onClick={() => handleUpdateStatus(apt.id, 'confirmed')}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                    onClick={() => handleConfirmAndNotifyPrompt(apt)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer animate-pulse hover:animate-none"
                                     title="সিরিয়াল নিশ্চিত করুন ও রোগীর ইমেইলে কনফার্মেশন পাঠান"
                                   >
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>কনফার্ম</span>
+                                    <span>সিরিয়াল নিশ্চিত করুন</span>
                                   </button>
                                 )}
 
@@ -1943,22 +1997,44 @@ export default function AdminDashboardPage() {
                                 {/* 2. Print Single-Page Slip */}
                                 <button
                                   type="button"
-                                  onClick={() => printSinglePageSerialSlip(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="১ পৃষ্ঠার অফিসিয়াল ডিজিটাল স্লিপ প্রিন্ট করুন"
+                                  disabled={apt.status === 'pending'}
+                                  onClick={() => {
+                                    if (apt.status === 'pending') {
+                                      showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর ডিজিটাল স্লিপ প্রিন্ট করা যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
+                                      return;
+                                    }
+                                    printSinglePageSerialSlip(apt);
+                                  }}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold shadow-xs transition-all ${
+                                    apt.status === 'pending'
+                                      ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50'
+                                      : 'border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 cursor-pointer'
+                                  }`}
+                                  title={apt.status === 'pending' ? 'প্রথমে সিরিয়াল নিশ্চিত করুন, এরপর স্লিপ প্রিন্ট সক্রিয় হবে' : '১ পৃষ্ঠার অফিসিয়াল ডিজিটাল স্লিপ প্রিন্ট করুন'}
                                 >
-                                  <Printer className="w-3.5 h-3.5" />
+                                  {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <Printer className="w-3.5 h-3.5" />}
                                   <span>স্লিপ প্রিন্ট</span>
                                 </button>
 
                                 {/* 3. Doctor Customizable Message / WhatsApp Communication */}
                                 <button
                                   type="button"
-                                  onClick={() => handleOpenMessageModal(apt, 'confirm')}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
-                                  title="বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান"
+                                  disabled={apt.status === 'pending'}
+                                  onClick={() => {
+                                    if (apt.status === 'pending') {
+                                      showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর রোগীকে কনফার্মেশন বার্তা পাঠানো যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
+                                      return;
+                                    }
+                                    handleOpenMessageModal(apt, 'confirm');
+                                  }}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-xs transition-all ${
+                                    apt.status === 'pending'
+                                      ? 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed opacity-50'
+                                      : 'bg-[#25D366] hover:bg-[#20bd5a] cursor-pointer'
+                                  }`}
+                                  title={apt.status === 'pending' ? 'প্রথমে সিরিয়াল নিশ্চিত করুন, এরপর মেসেজ পাঠানো সক্রিয় হবে' : 'বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান'}
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                                  {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <MessageCircle className="w-3.5 h-3.5 fill-white" />}
                                   <span>মেসেজ পাঠান</span>
                                 </button>
 
@@ -2219,16 +2295,23 @@ export default function AdminDashboardPage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {apt.status === 'pending' && (
                             <button
                               type="button"
-                              onClick={() => handleUpdateStatus(apt.id, 'confirmed')}
-                              className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-emerald-700 text-white text-xs font-bold shadow-xs active:scale-95"
+                              onClick={() => handleConfirmAndNotifyPrompt(apt)}
+                              className="w-full inline-flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white text-xs font-bold shadow-md active:scale-95 animate-pulse hover:animate-none cursor-pointer"
                             >
-                              <CheckCircle2 className="w-4 h-4" />
+                              <CheckCircle2 className="w-4 h-4 text-emerald-200" />
                               <span>সিরিয়াল নিশ্চিত করুন (Confirm)</span>
                             </button>
+                          )}
+
+                          {apt.status === 'pending' && (
+                            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/50 text-[11px] text-amber-900 dark:text-amber-300 flex items-center gap-1.5 font-medium">
+                              <Lock className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                              <span>সিরিয়াল নিশ্চিত করার পর মেসেজ ও স্লিপ প্রিন্ট সক্রিয় হবে</span>
+                            </div>
                           )}
 
                           <div className="grid grid-cols-2 gap-1.5">
@@ -2245,20 +2328,42 @@ export default function AdminDashboardPage() {
                             {/* 2. Print Slip */}
                             <button
                               type="button"
-                              onClick={() => printSinglePageSerialSlip(apt)}
-                              className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-bold shadow-xs active:scale-95"
+                              disabled={apt.status === 'pending'}
+                              onClick={() => {
+                                if (apt.status === 'pending') {
+                                  showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর ডিজিটাল স্লিপ প্রিন্ট করা যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
+                                  return;
+                                }
+                                printSinglePageSerialSlip(apt);
+                              }}
+                              className={`inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg border text-xs font-bold shadow-xs active:scale-95 ${
+                                apt.status === 'pending'
+                                  ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-500 opacity-50 cursor-not-allowed'
+                                  : 'border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200'
+                              }`}
                             >
-                              <Printer className="w-3.5 h-3.5" />
+                              {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <Printer className="w-3.5 h-3.5" />}
                               <span>স্লিপ প্রিন্ট</span>
                             </button>
 
                             {/* 3. Send Message */}
                             <button
                               type="button"
-                              onClick={() => handleOpenMessageModal(apt, 'confirm')}
-                              className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg bg-[#25D366] text-white text-xs font-bold shadow-xs active:scale-95"
+                              disabled={apt.status === 'pending'}
+                              onClick={() => {
+                                if (apt.status === 'pending') {
+                                  showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর রোগীকে কনফার্মেশন বার্তা পাঠানো যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
+                                  return;
+                                }
+                                handleOpenMessageModal(apt, 'confirm');
+                              }}
+                              className={`inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg text-xs font-bold shadow-xs active:scale-95 ${
+                                apt.status === 'pending'
+                                  ? 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 opacity-50 cursor-not-allowed'
+                                  : 'bg-[#25D366] text-white'
+                              }`}
                             >
-                              <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                              {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <MessageCircle className="w-3.5 h-3.5 fill-white" />}
                               <span>মেসেজ পাঠান</span>
                             </button>
 
