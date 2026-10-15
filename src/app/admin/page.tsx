@@ -1937,22 +1937,39 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               </div>
 
               {/* MOBILE & TABLET PATIENT CARDS VIEW (Shown on Mobile screens: block lg:hidden) */}
-              <div className="block lg:hidden divide-y divide-emerald-900/10 dark:divide-emerald-800/20">
-                {paginatedAppointments.map((apt) => (
-                  <div
-                    key={apt.id}
-                    className={`p-3.5 sm:p-4 transition-colors ${
-                      apt.status === 'cancelled'
-                        ? 'bg-rose-50/20 dark:bg-rose-950/15'
-                        : 'hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20'
-                    }`}
-                  >
-                    {/* Card Top: Serial Badge, Chamber & Status Badge */}
-                    <div className="flex items-center justify-between gap-2 mb-2.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono font-black text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 bg-emerald-100/90 dark:bg-emerald-900/60 px-2.5 py-0.5 rounded-lg border border-emerald-300/40">
-                          {apt.serialNo}
-                        </span>
+              <div className="block lg:hidden p-3 sm:p-4 space-y-3.5 bg-emerald-950/5 dark:bg-[#08120d]/60">
+                {paginatedAppointments.map((apt, idx) => {
+                  const isEven = idx % 2 === 0;
+                  const isCancelled = apt.status === 'cancelled';
+                  const seqNumber = (validCurrentPage - 1) * ITEMS_PER_PAGE + idx + 1;
+                  const statusAccent =
+                    apt.status === 'confirmed'
+                      ? 'border-l-4 border-l-emerald-500'
+                      : apt.status === 'pending'
+                      ? 'border-l-4 border-l-amber-500'
+                      : apt.status === 'rescheduled'
+                      ? 'border-l-4 border-l-indigo-500'
+                      : apt.status === 'completed'
+                      ? 'border-l-4 border-l-blue-500'
+                      : 'border-l-4 border-l-rose-500';
+
+                  const cardBg = isCancelled
+                    ? 'bg-rose-50/40 dark:bg-rose-950/25 border-rose-200 dark:border-rose-900/50'
+                    : isEven
+                    ? 'bg-white dark:bg-[#13201a] border-emerald-900/15 dark:border-emerald-700/40 shadow-xs'
+                    : 'bg-[#f4f9f6] dark:bg-[#182921] border-emerald-900/20 dark:border-emerald-600/50 shadow-xs';
+
+                  return (
+                    <div
+                      key={apt.id}
+                      className={`rounded-2xl border ${statusAccent} ${cardBg} p-3.5 sm:p-4 transition-all relative overflow-hidden`}
+                    >
+                      {/* Card Top: Serial Badge, Chamber & Status Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-emerald-900/10 dark:border-emerald-700/30">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono font-black text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 bg-emerald-100/90 dark:bg-emerald-900/70 px-2.5 py-0.5 rounded-lg border border-emerald-300/40">
+                            {apt.serialNo}
+                          </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             apt.chamberMode === 'offline'
@@ -2212,8 +2229,20 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                         </div>
                       )}
                     </div>
+
+                    {/* Card Bottom: Clear Visual End Marker & Serial Completion Indicator */}
+                    <div className="mt-3 pt-2.5 border-t border-dashed border-emerald-900/10 dark:border-emerald-700/35 flex items-center justify-between text-[11px] text-emerald-800/80 dark:text-emerald-400/80">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+                        <span>সিরিয়াল #{toBengaliNumber(seqNumber)} সমাপ্ত</span>
+                      </span>
+                      <span className="font-mono text-[10px] opacity-75">
+                        আইডি: {apt.id.slice(-6)}
+                      </span>
+                    </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
 
               {/* PAGINATION CONTROLS */}
