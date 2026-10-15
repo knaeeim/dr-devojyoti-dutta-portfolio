@@ -47,7 +47,9 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Loader2
+  Loader2,
+  MessageSquare,
+  Coins
 } from 'lucide-react';
 import {
   Appointment,
@@ -70,6 +72,13 @@ import {
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
 import { printSinglePageSerialSlip, printReceptionSheet } from '@/lib/booking/print-slip';
+import {
+  DEFAULT_SMS_TEMPLATES,
+  ChamberTemplatesConfig,
+  TemplateType,
+  evaluateSms,
+  interpolateTemplate
+} from '@/lib/sms/templates';
 
 export type SortOption =
   | 'created_desc'
@@ -219,6 +228,15 @@ export default function AdminDashboardPage() {
   const [isSendingSms, setIsSendingSms] = useState(false);
   const [smsStatusMsg, setSmsStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // SMS Template Configuration Modal State
+  const [templatesConfig, setTemplatesConfig] = useState<ChamberTemplatesConfig>(DEFAULT_SMS_TEMPLATES);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplateMode, setSelectedTemplateMode] = useState<'offline' | 'online'>('offline');
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<TemplateType>('confirm');
+  const [editingTemplates, setEditingTemplates] = useState<ChamberTemplatesConfig>(DEFAULT_SMS_TEMPLATES);
+  const [isSavingTemplates, setIsSavingTemplates] = useState(false);
+  const [templateSaveFeedback, setTemplateSaveFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Cancellation Modal State
   const [cancelApt, setCancelApt] = useState<Appointment | null>(null);
   const [cancelReason, setCancelReason] = useState<string>('রোগীর পক্ষ থেকে বাতিল করতে অনুরোধ করা হয়েছে');
@@ -266,113 +284,38 @@ export default function AdminDashboardPage() {
     apt: Appointment,
     type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' | 'compact'
   ) => {
+    const isOnline = apt.chamberMode === 'online';
+    const modeKey: 'online' | 'offline' = isOnline ? 'online' : 'offline';
     const dateFormatted = formatTemplateDate(apt.appointmentDate);
     const timeFormatted = apt.slotTimeEn || apt.slotTimeBn;
-    const isOffline = apt.chamberMode === 'offline';
 
-    switch (type) {
-      case 'confirm':
-        return `*Mr./Mrs. ${apt.patientName},*
+    if (type === 'custom') {
+      return `*Mr./Mrs. ${apt.patientName},*
 
+• সিরিয়াল নম্বর: ${apt.serialNo}
 • তারিখ: ${dateFormatted}
-• সময়: ${timeFormatted}
-• ডাঃ দেবজ্যোতি দত্তের সাথে আপনার অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।
-
-• সিরিয়াল নম্বর: ${apt.serialNo}
-
->> অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)
-https://forms.gle/L6YfWn7Z12nV3aK66
-(পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)
-
-${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।
-• গুগল ম্যাপ লিঙ্ক: https://maps.app.goo.gl/NgPzAZamW3Ucy8799` : `• কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন (হোয়াটসঅ্যাপ ভিডিও কল)
-• নির্ধারিত সময়ে এই নম্বরে হোয়াটসঅ্যাপে কল করা হবে।`}`;
-
-      case 'reminder':
-        return `*Mr./Mrs. ${apt.patientName},*
-
-ডাঃ দেবজ্যোতি দত্তের চেম্বারে আপনার অ্যাপয়েন্টমেন্টটি স্মরণ করিয়ে দেওয়া হচ্ছে:
-
-• তারিখ: ${dateFormatted}
-• সময়: ${timeFormatted}
-• সিরিয়াল নম্বর: ${apt.serialNo}
-
->> অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (যদি এখনও পূরণ না করে থাকেন)
-https://forms.gle/L6YfWn7Z12nV3aK66
-
-${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।
-• গুগল ম্যাপ লিঙ্ক: https://maps.app.goo.gl/NgPzAZamW3Ucy8799` : `• কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন (হোয়াটসঅ্যাপ ভিডিও কল)`}
-
-• নির্ধারিত সময়ের ১০ মিনিট পূর্বে উপস্থিত থাকবেন। সাথে পূর্ববর্তী প্রেসক্রিপশন বা টেস্ট রিপোর্ট রাখবেন।`;
-
-      case 'reports':
-        return `*Mr./Mrs. ${apt.patientName},*
-
-ডাঃ দেবজ্যোতি দত্তের চেম্বার থেকে যোগাযোগ করা হচ্ছে:
-
-• সিরিয়াল নম্বর: ${apt.serialNo}
-• তারিখ: ${dateFormatted}
-• সময়: ${timeFormatted}
-
->> চিকিৎসা ও রোগ পর্যালোচনার সুবিধার্থে অনুগ্রহ করে:
-১. এই ফর্মটি পূরণ করুন (অবশ্যই পূরণ করতে হবে):
-https://forms.gle/L6YfWn7Z12nV3aK66
-(পূর্বে পূরণ করে থাকলে পুনরায় প্রয়োজন নেই)
-
-২. আপনার পূর্ববর্তী প্রেসক্রিপশন, সাম্প্রতিক রক্ত পরীক্ষা বা আল্ট্রাসনোগ্রাম রিপোর্টের স্পষ্ট ছবি এই হোয়াটসঅ্যাপ নম্বরে পাঠিয়ে রাখুন।
-
-• হেল্পলাইন ও পরামর্শ: 01712854941
-
-ধন্যবাদ,
-— ডাঃ দেবজ্যোতি দত্ত চেম্বার।`;
-
-      case 'reschedule':
-        return `*Mr./Mrs. ${apt.patientName},*
-
-ডাঃ দেবজ্যোতি দত্তের চেম্বারে আপনার অ্যাপয়েন্টমেন্টের সময়সূচী সমন্বয় করা হয়েছে:
-
-• নতুন তারিখ: ${dateFormatted}
-• নতুন সময়: ${timeFormatted}
-• সিরিয়াল নম্বর: ${apt.serialNo}
-
->> অনুগ্রহ করে এই ফর্মটি পূরণ করুন:
-https://forms.gle/L6YfWn7Z12nV3aK66
-(পূর্বে একবার পূরণ করে থাকলে পুনরায় পূরণ করার প্রয়োজন নেই।)
-
-${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।
-• গুগল ম্যাপ লিঙ্ক: https://maps.app.goo.gl/NgPzAZamW3Ucy8799` : `• কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন`}`;
-
-      case 'cancel':
-        return `*Mr./Mrs. ${apt.patientName},*
-
-ডাঃ দেবজ্যোতি দত্তের চেম্বারে আপনার নিম্নলিখিত সিরিয়ালটি বাতিল করা হয়েছে:
-
-• সিরিয়াল নম্বর: ${apt.serialNo}
-• তারিখ: ${dateFormatted}
-• সময়: ${timeFormatted}
-
-স্লটটি উন্মুক্ত করা হয়েছে। আপনি চাইলে পরবর্তীতে ওয়েবসাইট থেকে সুবিধাজনক সময়ে নতুন সিরিয়াল বুক করতে পারেন:
-🌐 https://drdevojyotidutta.com
-
-সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।
-— ডাঃ দেবজ্যোতি দত্ত চেম্বার।`;
-
-      case 'custom':
-        return `*Mr./Mrs. ${apt.patientName},*
-
-• তারিখ: ${dateFormatted}
-• সময়: ${timeFormatted}
-• সিরিয়াল নম্বর: ${apt.serialNo}
-
->> ফর্ম লিঙ্ক: https://forms.gle/L6YfWn7Z12nV3aK66
-• চেম্বার: ২/১, জাহেদা ভিলা, শ্যামলী, ঢাকা-১২০৭ (ম্যাপ: https://maps.app.goo.gl/NgPzAZamW3Ucy8799)
-• হোয়াটসঅ্যাপ হেল্পলাইন: 01712854941
+• সময়: ${timeFormatted}
+• মোড: ${isOnline ? 'অনলাইন ভিডিও কনসালটেশন' : 'শ্যামলী চেম্বার, ঢাকা'}
 
 ডাঃ দেবজ্যোতি দত্তের চেম্বার থেকে বার্তা: `;
-
-      case 'compact':
-        return `ডা. দেবজ্যোতি দত্ত চেম্বার: সিরিয়াল ${apt.serialNo} নিশ্চিত। তারিখ: ${dateFormatted}, সময়: ${timeFormatted}। চেম্বার: ${isOffline ? 'শ্যামলী, ঢাকা' : 'অনলাইন ভিডিও'}। হেল্পলাইন: 01712854941`;
     }
+
+    const templateSource =
+      (templatesConfig && templatesConfig[modeKey] && templatesConfig[modeKey][type]) ||
+      (DEFAULT_SMS_TEMPLATES[modeKey] && DEFAULT_SMS_TEMPLATES[modeKey][type]) ||
+      '';
+
+    return interpolateTemplate(templateSource, {
+      patientName: apt.patientName,
+      serialNo: apt.serialNo,
+      date: dateFormatted,
+      time: timeFormatted,
+      chamberMode: modeKey,
+      chamberAddress: '২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।',
+      mapsUrl: 'https://maps.app.goo.gl/NgPzAZamW3Ucy8799',
+      formUrl: 'https://forms.gle/L6YfWn7Z12nV3aK66',
+      helpline: '01712854941'
+    });
   };
 
   // Open Message Customizer Modal
@@ -500,8 +443,62 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
     } catch {}
   };
 
+  // Fetch customizable SMS templates
+  const fetchTemplates = async () => {
+    try {
+      const res = await fetch('/api/admin/sms/templates');
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success && data.templates) {
+        setTemplatesConfig(data.templates);
+        setEditingTemplates(data.templates);
+      }
+    } catch {}
+  };
+
+  // Save SMS templates to persistent store
+  const handleSaveTemplates = async () => {
+    setIsSavingTemplates(true);
+    setTemplateSaveFeedback(null);
+    try {
+      const res = await fetch('/api/admin/sms/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templates: editingTemplates })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setTemplateSaveFeedback({ type: 'error', text: data.error || 'টেমপ্লেট সংরক্ষণ ব্যর্থ হয়েছে।' });
+      } else {
+        setTemplatesConfig(data.templates);
+        setTemplateSaveFeedback({ type: 'success', text: 'এসএমএস টেমপ্লেট সফলভাবে সংরক্ষিত হয়েছে!' });
+        setTimeout(() => {
+          setTemplateSaveFeedback(null);
+        }, 3000);
+      }
+    } catch {
+      setTemplateSaveFeedback({ type: 'error', text: 'সার্ভার যোগাযোগে সমস্যা দেখা দিয়েছে।' });
+    } finally {
+      setIsSavingTemplates(false);
+    }
+  };
+
+  const handleResetTemplateToDefault = (mode: 'offline' | 'online', key: TemplateType) => {
+    setEditingTemplates(prev => ({
+      ...prev,
+      [mode]: {
+        ...prev[mode],
+        [key]: DEFAULT_SMS_TEMPLATES[mode][key]
+      }
+    }));
+  };
+
+  const handleResetAllTemplatesToDefault = () => {
+    setEditingTemplates(JSON.parse(JSON.stringify(DEFAULT_SMS_TEMPLATES)));
+  };
+
   useEffect(() => {
     fetchSmsBalance();
+    fetchTemplates();
   }, []);
 
   // Send Direct SMS via BulkSMSBD Gateway (1-Click send)
@@ -1239,6 +1236,20 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
               <button
                 type="button"
+                onClick={() => {
+                  setEditingTemplates(JSON.parse(JSON.stringify(templatesConfig)));
+                  setTemplateSaveFeedback(null);
+                  setShowTemplateModal(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-xs"
+                title="অনলাইন ও চেম্বারের এসএমএস ও মেসেজ টেমপ্লেট পরিবর্তন করুন"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>মেসেজ ও এসএমএস টেমপ্লেট</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowPrintModal(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-xs"
               >
@@ -1302,6 +1313,19 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
           >
             <Settings className="w-3.5 h-3.5 text-amber-500" />
             <span>শিডিউল এডিটর</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEditingTemplates(JSON.parse(JSON.stringify(templatesConfig)));
+              setTemplateSaveFeedback(null);
+              setShowTemplateModal(true);
+            }}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+            <span>টেমপ্লেট</span>
           </button>
 
           <button
@@ -3542,9 +3566,24 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
             {/* Template Chips */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-emerald-950 dark:text-emerald-200">
-                এক ক্লিকে প্রিমেড টেমপ্লেট নির্বাচন করুন:
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <label className="block text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                  এক ক্লিকে প্রিমেড টেমপ্লেট নির্বাচন করুন ({messageModalApt.chamberMode === 'online' ? '🌐 অনলাইন ভিডিও' : '🏢 শ্যামলী চেম্বার'}):
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTemplateMode(messageModalApt.chamberMode === 'online' ? 'online' : 'offline');
+                    setEditingTemplates(JSON.parse(JSON.stringify(templatesConfig)));
+                    setTemplateSaveFeedback(null);
+                    setShowTemplateModal(true);
+                  }}
+                  className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>টেমপ্লেট পরিবর্তন ও কনফিগার</span>
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -3649,22 +3688,33 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
             {/* Editable Text Area */}
             <div className="space-y-1.5">
-              <div className="flex flex-wrap justify-between items-center text-xs gap-1">
+              <div className="flex flex-wrap justify-between items-center text-xs gap-1.5">
                 <label className="font-bold text-emerald-950 dark:text-emerald-200">
                   বার্তাটি সম্পাদন করুন (Edit Text):
                 </label>
-                <span className="text-zinc-500 font-mono text-[11px]">
-                  {customMessage.length} অক্ষর
-                  {customMessage.length > 640 ? (
-                    <span className="text-emerald-700 dark:text-emerald-400 font-bold ml-1">
-                      (স্বয়ংক্রিয়ভাবে {Math.ceil(customMessage.length / 600)} পর্বে সম্পূর্ণ যাবে)
-                    </span>
-                  ) : (
-                    <span className="ml-1">
-                      (~{Math.max(1, Math.ceil(customMessage.length / 67))}টি এসএমএস পার্ট - একবারে যাবে)
-                    </span>
-                  )}
-                </span>
+                {(() => {
+                  const evalResult = evaluateSms(customMessage);
+                  return (
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                      <span className="font-bold text-emerald-950 dark:text-emerald-100">
+                        {evalResult.charCount} অক্ষর
+                      </span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-sans font-bold ${
+                        evalResult.isUnicode
+                          ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300'
+                          : 'bg-emerald-100 dark:bg-emerald-900/70 text-emerald-800 dark:text-emerald-300'
+                      }`}>
+                        {evalResult.isUnicode ? 'বাংলা (Unicode)' : 'English (GSM-7)'}
+                      </span>
+                      <span>
+                        কয়টায় যাবে: <strong className="text-emerald-800 dark:text-emerald-300">{evalResult.smsCount}টি SMS</strong>
+                      </span>
+                      <span>
+                        কাটবে: <strong className="text-amber-700 dark:text-amber-400">~৳{evalResult.estimatedCost.toFixed(2)}</strong>
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               <textarea
                 rows={7}
@@ -4296,6 +4346,339 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOMIZABLE SMS & MESSAGE TEMPLATES MANAGER MODAL */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-5xl rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-6 md:p-7 space-y-5 animate-scale-up my-auto max-h-[92vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-emerald-100 dark:border-emerald-900/50 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shadow-inner">
+                  <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50">
+                    মেসেজ ও এসএমএস টেমপ্লেট ম্যানেজার
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    অনলাইন ও অফলাইন চেম্বারের জন্য কাস্টমাইজড বার্তা সেট করুন এবং লাইভ এসএমএস চার্জ ইভ্যালুয়েশন দেখুন।
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(false)}
+                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Mode Switcher Tabs (Offline vs Online) */}
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/70 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedTemplateMode('offline')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  selectedTemplateMode === 'offline'
+                    ? 'bg-emerald-800 text-white shadow-md'
+                    : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
+                }`}
+              >
+                <MapPin className="w-4 h-4 text-amber-300" />
+                <span>🏢 শ্যামলী চেম্বার (সরাসরি ভিজিট / Offline)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTemplateMode('online')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  selectedTemplateMode === 'online'
+                    ? 'bg-emerald-800 text-white shadow-md'
+                    : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
+                }`}
+              >
+                <Video className="w-4 h-4 text-emerald-300" />
+                <span>🌐 অনলাইন ভিডিও কনসালটেশন (Online)</span>
+              </button>
+            </div>
+
+            {/* Template Type Tabs */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-emerald-900 dark:text-emerald-300 block">
+                টেমপ্লেটের ধরন নির্বাচন করুন:
+              </label>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                {[
+                  { key: 'confirm', label: '📋 সিরিয়াল নিশ্চিতকরণ (Confirm)' },
+                  { key: 'reminder', label: '⏰ সময়সূচী রিমাইন্ডার (Reminder)' },
+                  { key: 'reports', label: '🧪 রিপোর্ট আহ্বান (Reports)' },
+                  { key: 'reschedule', label: '🔄 রিশিডিউল বিজ্ঞপ্তি (Reschedule)' },
+                  { key: 'cancel', label: '🚫 বাতিল বিজ্ঞপ্তি (Cancel)' },
+                  { key: 'compact', label: '📱 সংক্ষিপ্ত এসএমএস (Compact)' }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setSelectedTemplateKey(tab.key as TemplateType)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      selectedTemplateKey === tab.key
+                        ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400'
+                        : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Variable Pills (One-Click Insert) */}
+            <div className="space-y-1.5 p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  ক্লিক করে ভ্যারিয়েবল বসান:
+                </span>
+                <span className="text-[11px] text-amber-700 dark:text-amber-400">
+                  (বার্তা পাঠানোর সময় স্বয়ংক্রিয়ভাবে রোগীর তথ্যে রূপান্তরিত হবে)
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[
+                  { tag: '{patientName}', desc: 'রোগীর নাম' },
+                  { tag: '{serialNo}', desc: 'সিরিয়াল নম্বর' },
+                  { tag: '{date}', desc: 'তারিখ' },
+                  { tag: '{time}', desc: 'সময়' },
+                  { tag: '{chamberAddress}', desc: 'চেম্বারের ঠিকানা' },
+                  { tag: '{mapsUrl}', desc: 'গুগল ম্যাপ লিঙ্ক' },
+                  { tag: '{formUrl}', desc: 'তথ্য ফর্ম লিঙ্ক' },
+                  { tag: '{helpline}', desc: 'হেল্পলাইন' }
+                ].map((pill) => (
+                  <button
+                    key={pill.tag}
+                    type="button"
+                    onClick={() => {
+                      const currentVal = editingTemplates[selectedTemplateMode][selectedTemplateKey] || '';
+                      setEditingTemplates({
+                        ...editingTemplates,
+                        [selectedTemplateMode]: {
+                          ...editingTemplates[selectedTemplateMode],
+                          [selectedTemplateKey]:
+                            currentVal +
+                            (currentVal.endsWith(' ') || currentVal.endsWith('\n') || currentVal.length === 0 ? '' : ' ') +
+                            pill.tag
+                        }
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1a2e24] border border-amber-300 dark:border-amber-800/70 hover:border-amber-500 text-amber-900 dark:text-amber-200 font-mono text-[11px] font-semibold hover:bg-amber-100/50 transition-colors cursor-pointer flex items-center gap-1 active:scale-95 shadow-2xs"
+                  >
+                    <span>+ {pill.tag}</span>
+                    <span className="text-[10px] text-zinc-400 font-sans">({pill.desc})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 2-Column Grid: Left Editor, Right Live Evaluator & Preview */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* LEFT COLUMN: Text Editor */}
+              <div className="lg:col-span-7 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-emerald-950 dark:text-emerald-200">
+                    টেমপ্লেট বার্তা সম্পাদনা করুন:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleResetTemplateToDefault(selectedTemplateMode, selectedTemplateKey)}
+                    className="text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer text-[11px]"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>এই টেমপ্লেটটি ডিফল্টে ফেরত নিন</span>
+                  </button>
+                </div>
+
+                <textarea
+                  rows={12}
+                  value={editingTemplates[selectedTemplateMode][selectedTemplateKey] || ''}
+                  onChange={(e) => {
+                    setEditingTemplates({
+                      ...editingTemplates,
+                      [selectedTemplateMode]: {
+                        ...editingTemplates[selectedTemplateMode],
+                        [selectedTemplateKey]: e.target.value
+                      }
+                    });
+                  }}
+                  placeholder="এখানে টেমপ্লেট বার্তা লিখুন..."
+                  className="w-full p-4 rounded-2xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-50 text-xs sm:text-sm font-sans focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed font-mono"
+                />
+              </div>
+
+              {/* RIGHT COLUMN: Live Evaluator & Preview */}
+              {(() => {
+                const currentText = editingTemplates[selectedTemplateMode][selectedTemplateKey] || '';
+                const samplePreviewText = interpolateTemplate(currentText, {
+                  patientName: 'মোঃ রহিম সাহেব',
+                  serialNo: selectedTemplateMode === 'online' ? 'ON-105' : 'DD-102',
+                  date: '২০ অক্টোবর ২০২৬',
+                  time: 'বিকাল ৫:৩০',
+                  chamberMode: selectedTemplateMode,
+                  chamberAddress: '২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।',
+                  mapsUrl: 'https://maps.app.goo.gl/NgPzAZamW3Ucy8799',
+                  formUrl: 'https://forms.gle/L6YfWn7Z12nV3aK66',
+                  helpline: '01712854941'
+                });
+                const evalResult = evaluateSms(samplePreviewText);
+
+                return (
+                  <div className="lg:col-span-5 space-y-4">
+                    {/* EVALUATION METRICS CARD */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-[#162720] dark:to-[#10221a] border border-emerald-300/80 dark:border-emerald-700/80 shadow-xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-emerald-200/80 dark:border-emerald-800 pb-2">
+                        <span className="font-bold text-xs text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
+                          <Coins className="w-4 h-4 text-amber-500" />
+                          এসএমএস ইভ্যালুয়েশন ও চার্জ
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            evalResult.isUnicode
+                              ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                              : 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
+                          }`}
+                        >
+                          {evalResult.encoding}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-center">
+                        <div className="p-2.5 rounded-xl bg-white/80 dark:bg-black/30 border border-emerald-200/60 dark:border-emerald-800/60">
+                          <span className="block text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">
+                            অক্ষর সংখ্যা
+                          </span>
+                          <span className="font-mono text-base font-bold text-emerald-950 dark:text-emerald-100">
+                            {evalResult.charCount}
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-white/80 dark:bg-black/30 border border-emerald-200/60 dark:border-emerald-800/60">
+                          <span className="block text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">
+                            কয়টায় যাবে
+                          </span>
+                          <span className="font-mono text-base font-bold text-emerald-700 dark:text-emerald-300">
+                            {evalResult.smsCount} টি SMS
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-white/80 dark:bg-black/30 border border-emerald-200/60 dark:border-emerald-800/60">
+                          <span className="block text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold">
+                            এসএমএস রেট
+                          </span>
+                          <span className="font-mono text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                            ৳ ০.৩৫ /টি
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/60">
+                          <span className="block text-[10px] text-amber-800 dark:text-amber-300 font-semibold">
+                            কয়টা কাটবে (মোট খরচ)
+                          </span>
+                          <span className="font-mono text-base font-bold text-amber-700 dark:text-amber-300">
+                            ~৳ {evalResult.estimatedCost.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-emerald-900/80 dark:text-emerald-300/80 leading-relaxed bg-white/60 dark:bg-black/20 p-2.5 rounded-xl border border-emerald-200/40 dark:border-emerald-800/40">
+                        {evalResult.isUnicode ? (
+                          <span>
+                            📌 <strong>বাংলা টেক্সট:</strong> প্রথম ৭০ অক্ষরের পর প্রতি ৬৭ অক্ষরে ১টি করে এসএমএস পার্ট যুক্ত হয়।
+                          </span>
+                        ) : (
+                          <span>
+                            📌 <strong>ইংরেজি টেক্সট:</strong> প্রতি ১৬০ অক্ষর পর্যন্ত মাত্র ১টি একক এসএমএস কাউন্ট হয়।
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* LIVE REALISTIC PREVIEW BOX */}
+                    <div className="p-3.5 rounded-2xl bg-zinc-100 dark:bg-[#162720] border border-zinc-200 dark:border-emerald-800/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                          রোগীর মোবাইলে যেমন দেখাবে (লাইভ প্রিভিউ):
+                        </span>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-white dark:bg-[#0c1511] border border-zinc-300/70 dark:border-emerald-900/50 text-[11px] text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap font-sans leading-relaxed max-h-56 overflow-y-auto shadow-inner">
+                        {samplePreviewText}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Feedback Banner */}
+            {templateSaveFeedback && (
+              <div
+                className={`p-3 rounded-2xl text-xs flex items-center gap-2 ${
+                  templateSaveFeedback.type === 'success'
+                    ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800'
+                    : 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200 border border-rose-300 dark:border-rose-800'
+                }`}
+              >
+                {templateSaveFeedback.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                )}
+                <span className="font-semibold">{templateSaveFeedback.text}</span>
+              </div>
+            )}
+
+            {/* Footer Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-emerald-100 dark:border-emerald-900/50">
+              <button
+                type="button"
+                onClick={handleResetAllTemplatesToDefault}
+                className="text-xs text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>সবগুলো টেমপ্লেট ফ্যাক্টরি ডিফল্টে রিসেট করুন</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTemplateModal(false)}
+                  className="py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer"
+                >
+                  বাতিল
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTemplates}
+                  disabled={isSavingTemplates}
+                  className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {isSavingTemplates ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>সংরক্ষণ করা হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 text-amber-300" />
+                      <span>টেমপ্লেট সংরক্ষণ করুন</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
