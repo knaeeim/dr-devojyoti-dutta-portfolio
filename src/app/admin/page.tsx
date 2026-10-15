@@ -3644,13 +3644,13 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 </label>
                 <span className="text-zinc-500 font-mono text-[11px]">
                   {customMessage.length} অক্ষর
-                  {customMessage.length > 460 ? (
+                  {customMessage.length > 640 ? (
                     <span className="text-emerald-700 dark:text-emerald-400 font-bold ml-1">
-                      (স্বয়ংক্রিয়ভাবে {Math.ceil(customMessage.length / 430)} পর্বে সম্পূর্ণ যাবে)
+                      (স্বয়ংক্রিয়ভাবে {Math.ceil(customMessage.length / 600)} পর্বে সম্পূর্ণ যাবে)
                     </span>
                   ) : (
                     <span className="ml-1">
-                      (~{Math.max(1, Math.ceil(customMessage.length / 67))}টি এসএমএস পার্ট)
+                      (~{Math.max(1, Math.ceil(customMessage.length / 67))}টি এসএমএস পার্ট - একবারে যাবে)
                     </span>
                   )}
                 </span>

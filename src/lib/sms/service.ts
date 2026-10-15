@@ -34,9 +34,10 @@ export function formatBdPhoneNumber(phone: string): string {
 
 /**
  * Splits long messages cleanly along paragraph/line/sentence boundaries
- * so BulkSMSBD's 10-part limit (error 1004) is never exceeded and full text is preserved.
+ * only when exceeding BulkSMSBD's 10-part limit (error 1004).
+ * Single messages up to 640 characters are delivered as 1 single SMS.
  */
-export function splitMessageForSms(text: string, maxLen: number = 460): string[] {
+export function splitMessageForSms(text: string, maxLen: number = 640): string[] {
   const trimmed = text.trim();
   if (trimmed.length <= maxLen) {
     return [trimmed];
@@ -242,10 +243,10 @@ export async function sendDirectSms(
   }
 
   try {
-    // Automatically split messages longer than 460 characters so BulkSMSBD's 10-part ceiling
-    // ("Maximum and Minimum Limit exceeded for SMS Part Counting") is never triggered,
-    // while ensuring 100% of the text, links, and details are delivered!
-    const parts = splitMessageForSms(messageText, 460);
+    // Messages up to 640 characters are sent as 1 single SMS.
+    // If a custom message exceeds 640 characters (10 parts), it is automatically split into clean parts
+    // so BulkSMSBD's 10-part ceiling (error 1004) is never triggered.
+    const parts = splitMessageForSms(messageText, 640);
 
     let lastResult: SendSmsResult = { success: false, error: 'এসএমএস পাঠানো যায়নি।' };
 
