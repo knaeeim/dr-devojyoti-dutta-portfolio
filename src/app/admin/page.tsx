@@ -913,33 +913,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Export CSV
-  const handleExportCSV = () => {
-    const listToExport = sortedAppointments.length > 0 ? sortedAppointments : appointments;
-    if (listToExport.length === 0) {
-      showAlert('এক্সপোর্ট করার জন্য কোনো অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।', 'তথ্য নেই', 'info');
-      return;
-    }
-
-    let csv = 'Serial No,Patient Name,Phone,Email,Chamber,Date,Slot Time,Complaints,Status\n';
-    listToExport.forEach((a) => {
-      csv += `"${a.serialNo}","${a.patientName}","${a.phone}","${a.email || ''}","${
-        a.chamberTitleBn
-      }","${a.appointmentDate}","${a.slotTimeEn || a.slotTimeBn}","${(a.complaints || '').replace(
-        /"/g,
-        '""'
-      )}","${a.status}"\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `Dr_Devojyoti_Appointments_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Save Chamber Schedules
   const handleSaveSchedule = async () => {
     setScheduleSaveMsg(null);
@@ -1261,16 +1234,6 @@ export default function AdminDashboardPage() {
                 <span>প্রিন্ট</span>
               </button>
 
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
-                title="অ্যাপয়েন্টমেন্ট CSV এক্সপোর্ট করুন"
-              >
-                <Download className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>CSV</span>
-              </button>
-
               {/* Vertical Divider */}
               <div className="h-4 w-px bg-emerald-300/60 dark:bg-emerald-800 mx-0.5" />
 
@@ -1346,15 +1309,6 @@ export default function AdminDashboardPage() {
           >
             <Printer className="w-3.5 h-3.5 text-emerald-600" />
             <span>প্রিন্ট</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-600" />
-            <span>CSV</span>
           </button>
 
           <button
