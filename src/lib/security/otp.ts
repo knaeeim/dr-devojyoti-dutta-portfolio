@@ -98,7 +98,7 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
     verified: false
   });
 
-  const smsText = `ডা. দেবজ্যোতি দত্তের চেম্বার অ্যাপয়েন্টমেন্ট ওটিপি: ${code}। মেয়াদ ৫ মিনিট। কারো সাথে শেয়ার করবেন না। Dr. Devojyoti Dutta.`;
+  const smsText = `Your OTP for Dr. Devojyoti Dutta chamber appointment is ${code}. Valid for 5 minutes. Do not share with anyone.`;
 
   // 1. Try sending via configured SMS Gateway (BulkSMSBD)
   let smsSent = false;
