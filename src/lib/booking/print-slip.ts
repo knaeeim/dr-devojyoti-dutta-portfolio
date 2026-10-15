@@ -51,7 +51,7 @@ export function printSinglePageSerialSlip(apt: Appointment) {
           padding: 0;
         }
         body {
-          font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
+          font-family: 'Kohinoor Bangla', 'kohinoor-bangla', 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
           color: #064e3b;
           background: #ffffff;
           padding: 10px;
@@ -344,7 +344,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
           padding: 0;
         }
         body {
-          font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
+          font-family: 'Kohinoor Bangla', 'kohinoor-bangla', 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
           color: #111827;
           background: #ffffff;
           padding: 10px;
