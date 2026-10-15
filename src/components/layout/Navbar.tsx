@@ -27,6 +27,32 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnterDropdown = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeaveDropdown = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -223,12 +249,15 @@ export default function Navbar() {
               <div
                 ref={dropdownRef}
                 className="relative"
-                onMouseEnter={() => setIsDropdownOpen(true)}
-                onMouseLeave={() => setIsDropdownOpen(false)}
+                onMouseEnter={handleMouseEnterDropdown}
+                onMouseLeave={handleMouseLeaveDropdown}
               >
                 <button
                   type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onClick={() => {
+                    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+                    setIsDropdownOpen((prev) => !prev);
+                  }}
                   className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 flex items-center gap-1 whitespace-nowrap cursor-pointer ${
                     isDropdownOpen
                       ? 'bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-950 dark:text-emerald-100'
@@ -244,49 +273,54 @@ export default function Navbar() {
                   />
                 </button>
 
-                {/* Dropdown Card */}
+                {/* Dropdown Card - Outer padding bridge connects button to card with zero dead zones */}
                 <div
-                  className={`absolute top-full right-0 mt-1.5 w-72 rounded-2xl bg-white/98 dark:bg-[#13201a]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1 transition-all duration-200 z-50 ${
+                  className={`absolute top-full right-0 pt-2 w-72 transition-all duration-200 z-50 ${
                     isDropdownOpen
                       ? 'opacity-100 visible translate-y-0'
                       : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                   }`}
                 >
-                  <div className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase border-b border-emerald-900/5 dark:border-emerald-800/40">
-                    অন্যান্য শাখা ও সেবা
-                  </div>
+                  <div className="rounded-2xl bg-white/98 dark:bg-[#13201a]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1">
+                    <div className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase border-b border-emerald-900/5 dark:border-emerald-800/40">
+                      অন্যান্য শাখা ও সেবা
+                    </div>
 
-                  {secondaryNavLinks.map((item) => {
-                    const Icon = item.icon;
-                    const isLinkInternal = item.href.startsWith('#');
-                    const Component = isLinkInternal ? 'a' : Link;
+                    {secondaryNavLinks.map((item) => {
+                      const Icon = item.icon;
+                      const isLinkInternal = item.href.startsWith('#');
+                      const Component = isLinkInternal ? 'a' : Link;
 
-                    return (
-                      <Component
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsDropdownOpen(false)}
-                        className={`flex items-start gap-2.5 p-2 rounded-xl text-xs transition-colors group ${
-                          item.isSpecial
-                            ? 'bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-900/60 hover:bg-amber-100'
-                            : 'text-emerald-950 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
-                        }`}
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-emerald-100/70 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shrink-0 group-hover:scale-105 transition-transform mt-0.5">
-                          <Icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold flex items-center justify-between">
-                            <span>{item.label}</span>
-                            <ChevronRight className="w-3 h-3 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      return (
+                        <Component
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => {
+                            if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`flex items-start gap-2.5 p-2 rounded-xl text-xs transition-colors group ${
+                            item.isSpecial
+                              ? 'bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-900/60 hover:bg-amber-100'
+                              : 'text-emerald-950 dark:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+                          }`}
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-emerald-100/70 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shrink-0 group-hover:scale-105 transition-transform mt-0.5">
+                            <Icon className="w-3.5 h-3.5" />
                           </div>
-                          <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 truncate">
-                            {item.desc}
-                          </p>
-                        </div>
-                      </Component>
-                    );
-                  })}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold flex items-center justify-between">
+                              <span>{item.label}</span>
+                              <ChevronRight className="w-3 h-3 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 truncate">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </Component>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </nav>

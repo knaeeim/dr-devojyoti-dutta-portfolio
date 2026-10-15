@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Copy,
   Printer,
+  Download,
   Share2,
   Sparkles,
   Phone,
@@ -1078,20 +1079,20 @@ export default function BookingHub() {
               {/* Instructions */}
               <div className="p-2.5 rounded-xl bg-white/70 dark:bg-emerald-950/60 text-[11px] text-emerald-800 dark:text-emerald-300 space-y-1">
                 <p>
-                  📌 <strong>নির্দেশনা:</strong> স্লিপটি প্রিন্ট করে বা ডিজিটাল কপি সংরক্ষণ করুন। ডাক্তার চেম্বার থেকে সিরিয়াল কনফার্ম করলে আপনার ইমেইলে কনফার্মেশন স্লিপ পৌঁছে যাবে।
+                  📌 <strong>নির্দেশনা:</strong> স্লিপটি ডাউনলোড করে বা ডিজিটাল কপি সংরক্ষণ করুন। ডাক্তার চেম্বার থেকে সিরিয়াল কনফার্ম করলে আপনার ইমেইলে কনফার্মেশন স্লিপ পৌঁছে যাবে।
                 </p>
               </div>
             </div>
 
-            {/* Action Buttons: Strictly Slip Print & OK */}
+            {/* Action Buttons: Strictly Slip Download & OK */}
             <div className="grid grid-cols-2 gap-2.5 pt-1">
               <button
                 onClick={handlePrintSlip}
                 type="button"
                 className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-all cursor-pointer shadow-sm text-center"
               >
-                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
-                <span>স্লিপ প্রিন্ট করুন</span>
+                <Download className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                <span>স্লিপ ডাউনলোড করুন</span>
               </button>
 
               <button
