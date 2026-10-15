@@ -182,17 +182,50 @@ h1, h2, h3, .font-bengali-serif {
   background: var(--text-muted);
 }
 
-/* Print Styles */
+/* Print Styles: Strictly print only the official appointment slip / reception sheet */
 @media print {
-  body {
+  /* Hide whole app/website during print */
+  body > *:not(#dr-dutta-print-slip-container):not(#print-reception-container) {
+    display: none !important;
+  }
+
+  /* Reset body and html for clean print layout */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  #dr-dutta-print-slip-container,
+  #print-reception-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    visibility: visible !important;
     background: #ffffff !important;
     color: #000000 !important;
   }
+
+  #dr-dutta-print-slip-container *,
+  #print-reception-container * {
+    visibility: visible !important;
+  }
+
   .no-print {
     display: none !important;
   }
-  .print-only {
-    display: block !important;
+}
+
+@media screen {
+  #dr-dutta-print-slip-container,
+  #print-reception-container {
+    display: none !important;
   }
 }
 

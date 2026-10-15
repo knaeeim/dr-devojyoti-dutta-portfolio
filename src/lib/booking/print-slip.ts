@@ -3,24 +3,14 @@ import { Appointment } from '@/types/booking';
 export function printSinglePageSerialSlip(apt: Appointment) {
   if (typeof window === 'undefined') return;
 
-  // Remove any previous print iframe
-  const existingFrame = document.getElementById('print-slip-iframe');
-  if (existingFrame) {
-    existingFrame.remove();
+  // Remove any previous print container
+  const existing = document.getElementById('dr-dutta-print-slip-container');
+  if (existing) {
+    existing.remove();
   }
 
-  const iframe = document.createElement('iframe');
-  iframe.id = 'print-slip-iframe';
-  iframe.style.position = 'fixed';
-  iframe.style.right = '0';
-  iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = '0';
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentWindow?.document;
-  if (!doc) return;
+  const container = document.createElement('div');
+  container.id = 'dr-dutta-print-slip-container';
 
   const statusLabel =
     apt.status === 'confirmed'
@@ -29,230 +19,105 @@ export function printSinglePageSerialSlip(apt: Appointment) {
       ? 'পুনঃনির্ধারিত (Rescheduled)'
       : apt.status === 'completed'
       ? 'সম্পন্ন (Completed)'
-      : 'যাচাই চলছে (Pending Verification)';
+      : 'যাচাইকৃত (Verified)';
 
   const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
 
-  doc.open();
-  doc.write(`
-    <!DOCTYPE html>
-    <html lang="bn">
-    <head>
-      <meta charset="utf-8" />
-      <title>সিরিয়াল স্লিপ - ${apt.serialNo}</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-      <style>
-        @page {
-          size: A5 portrait;
-          margin: 8mm;
-        }
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-        body {
-          font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif;
-          color: #064e3b;
-          background: #ffffff;
-          padding: 10px;
-          line-height: 1.4;
-          font-size: 12px;
-        }
-        .slip-box {
-          border: 2px solid #047857;
-          border-radius: 12px;
-          padding: 16px;
-          background: #ffffff;
-          max-width: 520px;
-          margin: 0 auto;
-        }
-        .header {
-          text-align: center;
-          border-bottom: 2px solid #10b981;
-          padding-bottom: 10px;
-          margin-bottom: 12px;
-        }
-        .doctor-name {
-          font-size: 20px;
-          font-weight: 800;
-          color: #064e3b;
-          letter-spacing: -0.3px;
-        }
-        .doctor-degree {
-          font-size: 11px;
-          color: #047857;
-          font-weight: 600;
-          margin-top: 2px;
-        }
-        .clinic-tag {
-          display: inline-block;
-          background: #ecfdf5;
-          color: #047857;
-          border: 1px solid #a7f3d0;
-          padding: 2px 10px;
-          border-radius: 20px;
-          font-size: 10px;
-          font-weight: bold;
-          margin-top: 5px;
-        }
-        .serial-banner {
-          background: #f0fdf4;
-          border: 1.5px dashed #059669;
-          border-radius: 8px;
-          padding: 10px 14px;
-          margin-bottom: 14px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .serial-label {
-          font-size: 10px;
-          font-weight: bold;
-          text-transform: uppercase;
-          color: #047857;
-        }
-        .serial-no {
-          font-family: monospace;
-          font-size: 22px;
-          font-weight: 900;
-          color: #064e3b;
-          letter-spacing: 1px;
-        }
-        .status-badge {
-          display: inline-block;
-          padding: 3px 10px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: bold;
-          background: ${apt.status === 'confirmed' ? '#047857' : '#f59e0b'};
-          color: ${apt.status === 'confirmed' ? '#ffffff' : '#78350f'};
-        }
-        .grid-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 12px;
-        }
-        .grid-table td {
-          padding: 6px 8px;
-          border-bottom: 1px solid #e5e7eb;
-          font-size: 11.5px;
-        }
-        .grid-table td.label {
-          color: #4b5563;
-          font-weight: 600;
-          width: 38%;
-        }
-        .grid-table td.value {
-          color: #111827;
-          font-weight: bold;
-        }
-        .instructions {
-          background: #fefce8;
-          border-left: 3px solid #eab308;
-          padding: 8px 12px;
-          border-radius: 6px;
-          font-size: 10.5px;
-          color: #713f12;
-          margin-bottom: 12px;
-        }
-        .footer {
-          border-top: 1px solid #e5e7eb;
-          padding-top: 8px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 9.5px;
-          color: #6b7280;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="slip-box">
-        <div class="header">
-          <div class="doctor-name">ডা. দেবজ্যোতি দত্ত</div>
-          <div class="doctor-degree">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU)</div>
-          <div class="doctor-degree">চিকিৎসা বিশেষজ্ঞ ও লেখক — "স্বাস্থ্য দর্পণ"</div>
-          <div class="clinic-tag">ডিজিটাল সিরিয়াল ও বুকিং স্লিপ</div>
+  container.innerHTML = `
+    <div style="font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif; color: #064e3b; background: #ffffff; padding: 12px; line-height: 1.45; font-size: 12px; max-width: 540px; margin: 0 auto;">
+      <div style="border: 2px solid #047857; border-radius: 12px; padding: 16px; background: #ffffff;">
+        <div style="text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 10px; margin-bottom: 12px;">
+          <div style="font-size: 20px; font-weight: 800; color: #064e3b; letter-spacing: -0.3px;">ডা. দেবজ্যোতি দত্ত</div>
+          <div style="font-size: 11px; color: #047857; font-weight: 600; margin-top: 2px;">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU)</div>
+          <div style="font-size: 11px; color: #047857; font-weight: 600;">চিকিৎসা বিশেষজ্ঞ ও লেখক — "স্বাস্থ্য দর্পণ"</div>
+          <div style="display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-top: 5px;">ডিজিটাল সিরিয়াল ও বুকিং স্লিপ</div>
         </div>
 
-        <div class="serial-banner">
+        <div style="background: #f0fdf4; border: 1.5px dashed #059669; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div class="serial-label">অফিশিয়াল সিরিয়াল নম্বর</div>
-            <div class="serial-no">${apt.serialNo}</div>
+            <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #047857;">অফিশিয়াল সিরিয়াল নম্বর</div>
+            <div style="font-family: monospace; font-size: 22px; font-weight: 900; color: #064e3b; letter-spacing: 1px;">${apt.serialNo}</div>
           </div>
           <div style="text-align: right;">
-            <div class="status-badge">${statusLabel}</div>
+            <div style="display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; background: #047857; color: #ffffff;">${statusLabel}</div>
           </div>
         </div>
 
-        <table class="grid-table">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px;">
           <tr>
-            <td class="label">রোগীর নাম:</td>
-            <td class="value">${apt.patientName}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600; width: 38%;">রোগীর নাম:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold;">${apt.patientName}</td>
           </tr>
           <tr>
-            <td class="label">মোবাইল নম্বর:</td>
-            <td class="value">${apt.phone}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">মোবাইল নম্বর:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold; font-family: monospace;">${apt.phone}</td>
           </tr>
           ${
             apt.email
               ? `<tr>
-            <td class="label">ইমেইল:</td>
-            <td class="value">${apt.email}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">ইমেইল:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold; font-family: monospace;">${apt.email}</td>
           </tr>`
               : ''
           }
           <tr>
-            <td class="label">চেম্বার / মোড:</td>
-            <td class="value">${apt.chamberTitleBn}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">চেম্বার / মোড:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #064e3b; font-weight: bold;">${apt.chamberTitleBn}</td>
           </tr>
           <tr>
-            <td class="label">তারিখ:</td>
-            <td class="value">${apt.dateFormattedBn}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">তারিখ:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold;">${apt.dateFormattedBn}</td>
           </tr>
           <tr>
-            <td class="label">নির্ধারিত সময় স্লট:</td>
-            <td class="value" style="color: #b45309; font-weight: 800;">${apt.slotTimeBn}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">নির্ধারিত সময় স্লট:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #b45309; font-weight: 800;">${apt.slotTimeBn}</td>
           </tr>
           <tr>
-            <td class="label">পরামর্শ ফি:</td>
-            <td class="value">${fee}</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">পরামর্শ ফি:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold;">${fee}</td>
           </tr>
+          ${
+            apt.chamberMode === 'offline'
+              ? `<tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">চেম্বারের ঠিকানা:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: 600;">২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭</td>
+          </tr>`
+              : `<tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">কনসালটেশন মাধ্যম:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: 600;">অনলাইন ভিডিও কনসালটেশন (জুমে/হোয়াটসঅ্যাপ ভিডিও কল)</td>
+          </tr>`
+          }
         </table>
 
-        <div class="instructions">
+        <div style="background: #fefce8; border-left: 3px solid #eab308; padding: 10px 12px; border-radius: 6px; font-size: 11px; color: #713f12; margin-bottom: 14px;">
           <strong>জরুরি নির্দেশনা:</strong>
-          <ul style="margin-left: 16px; margin-top: 4px;">
-            <li>আপনার নির্ধারিত সময়ের অন্তত ১০ মিনিট পূর্বে চেম্বারে উপস্থিত থাকুন।</li>
-            <li>অনলাইন ভিডিও কনসালটেশনের ক্ষেত্রে সময়ের পূর্বে জুমে সক্রিয় থাকুন।</li>
-            <li>পূর্ববর্তী প্রেসক্রিপশন বা কোনো মেডিকেল রিপোর্ট থাকলে সাথে রাখুন।</li>
+          <ul style="margin-left: 16px; margin-top: 4px; line-height: 1.5;">
+            <li>অনলাইন ফর্ম পূরণ করুন: <strong>https://forms.gle/L6YfWn7Z12nV3aK66</strong> (পূর্বে পূরণ না করে থাকলে)</li>
+            <li>আপনার নির্ধারিত সময়ের অন্তত ১০ মিনিট পূর্বে উপস্থিত থাকবেন।</li>
+            <li>পূর্ববর্তী প্রেসক্রিপশন বা মেডিকেল টেস্ট রিপোর্ট থাকলে সাথে রাখুন।</li>
           </ul>
         </div>
 
-        <div class="footer">
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #6b7280;">
           <div>মুদ্রণের সময়: ${new Date().toLocaleString('bn-BD')}</div>
-          <div>সহায়তায়: +880 1711-223344</div>
+          <div>হেল্পলাইন: 01712854941</div>
         </div>
       </div>
+    </div>
+  `;
 
-      <script>
-        window.onload = function() {
-          window.focus();
-          window.print();
-        };
-      </script>
-    </body>
-    </html>
-  `);
-  doc.close();
+  document.body.appendChild(container);
 
-  // Clean up iframe after printing
+  // Short timeout to ensure browser paints container before print dialog opens
   setTimeout(() => {
-    iframe.remove();
-  }, 4000);
+    window.print();
+    const cleanup = () => {
+      container.remove();
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    setTimeout(cleanup, 6000);
+  }, 100);
 }
 
 /**

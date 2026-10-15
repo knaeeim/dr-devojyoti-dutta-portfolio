@@ -383,6 +383,37 @@ export default function BookingHub() {
     setPhone('');
     setEmail('');
     setComplaints('');
+
+    // Smooth scroll animation to home / top of page
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }, 120);
+  };
+
+  const handleDateSelect = (dateStr: string) => {
+    setSelectedDate(dateStr);
+    // Smooth scroll animation to Step 2 (Slots)
+    setTimeout(() => {
+      const step2 = document.getElementById('step-2-slots');
+      if (step2) {
+        step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 120);
+  };
+
+  const handleSlotSelect = (slot: Slot) => {
+    setSelectedSlot(slot);
+    // Smooth scroll animation to Step 3 (Patient Info Form)
+    setTimeout(() => {
+      const step3 = document.getElementById('step-3-form');
+      if (step3) {
+        step3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 120);
   };
 
   return (
@@ -478,7 +509,7 @@ export default function BookingHub() {
                       key={item.dateStr}
                       type="button"
                       disabled={!item.isBookingOpen}
-                      onClick={() => setSelectedDate(item.dateStr)}
+                      onClick={() => handleDateSelect(item.dateStr)}
                       className={`relative p-3.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
                         isSelected
                           ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50'
@@ -516,7 +547,7 @@ export default function BookingHub() {
 
           {/* STEP 2: Choose 15-Min Slot */}
           {selectedDate && (
-            <div className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
+            <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
@@ -572,7 +603,7 @@ export default function BookingHub() {
                               type="button"
                               disabled={isDisabled}
                               onClick={() => {
-                                if (!isDisabled) setSelectedSlot(slot);
+                                if (!isDisabled) handleSlotSelect(slot);
                               }}
                               className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
@@ -610,8 +641,8 @@ export default function BookingHub() {
 
           {/* STEP 3: Patient Information Form */}
           {selectedSlot && (
-            <form onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
-              <div className="flex items-center justify-between">
+            <form id="step-3-form" onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
                     ৩
@@ -621,6 +652,53 @@ export default function BookingHub() {
                 <span className="text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-semibold">
                   বরাদ্দকৃত স্লট: {selectedSlot.shortBn}
                 </span>
+              </div>
+
+              {/* Selected Booking Summary Card (যা যা সিলেক্ট করেছে সেগুলো প্রদর্শন) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-emerald-100/30 to-amber-50/50 dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-emerald-950/60 border border-emerald-300/80 dark:border-emerald-700/60 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-emerald-200/80 dark:border-emerald-800/60 pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                    <span>📋</span> আপনার নির্বাচিত বুকিং তথ্য:
+                  </span>
+                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-0.5 rounded-full">
+                    ধাপ ১ ও ২ সম্পন্ন
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
+                  {/* Chamber */}
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">চেম্বার / মোড</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
+                      {chamberMode === 'offline' ? '📍 ঢাকা চেম্বার (সরাসরি)' : '📹 অনলাইন ভিডিও কনসালটেশন'}
+                    </span>
+                  </div>
+
+                  {/* Date */}
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">নির্বাচিত তারিখ</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
+                      📅 {activeDateObj?.fullBn || selectedDate}
+                    </span>
+                  </div>
+
+                  {/* Slot Time */}
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-amber-300/70 dark:border-amber-700/60 flex flex-col gap-0.5 shadow-xs">
+                    <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">বরাদ্দকৃত সময় স্লট</span>
+                    <span className="font-bold text-amber-900 dark:text-amber-300 text-xs flex items-center gap-1">
+                      ⏰ {selectedSlot.timeBn}
+                    </span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">({selectedSlot.timeEn})</span>
+                  </div>
+
+                  {/* Fee */}
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">পরামর্শ ফি</span>
+                    <span className="font-bold text-emerald-850 dark:text-emerald-200 text-xs">
+                      💳 {activeSchedule.feeBn || (chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা')}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {errorMsg && (
