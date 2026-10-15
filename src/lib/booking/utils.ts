@@ -265,6 +265,61 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
   return slots;
 }
 
+/**
+ * Returns current date (YYYY-MM-DD) and current minutes from midnight (0..1439)
+ * strictly in Bangladesh Standard Time (Asia/Dhaka, UTC+6).
+ */
+export function getDhakaCurrentTime(): {
+  dateStr: string;
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  currentMinutes: number;
+} {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Dhaka',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  });
+  const parts = formatter.formatToParts(now);
+  const y = parts.find((p) => p.type === 'year')?.value || '';
+  const m = parts.find((p) => p.type === 'month')?.value || '';
+  const d = parts.find((p) => p.type === 'day')?.value || '';
+  const hour = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+  const minute = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
+
+  return {
+    dateStr: `${y}-${m}-${d}`,
+    year: parseInt(y, 10),
+    month: parseInt(m, 10),
+    day: parseInt(d, 10),
+    hour,
+    minute,
+    currentMinutes: hour * 60 + minute
+  };
+}
+
+/**
+ * Checks whether a given slot on a given date is in the past according to Bangladesh time.
+ * If slot date is before today -> true (past).
+ * If slot date is today and slot's start time <= current time -> true (past).
+ * If slot date is in the future -> false.
+ */
+export function isSlotPastTime(dateStr: string, slotStartMinutes: number): boolean {
+  if (!dateStr) return false;
+  const now = getDhakaCurrentTime();
+  if (dateStr < now.dateStr) return true;
+  if (dateStr > now.dateStr) return false;
+  return slotStartMinutes <= now.currentMinutes;
+}
+
 export function getUpcomingDates(
   schedule: ChamberSchedule,
   count = 10
@@ -279,10 +334,11 @@ export function getUpcomingDates(
   }
 
   const dates: CalendarDay[] = [];
-  const today = new Date();
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dhakaNow = getDhakaCurrentTime();
+  const [dhakaY, dhakaM, dhakaD] = dhakaNow.dateStr.split('-').map(Number);
+  const todayMidnight = new Date(dhakaY, dhakaM - 1, dhakaD);
 
-  for (let i = 1; i <= 45 && dates.length < count; i++) {
+  for (let i = 0; i <= 45 && dates.length < count; i++) {
     const d = new Date(todayMidnight);
     d.setDate(todayMidnight.getDate() + i);
     const dayOfWeek = d.getDay();
@@ -298,27 +354,41 @@ export function getUpcomingDates(
     if (isDayActive) {
       const diffTime = d.getTime() - todayMidnight.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-      const isBookingOpen = diffDays <= 7;
+      let isBookingOpen = diffDays <= 7;
+      let statusLabel = override?.dayNameBn
+        ? `${override.dayNameBn} • বিশেষ সময়`
+        : isBookingOpen
+        ? 'বুকিং খোলা'
+        : 'পরবর্তী সপ্তাহে উন্মুক্ত';
+
+      if (diffDays === 0) {
+        const timing = getEffectiveTimingForDate(schedule, dateStr);
+        const endMin = timing ? parseTimeToMinutes(timing.endTime) : 0;
+        const isTodayEnded = endMin > 0 && endMin <= dhakaNow.currentMinutes;
+        if (isTodayEnded) {
+          statusLabel = 'আজকের সময় সমাপ্ত';
+          isBookingOpen = false;
+        } else {
+          statusLabel = 'আজকে উন্মুক্ত';
+          isBookingOpen = true;
+        }
+      }
 
       dates.push({
         dateStr,
         dayOfWeek,
-        dayNameBn: bnDays[dayOfWeek],
-        dayNameShortBn: bnDaysShort[dayOfWeek],
-        dayNameEn: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNameBn: diffDays === 0 ? 'আজকে' : bnDays[dayOfWeek],
+        dayNameShortBn: diffDays === 0 ? 'আজ' : bnDaysShort[dayOfWeek],
+        dayNameEn: diffDays === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' }),
         dayNumBn: toBengaliNumber(d.getDate()),
         dayNumEn: d.getDate(),
         monthBn: bnMonths[d.getMonth()],
         monthEn: d.toLocaleDateString('en-US', { month: 'short' }),
-        fullBn: `${toBengaliNumber(d.getDate())} ${bnMonths[d.getMonth()]}, ${toBengaliNumber(yyyy)} (${bnDays[dayOfWeek]})`,
-        fullEn: `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} (${d.toLocaleDateString('en-US', { weekday: 'short' })})`,
+        fullBn: `${toBengaliNumber(d.getDate())} ${bnMonths[d.getMonth()]}, ${toBengaliNumber(yyyy)} (${diffDays === 0 ? 'আজ' : bnDays[dayOfWeek]})`,
+        fullEn: `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} (${diffDays === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' })})`,
         diffDays,
         isBookingOpen,
-        statusLabelBn: override?.dayNameBn
-          ? `${override.dayNameBn} • বিশেষ সময়`
-          : isBookingOpen
-          ? 'বুকিং খোলা'
-          : 'পরবর্তী সপ্তাহে উন্মুক্ত'
+        statusLabelBn: statusLabel
       });
     }
   }

@@ -35,7 +35,9 @@ import {
   generateSlotsFromTiming,
   getEffectiveTimingForDay,
   getEffectiveTimingForDate,
-  toBengaliNumber
+  toBengaliNumber,
+  isSlotPastTime,
+  getDhakaCurrentTime
 } from '@/lib/booking/utils';
 import { printSinglePageSerialSlip } from '@/lib/booking/print-slip';
 
@@ -47,6 +49,16 @@ export default function BookingHub() {
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+
+  // Live Bangladesh time state (refreshes every 30 seconds)
+  const [nowDhaka, setNowDhaka] = useState(() => getDhakaCurrentTime());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowDhaka(getDhakaCurrentTime());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Form inputs
   const [patientName, setPatientName] = useState('');
@@ -178,6 +190,12 @@ export default function BookingHub() {
 
     if (!selectedSlot) {
       setErrorMsg('অনুগ্রহ করে একটি স্লট পছন্দ করুন।');
+      return;
+    }
+
+    if (isSlotPastTime(selectedDate, selectedSlot.startMinutes)) {
+      setErrorMsg('দুঃখিত, এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত স্লট পছন্দ করুন।');
+      setSelectedSlot(null);
       return;
     }
 
@@ -513,6 +531,16 @@ export default function BookingHub() {
                 )}
               </div>
 
+              {/* Notice banner when today is selected */}
+              {selectedDate === nowDhaka.dateStr && (
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 text-xs">
+                  <span className="text-sm">⏱️</span>
+                  <span>
+                    <strong>আজকের সময়সূচী:</strong> বর্তমান সময়ের পূর্বে শেষ হওয়া স্লটগুলোতে স্বয়ংক্রিয়ভাবে <em>&apos;টাইম ওভার&apos;</em> কার্যকর করা হয়েছে। শুধুমাত্র পরবর্তী উন্মুক্ত স্লটগুলোতে বুকিং করা যাবে।
+                  </span>
+                </div>
+              )}
+
               {availableSlots.length === 0 ? (
                 <div className="p-6 text-center text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl">
                   এই তারিখে কোনো সক্রিয় অ্যাপয়েন্টমেন্ট স্লট খালি নেই।
@@ -534,25 +562,38 @@ export default function BookingHub() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                         {group.slots.map((slot) => {
                           const isBooked = bookedSlotIds.includes(slot.id);
+                          const isPast = isSlotPastTime(selectedDate, slot.startMinutes);
                           const isSelected = selectedSlot?.id === slot.id;
+                          const isDisabled = isBooked || isPast;
+
                           return (
                             <button
                               key={slot.id}
                               type="button"
-                              disabled={isBooked}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95 ${
+                              disabled={isDisabled}
+                              onClick={() => {
+                                if (!isDisabled) setSelectedSlot(slot);
+                              }}
+                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
-                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500'
+                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500 cursor-pointer active:scale-95'
                                   : isBooked
                                   ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+                                  : isPast
+                                  ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-60'
+                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 cursor-pointer active:scale-95'
                               }`}
                             >
-                              <span className="text-xs font-semibold">{slot.shortBn}</span>
+                              <span className={`text-xs font-semibold ${isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}`}>
+                                {slot.shortBn}
+                              </span>
                               <span className="text-[10px] opacity-75 font-mono">{slot.shortEn}</span>
                               {isBooked ? (
                                 <span className="text-[10px] font-bold text-red-500">বুকড</span>
+                              ) : isPast ? (
+                                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-0.5">
+                                  <span>⏱️</span> টাইম ওভার
+                                </span>
                               ) : isSelected ? (
                                 <span className="text-[10px] font-bold text-amber-300">নির্বাচিত</span>
                               ) : null}

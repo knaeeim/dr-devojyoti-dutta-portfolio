@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { Appointment, AppointmentStatus, ChamberMode } from '@/types/booking';
-import { generateSerialNo, formatDateToBn, defaultSchedules } from '@/lib/booking/utils';
+import { generateSerialNo, formatDateToBn, defaultSchedules, isSlotPastTime } from '@/lib/booking/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'appointments.json');
@@ -257,6 +257,13 @@ export async function createAppointment(params: {
 }): Promise<Appointment> {
   const allAppointments = await getAllAppointments();
 
+  // Check if slot time has passed (Time Over check)
+  const slotParts = params.slotId.replace('slot_', '').split('_').map(Number);
+  const startMin = slotParts[0] || 0;
+  if (isSlotPastTime(params.appointmentDate, startMin)) {
+    throw new Error('এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত সময় বেছে নিন।');
+  }
+
   // Check if slot already booked by an active (non-cancelled) appointment
   const alreadyBooked = allAppointments.some(
     (a) =>
@@ -501,7 +508,14 @@ export async function rescheduleAppointment(params: {
     throw new Error('অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।');
   }
 
-  // 2. Check if slot already booked on new date by another active appointment
+  // 2. Check if new slot time has passed
+  const slotParts = params.newSlotId.replace('slot_', '').split('_').map(Number);
+  const startMin = slotParts[0] || 0;
+  if (isSlotPastTime(params.newDate, startMin)) {
+    throw new Error('এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত সময় নির্বাচন করুন।');
+  }
+
+  // Check if slot already booked on new date by another active appointment
   const booked = await getBookedSlotsForDate(params.newDate, existingApt.chamberMode);
   if (booked.includes(params.newSlotId)) {
     throw new Error('দুঃখিত, নির্বাচিত নতুন স্লটটি ইতোমধ্যে অন্য রোগী বুক করে রেখেছেন। অন্য স্লট নির্বাচন করুন।');

@@ -7,6 +7,7 @@ import {
 } from '@/lib/db/appointments';
 import { isPhoneVerified } from '@/lib/security/otp';
 import { ChamberMode } from '@/types/booking';
+import { isSlotPastTime } from '@/lib/booking/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -80,6 +81,17 @@ export async function POST(request: NextRequest) {
     const slotParts = slotId.replace('slot_', '').split('_').map(Number);
     const startMin = slotParts[0] || 960;
     const endMin = slotParts[1] || 975;
+
+    // Validate that slot is not in the past (Time Over check)
+    if (isSlotPastTime(appointmentDate, startMin)) {
+      return NextResponse.json(
+        {
+          error:
+            'এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত স্লট পছন্দ করুন।'
+        },
+        { status: 400 }
+      );
+    }
 
     // Helper formatting for slot
     const formatH = (min: number) => {

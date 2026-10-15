@@ -64,7 +64,8 @@ import {
   time24ToComponents,
   getUpcomingDates,
   generateSlotsFromTiming,
-  getEffectiveTimingForDate
+  getEffectiveTimingForDate,
+  isSlotPastTime
 } from '@/lib/booking/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
@@ -2505,27 +2506,37 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
                   {rescheduleSlots.map((slot) => {
                     const isBooked = rescheduleBookedSlots.includes(slot.id);
+                    const isPast = isSlotPastTime(rescheduleDate, slot.startMinutes);
                     const isSelected = rescheduleSlotId === slot.id;
+                    const isDisabled = isBooked || isPast;
                     return (
                       <button
                         key={slot.id}
                         type="button"
-                        disabled={isBooked}
+                        disabled={isDisabled}
                         onClick={() => {
-                          setRescheduleSlotId(slot.id);
-                          setRescheduleSlotTimeBn(slot.timeBn);
-                          setRescheduleSlotTimeEn(slot.timeEn);
+                          if (!isDisabled) {
+                            setRescheduleSlotId(slot.id);
+                            setRescheduleSlotTimeBn(slot.timeBn);
+                            setRescheduleSlotTimeEn(slot.timeEn);
+                          }
                         }}
                         className={`p-2 rounded-xl border text-xs font-mono font-medium transition-all ${
                           isBooked
                             ? 'opacity-40 bg-gray-100 dark:bg-gray-800/40 border-gray-300 cursor-not-allowed text-gray-500 line-through'
+                            : isPast
+                            ? 'opacity-40 bg-zinc-100 dark:bg-zinc-800/40 border-zinc-300 dark:border-zinc-700 cursor-not-allowed text-zinc-500'
                             : isSelected
                             ? 'bg-amber-500 text-white border-amber-600 shadow-md font-bold'
                             : 'bg-white dark:bg-[#192a23] border-emerald-200 dark:border-emerald-800 hover:border-emerald-500 text-emerald-950 dark:text-emerald-100'
                         }`}
                       >
-                        <div>{slot.shortBn || slot.timeBn}</div>
-                        <div className="text-[10px] opacity-80 font-sans">{slot.shortEn}</div>
+                        <div className={isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}>
+                          {slot.shortBn || slot.timeBn}
+                        </div>
+                        <div className="text-[10px] opacity-80 font-sans">
+                          {isBooked ? 'বুকড' : isPast ? 'টাইম ওভার' : slot.shortEn}
+                        </div>
                       </button>
                     );
                   })}
