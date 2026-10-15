@@ -1187,24 +1187,24 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-[#fafbf9] dark:bg-[#0c1511] text-emerald-950 dark:text-emerald-50">
       {/* Top Header Bar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border-b border-emerald-900/10 dark:border-emerald-800/40">
-        <div className="max-w-7xl mx-auto py-2.5 sm:py-3.5 px-3 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-2 sm:py-2.5 px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Brand */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 flex items-center justify-center text-amber-300 font-bold text-sm sm:text-lg shadow shrink-0">
+            {/* Brand (Never shrinks, never truncates) */}
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 border border-amber-400/40 flex items-center justify-center text-amber-300 font-bold text-xs sm:text-sm shadow-xs shrink-0">
                 DD
               </div>
-              <div className="min-w-0">
+              <div className="shrink-0">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <h1 className="font-serif font-bold text-base sm:text-lg text-emerald-950 dark:text-emerald-100 leading-tight truncate">
+                  <h1 className="font-serif font-bold text-sm sm:text-base md:text-lg text-emerald-950 dark:text-emerald-50 leading-tight whitespace-nowrap">
                     ডা. দেবজ্যোতি দত্ত
                   </h1>
-                  <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 shrink-0">
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 shrink-0">
                     অ্যাডমিন
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 truncate hidden xs:block">
-                  সুরক্ষিত সিরিয়াল ও চেম্বার শিডিউলার ড্যাশবোর্ড
+                <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 whitespace-nowrap hidden xl:block">
+                  সিরিয়াল ও চেম্বার শিডিউলার ড্যাশবোর্ড
                 </p>
               </div>
             </div>
@@ -1223,15 +1223,17 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            {/* Desktop / Tablet Action Buttons */}
-            <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 flex-wrap">
+            {/* Desktop / Tablet Single-Row Action Navigation (NEVER wraps to second line!) */}
+            <div className="hidden sm:flex items-center gap-1.5 md:gap-2 shrink-0 flex-nowrap">
+              {/* Primary Management Tools */}
               <button
                 type="button"
                 onClick={() => setShowScheduleModal(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-200/70 border border-emerald-300 dark:border-emerald-800 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-200/70 border border-emerald-300 dark:border-emerald-800 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                title="চেম্বার শিডিউল ও ডে-স্পেসিফিক এডিটর"
               >
-                <Settings className="w-3.5 h-3.5 text-amber-500" />
-                <span>চেম্বার শিডিউল ও ডে-স্পেসিফিক এডিটর</span>
+                <Settings className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>শিডিউল</span>
               </button>
 
               <button
@@ -1241,31 +1243,38 @@ export default function AdminDashboardPage() {
                   setTemplateSaveFeedback(null);
                   setShowTemplateModal(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-xs"
-                title="অনলাইন ও চেম্বারের এসএমএস ও মেসেজ টেমপ্লেট পরিবর্তন করুন"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                title="অনলাইন ও অফলাইন এসএমএস ও মেসেজ টেমপ্লেট পরিবর্তন করুন"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>মেসেজ ও এসএমএস টেমপ্লেট</span>
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>মেসেজ টেমপ্লেট</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowPrintModal(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                title="রিসিপশন প্রিন্ট"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>রিসিপশন প্রিন্ট</span>
+                <Printer className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="hidden md:inline">রিসিপশন</span>
+                <span>প্রিন্ট</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                title="অ্যাপয়েন্টমেন্ট CSV এক্সপোর্ট করুন"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>CSV এক্সপোর্ট</span>
+                <Download className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>CSV</span>
               </button>
 
+              {/* Vertical Divider */}
+              <div className="h-4 w-px bg-emerald-300/60 dark:bg-emerald-800 mx-0.5" />
+
+              {/* Account Utilities (Icon + Tooltip, labels expand on large screens) */}
               <button
                 type="button"
                 onClick={() => {
@@ -1275,44 +1284,46 @@ export default function AdminDashboardPage() {
                   setNewPassword('');
                   setConfirmPassword('');
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
                 title="ডাক্তার পোর্টালের পাসওয়ার্ড পরিবর্তন করুন"
               >
-                <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                <span>পাসওয়ার্ড পরিবর্তন</span>
+                <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="hidden lg:inline">পাসওয়ার্ড</span>
               </button>
 
               <ThemeToggle />
 
               <Link
                 href="/"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 hover:underline"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors whitespace-nowrap"
+                title="মূল ওয়েবসাইট দেখুন"
               >
-                <span>ওয়েবসাইট →</span>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden lg:inline">ওয়েবসাইট</span>
               </Link>
 
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold hover:bg-red-200 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-semibold hover:bg-red-200 transition-colors cursor-pointer whitespace-nowrap"
                 title="পোর্টাল থেকে লগআউট করুন"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>লগআউট</span>
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden lg:inline">লগআউট</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Swipeable Quick-Actions Bar (Horizontal Touch Bar) */}
-        <div className="flex sm:hidden overflow-x-auto no-scrollbar gap-2 px-3 py-2 border-t border-emerald-900/5 dark:border-emerald-800/30 bg-emerald-50/40 dark:bg-emerald-950/20">
+        <div className="flex sm:hidden overflow-x-auto no-scrollbar gap-1.5 px-3 py-2 border-t border-emerald-900/5 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/30 touch-pan-x">
           <button
             type="button"
             onClick={() => setShowScheduleModal(true)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
             <Settings className="w-3.5 h-3.5 text-amber-500" />
-            <span>শিডিউল এডিটর</span>
+            <span>শিডিউল</span>
           </button>
 
           <button
@@ -1322,7 +1333,7 @@ export default function AdminDashboardPage() {
               setTemplateSaveFeedback(null);
               setShowTemplateModal(true);
             }}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
             <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
             <span>টেমপ্লেট</span>
@@ -1331,16 +1342,16 @@ export default function AdminDashboardPage() {
           <button
             type="button"
             onClick={() => setShowPrintModal(true)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
             <Printer className="w-3.5 h-3.5 text-emerald-600" />
-            <span>রিসিপশন প্রিন্ট</span>
+            <span>প্রিন্ট</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
             <Download className="w-3.5 h-3.5 text-emerald-600" />
             <span>CSV</span>
@@ -1355,7 +1366,7 @@ export default function AdminDashboardPage() {
               setNewPassword('');
               setConfirmPassword('');
             }}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
           >
             <KeyRound className="w-3.5 h-3.5 text-amber-600" />
             <span>পাসওয়ার্ড</span>
@@ -1363,7 +1374,7 @@ export default function AdminDashboardPage() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold whitespace-nowrap shadow-xs"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#192a23] border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold whitespace-nowrap shadow-xs shrink-0"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>ওয়েবসাইট</span>
@@ -4380,30 +4391,32 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Mode Switcher Tabs (Offline vs Online) */}
-            <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/70 flex gap-2">
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/70 flex gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedTemplateMode('offline')}
-                className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                   selectedTemplateMode === 'offline'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
                 }`}
               >
-                <MapPin className="w-4 h-4 text-amber-300" />
-                <span>🏢 শ্যামলী চেম্বার (সরাসরি ভিজিট / Offline)</span>
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+                <span className="hidden sm:inline">🏢 শ্যামলী চেম্বার (সরাসরি ভিজিট / Offline)</span>
+                <span className="sm:hidden">🏢 শ্যামলী চেম্বার (Offline)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedTemplateMode('online')}
-                className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                   selectedTemplateMode === 'online'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
                 }`}
               >
-                <Video className="w-4 h-4 text-emerald-300" />
-                <span>🌐 অনলাইন ভিডিও কনসালটেশন (Online)</span>
+                <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300 shrink-0" />
+                <span className="hidden sm:inline">🌐 অনলাইন ভিডিও কনসালটেশন (Online)</span>
+                <span className="sm:hidden">🌐 অনলাইন ভিডিও কল</span>
               </button>
             </div>
 
@@ -4412,20 +4425,20 @@ export default function AdminDashboardPage() {
               <label className="text-xs font-semibold text-emerald-900 dark:text-emerald-300 block">
                 টেমপ্লেটের ধরন নির্বাচন করুন:
               </label>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1 touch-pan-x">
                 {[
-                  { key: 'confirm', label: '📋 সিরিয়াল নিশ্চিতকরণ (Confirm)' },
-                  { key: 'reminder', label: '⏰ সময়সূচী রিমাইন্ডার (Reminder)' },
+                  { key: 'confirm', label: '📋 নিশ্চিতকরণ (Confirm)' },
+                  { key: 'reminder', label: '⏰ রিমাইন্ডার (Reminder)' },
                   { key: 'reports', label: '🧪 রিপোর্ট আহ্বান (Reports)' },
-                  { key: 'reschedule', label: '🔄 রিশিডিউল বিজ্ঞপ্তি (Reschedule)' },
-                  { key: 'cancel', label: '🚫 বাতিল বিজ্ঞপ্তি (Cancel)' },
-                  { key: 'compact', label: '📱 সংক্ষিপ্ত এসএমএস (Compact)' }
+                  { key: 'reschedule', label: '🔄 রিশিডিউল (Reschedule)' },
+                  { key: 'cancel', label: '🚫 বাতিল (Cancel)' },
+                  { key: 'compact', label: '📱 সংক্ষিপ্ত (Compact)' }
                 ].map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setSelectedTemplateKey(tab.key as TemplateType)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                       selectedTemplateKey === tab.key
                         ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400'
                         : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
@@ -4642,21 +4655,21 @@ export default function AdminDashboardPage() {
             )}
 
             {/* Footer Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-emerald-100 dark:border-emerald-900/50">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-emerald-100 dark:border-emerald-900/50">
               <button
                 type="button"
                 onClick={handleResetAllTemplatesToDefault}
-                className="text-xs text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
+                className="text-xs text-rose-700 dark:text-rose-400 hover:underline flex items-center justify-center sm:justify-start gap-1 cursor-pointer font-semibold py-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>সবগুলো টেমপ্লেট ফ্যাক্টরি ডিফল্টে রিসেট করুন</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowTemplateModal(false)}
-                  className="py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer text-center"
                 >
                   বাতিল
                 </button>
@@ -4664,7 +4677,7 @@ export default function AdminDashboardPage() {
                   type="button"
                   onClick={handleSaveTemplates}
                   disabled={isSavingTemplates}
-                  className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 sm:flex-initial py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-center whitespace-nowrap"
                 >
                   {isSavingTemplates ? (
                     <>
