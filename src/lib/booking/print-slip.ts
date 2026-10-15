@@ -40,6 +40,9 @@ export function printSinglePageSerialSlip(apt: Appointment) {
     <head>
       <meta charset="utf-8" />
       <title>সিরিয়াল স্লিপ - ${apt.serialNo}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
       <style>
         @page {
           size: A5 portrait;
@@ -51,7 +54,7 @@ export function printSinglePageSerialSlip(apt: Appointment) {
           padding: 0;
         }
         body {
-          font-family: 'Kohinoor Bangla', 'kohinoor-bangla', 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
+          font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif;
           color: #064e3b;
           background: #ffffff;
           padding: 10px;
@@ -333,6 +336,9 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
     <head>
       <meta charset="utf-8" />
       <title>${title}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
       <style>
         @page {
           size: A4 landscape;
@@ -344,7 +350,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
           padding: 0;
         }
         body {
-          font-family: 'Kohinoor Bangla', 'kohinoor-bangla', 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
+          font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif;
           color: #111827;
           background: #ffffff;
           padding: 10px;
