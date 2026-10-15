@@ -1,4 +1,5 @@
 import { Award, Dna, Flame, HeartPulse, Sparkles } from 'lucide-react';
+import ScrollReveal from '@/components/ui/ScrollReveal';
 
 export default function AboutSection() {
   const pillars = [
@@ -26,43 +27,44 @@ export default function AboutSection() {
     <section id="about" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-            <HeartPulse className="w-3.5 h-3.5 text-amber-500" />
-            চিকিৎসা দর্শন ও মূল নীতি
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
-            কেন এই দ্বৈত-বিজ্ঞানের সমন্বয় অতুলনীয়?
-          </h2>
-          <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed">
-            আধুনিক চিকিৎসাব্যবস্থা অনেক ক্ষেত্রে শুধু উপসর্গ চেপে রাখার জন্য আজীবন ওষুধ দেয়, অন্যদিকে সনাতন পদ্ধতি অনেক সময় আধুনিক জৈব রাসায়নিক যুক্তির বাইরে থাকে। ডা. দেবজ্যোতি দত্ত এই দুই বিশ্বের এক দুর্লভ মিলনস্থল।
-          </p>
-        </div>
+        <ScrollReveal direction="up">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+              <HeartPulse className="w-3.5 h-3.5 text-amber-500" />
+              চিকিৎসা দর্শন ও মূল নীতি
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
+              কেন এই দ্বৈত-বিজ্ঞানের সমন্বয় অতুলনীয়?
+            </h2>
+            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed">
+              আধুনিক চিকিৎসাব্যবস্থা অনেক ক্ষেত্রে শুধু উপসর্গ চেপে রাখার জন্য আজীবন ওষুধ দেয়, অন্যদিকে সনাতন পদ্ধতি অনেক সময় আধুনিক জৈব রাসায়নিক যুক্তির বাইরে থাকে। ডা. দেবজ্যোতি দত্ত এই দুই বিশ্বের এক দুর্লভ মিলনস্থল।
+            </p>
+          </div>
+        </ScrollReveal>
 
         {/* 3 Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {pillars.map((pillar, idx) => (
-            <div
-              key={idx}
-              className="p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-xl transition-all duration-300 space-y-4 group hover:-translate-y-1"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                {pillar.icon}
-              </div>
+            <ScrollReveal key={idx} delay={idx * 140} direction="up">
+              <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 space-y-4 group h-full">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                  {pillar.icon}
+                </div>
 
-              <div className="space-y-1">
-                <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 leading-snug">
-                  {pillar.title}
-                </h3>
-                <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
-                  {pillar.sub}
+                <div className="space-y-1">
+                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 leading-snug">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
+                    {pillar.sub}
+                  </p>
+                </div>
+
+                <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-200/70 leading-relaxed">
+                  {pillar.desc}
                 </p>
               </div>
-
-              <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-200/70 leading-relaxed">
-                {pillar.desc}
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

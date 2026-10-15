@@ -1,4 +1,5 @@
 import { Activity, Award, Brain, Check, Dna, Leaf, Sparkles, ShieldCheck } from 'lucide-react';
+import ScrollReveal from '@/components/ui/ScrollReveal';
 
 export default function ExpertiseSection() {
   const skills = [
@@ -37,35 +38,36 @@ export default function ExpertiseSection() {
   return (
     <section id="skills" className="py-20 bg-white dark:bg-[#0c1511] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-            <Activity className="w-3.5 h-3.5 text-amber-500" />
-            ক্লিনিক্যাল দক্ষতা
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
-            বিশেষজ্ঞ ডায়াগনস্টিক ও নিরাময় পদ্ধতি
-          </h2>
-          <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80">
-            আন্তর্জাতিক মানের শীর্ষ আয়ুর্বেদ শিক্ষাপ্রতিষ্ঠানের শাস্ত্রীয় জ্ঞান এবং আধুনিক ল্যাব টেস্টের বিজ্ঞানসম্মত মূল্যায়ন।
-          </p>
-        </div>
+        <ScrollReveal direction="up">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+              <Activity className="w-3.5 h-3.5 text-amber-500" />
+              ক্লিনিক্যাল দক্ষতা
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
+              বিশেষজ্ঞ ডায়াগনস্টিক ও নিরাময় পদ্ধতি
+            </h2>
+            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80">
+              আন্তর্জাতিক মানের শীর্ষ আয়ুর্বেদ শিক্ষাপ্রতিষ্ঠানের শাস্ত্রীয় জ্ঞান এবং আধুনিক ল্যাব টেস্টের বিজ্ঞানসম্মত মূল্যায়ন।
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {skills.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all duration-300 space-y-3 group hover:shadow-lg"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-950/80 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
-                {item.icon}
+            <ScrollReveal key={idx} delay={idx * 100} direction="up">
+              <div className="card-butter p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-xl space-y-3 group h-full">
+                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-950/80 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+                  {item.icon}
+                </div>
+                <h3 className="font-serif text-lg font-bold text-emerald-950 dark:text-emerald-50">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-300/70 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
-              <h3 className="font-serif text-lg font-bold text-emerald-950 dark:text-emerald-50">
-                {item.title}
-              </h3>
-              <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-300/70 leading-relaxed">
-                {item.desc}
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

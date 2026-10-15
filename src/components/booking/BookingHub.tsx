@@ -511,11 +511,11 @@ export default function BookingHub() {
                       type="button"
                       disabled={!item.isBookingOpen}
                       onClick={() => handleDateSelect(item.dateStr)}
-                      className={`relative p-3.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                      className={`relative p-3.5 rounded-2xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-1 ${
                         isSelected
-                          ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50'
+                          ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50 scale-[1.02] cursor-pointer'
                           : item.isBookingOpen
-                          ? 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 hover:border-emerald-400 hover:bg-emerald-100/50'
+                          ? 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 hover:border-emerald-400 hover:bg-emerald-100/50 hover:-translate-y-1 hover:shadow-md active:scale-95 cursor-pointer'
                           : 'border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-60'
                       }`}
                     >
@@ -548,7 +548,7 @@ export default function BookingHub() {
 
           {/* STEP 2: Choose 15-Min Slot */}
           {selectedDate && (
-            <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28">
+            <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-slide-up">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
@@ -606,14 +606,14 @@ export default function BookingHub() {
                               onClick={() => {
                                 if (!isDisabled) handleSlotSelect(slot);
                               }}
-                              className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-0.5 ${
+                              className={`p-3 rounded-xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
-                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500 cursor-pointer active:scale-95'
+                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500 cursor-pointer active:scale-95 scale-[1.02]'
                                   : isBooked
                                   ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
                                   : isPast
                                   ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 cursor-pointer active:scale-95'
+                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 cursor-pointer hover:-translate-y-0.5 hover:shadow-sm active:scale-95'
                               }`}
                             >
                               <span className={`text-xs font-semibold ${isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}`}>
@@ -642,7 +642,7 @@ export default function BookingHub() {
 
           {/* STEP 3: Patient Information Form */}
           {selectedSlot && (
-            <form id="step-3-form" onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28">
+            <form id="step-3-form" onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-slide-up">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">

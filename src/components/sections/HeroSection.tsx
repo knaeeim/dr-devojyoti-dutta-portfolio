@@ -61,19 +61,19 @@ export default function HeroSection() {
                 {/* Big Eye-catching Booking Button */}
                 <a
                   href="#booking"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/35 transition-all transform active:scale-95 ring-2 ring-emerald-500/30 group text-center cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/40 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:-translate-y-1 active:scale-95 ring-2 ring-emerald-500/30 group text-center cursor-pointer"
                 >
-                  <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
+                  <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform duration-300 shrink-0" />
                   <span>সিরিয়াল বুক করুন</span>
-                  <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1.5 transition-transform duration-300 shrink-0" />
                 </a>
 
                 {/* Secondary Prakriti Quiz CTA */}
                 <a
                   href="#prakriti"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow transition-all text-center cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-95 text-center cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  <Sparkles className="w-4 h-4 text-amber-500 group-hover:rotate-12 transition-transform duration-300 shrink-0" />
                   <span>আপনার প্রকৃতি (দোষ) জানুন</span>
                 </a>
               </div>
@@ -88,7 +88,7 @@ export default function HeroSection() {
             {/* Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
               {stats.map((s, idx) => (
-                <div key={idx} className="space-y-0.5">
+                <div key={idx} className="space-y-0.5 hover:-translate-y-0.5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
                   <div className="font-serif font-black text-2xl sm:text-3xl text-emerald-800 dark:text-emerald-300">
                     {s.number}
                   </div>
@@ -112,7 +112,7 @@ export default function HeroSection() {
                     fill
                     sizes="(max-width: 768px) 100vw, 450px"
                     priority
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
@@ -136,7 +136,7 @@ export default function HeroSection() {
               </div>
 
               {/* Floating Badge Top Left */}
-              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center gap-3 animate-bounce-subtle z-10">
+              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center gap-3 animate-float z-10 will-change-transform">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-800 dark:text-emerald-300 font-bold text-lg">
                   🏛️
                 </div>
@@ -151,7 +151,7 @@ export default function HeroSection() {
               </div>
 
               {/* Floating Badge Bottom Right */}
-              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-amber-200 dark:border-amber-900/60 shadow-xl flex items-center gap-3 z-10">
+              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-amber-200 dark:border-amber-900/60 shadow-xl flex items-center gap-3 animate-float-reverse z-10 will-change-transform">
                 <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold text-lg">
                   🧬
                 </div>
