@@ -36,11 +36,11 @@ export default function Footer() {
               <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40">
                 <strong className="text-white block font-medium">🏛️ ঢাকা চেম্বার (সরাসরি):</strong>
                 <span>প্রতি শুক্রবার ও শনিবার</span>
-                <p className="text-xs text-emerald-400 mt-0.5">সেন্ট্রাল ঢাকা ও ধানমন্ডি এরিয়া</p>
+                <p className="text-xs text-emerald-400 mt-0.5">২/১ জাহেদা ভিলা, ১ নং রোড, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭</p>
               </li>
               <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40">
                 <strong className="text-white block font-medium">🌐 অনলাইন ভিডিও কনসালটেশন:</strong>
-                <span>রবি, মঙ্গল ও বৃহস্পতিবার</span>
+                <span>রবি থেকে বৃহস্পতিবার</span>
                 <p className="text-xs text-emerald-400 mt-0.5">জুম বা হোয়াটসঅ্যাপ ভিডিও কল</p>
               </li>
             </ul>
