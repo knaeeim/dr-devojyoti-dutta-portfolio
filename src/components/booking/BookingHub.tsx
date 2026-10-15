@@ -69,6 +69,7 @@ export default function BookingHub() {
   const [otpToken, setOtpToken] = useState<string | null>(null);
   const [otpChallengeToken, setOtpChallengeToken] = useState<string | null>(null);
   const [otpDebugCode, setOtpDebugCode] = useState<string | null>(null);
+  const [otpGatewayNotice, setOtpGatewayNotice] = useState<string | null>(null);
 
   // Countdown timer for OTP
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function BookingHub() {
       setOtpChallengeToken(data.challengeToken || null);
       setOtpTimer(60);
       setOtpDebugCode(data.debugCode || null);
+      setOtpGatewayNotice(data.gatewayError || null);
       setShowOtpModal(true);
       setOtpPending(false);
     } catch (err) {
@@ -277,6 +279,7 @@ export default function BookingHub() {
         setOtpChallengeToken(data.challengeToken || null);
         setOtpTimer(60);
         setOtpDebugCode(data.debugCode || null);
+        setOtpGatewayNotice(data.gatewayError || null);
       } else {
         setOtpError(data.error || 'পুনরায় ওটিপি পাঠাতে ব্যর্থ হয়েছে।');
       }
@@ -716,7 +719,7 @@ export default function BookingHub() {
 
             {/* Demo / Sandbox Helper Badge if real SMS gateway is not configured */}
             {otpDebugCode && (
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1">
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1.5">
                 <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block">
                   🧪 টেস্ট মোড ওটিপি (Sandbox Demo):
                 </span>
@@ -729,6 +732,11 @@ export default function BookingHub() {
                   <span>{otpDebugCode}</span>
                   <span className="text-[10px] font-normal underline">(ক্লিক করে বসান)</span>
                 </button>
+                {otpGatewayNotice && (
+                  <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed px-1">
+                    {otpGatewayNotice}
+                  </p>
+                )}
               </div>
             )}
 

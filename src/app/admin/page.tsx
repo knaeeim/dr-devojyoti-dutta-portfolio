@@ -46,7 +46,8 @@ import {
   ChevronRight,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Loader2
 } from 'lucide-react';
 import {
   Appointment,
@@ -209,10 +210,13 @@ export default function AdminDashboardPage() {
   // Message Customizer Modal State
   const [messageModalApt, setMessageModalApt] = useState<Appointment | null>(null);
   const [messageTemplateType, setMessageTemplateType] = useState<
-    'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom'
+    'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' | 'compact'
   >('confirm');
   const [customMessage, setCustomMessage] = useState<string>('');
   const [copiedToast, setCopiedToast] = useState(false);
+  const [smsBalance, setSmsBalance] = useState<number | null>(null);
+  const [isSendingSms, setIsSendingSms] = useState(false);
+  const [smsStatusMsg, setSmsStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Cancellation Modal State
   const [cancelApt, setCancelApt] = useState<Appointment | null>(null);
@@ -259,7 +263,7 @@ export default function AdminDashboardPage() {
   // Helper to build default notification messages
   const buildDefaultMessage = (
     apt: Appointment,
-    type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom'
+    type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' | 'compact'
   ) => {
     const dateFormatted = formatTemplateDate(apt.appointmentDate);
     const timeFormatted = apt.slotTimeEn || apt.slotTimeBn;
@@ -377,13 +381,16 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 • হোয়াটসঅ্যাপ হেল্পলাইন: 01712854941
 
 ডাঃ দেবজ্যোতি দত্তের চেম্বার থেকে বার্তা: `;
+
+      case 'compact':
+        return `ডা. দেবজ্যোতি দত্ত চেম্বার: সিরিয়াল ${apt.serialNo} নিশ্চিত। তারিখ: ${dateFormatted}, সময়: ${timeFormatted}। চেম্বার: ${isOffline ? 'শ্যামলী, ঢাকা' : 'অনলাইন ভিডিও'}। হেল্পলাইন: 01712854941`;
     }
   };
 
   // Open Message Customizer Modal
   const handleOpenMessageModal = (
     apt: Appointment,
-    type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' = 'confirm'
+    type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' | 'compact' = 'confirm'
   ) => {
     const initialType =
       apt.status === 'cancelled'
@@ -395,6 +402,8 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
     setMessageTemplateType(initialType);
     setCustomMessage(buildDefaultMessage(apt, initialType));
     setCopiedToast(false);
+    setSmsStatusMsg(null);
+    fetchSmsBalance();
   };
 
   // Phone normalization & communication helpers
@@ -490,6 +499,66 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
     navigator.clipboard.writeText(customMessage);
     setCopiedToast(true);
     setTimeout(() => setCopiedToast(false), 2500);
+  };
+
+  // Fetch SMS credit balance from BulkSMSBD API
+  const fetchSmsBalance = async () => {
+    try {
+      const res = await fetch('/api/admin/sms/balance');
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success && typeof data.balance === 'number') {
+        setSmsBalance(data.balance);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchSmsBalance();
+  }, []);
+
+  // Send Direct SMS via BulkSMSBD Gateway (1-Click send)
+  const handleSendDirectSms = async () => {
+    if (!messageModalApt) return;
+    if (!customMessage.trim()) {
+      setSmsStatusMsg({ type: 'error', text: 'বার্তা খালি রাখা যাবে না।' });
+      return;
+    }
+
+    setIsSendingSms(true);
+    setSmsStatusMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/sms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: messageModalApt.phone,
+          message: customMessage.trim()
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setSmsStatusMsg({
+          type: 'error',
+          text: data?.error || 'এসএমএস পাঠাতে ব্যর্থ হয়েছে।'
+        });
+      } else {
+        setSmsStatusMsg({
+          type: 'success',
+          text: data?.message || `সফলভাবে রোগীর মোবাইলে (${messageModalApt.phone}) এসএমএস পাঠানো হয়েছে!`
+        });
+        fetchSmsBalance();
+      }
+    } catch (err: unknown) {
+      setSmsStatusMsg({
+        type: 'error',
+        text: 'সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে।'
+      });
+    } finally {
+      setIsSendingSms(false);
+    }
   };
 
   // Cancellation Modal openers & handlers
@@ -3421,20 +3490,33 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
             {/* Header */}
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-4">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 mb-1">
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>রোগীর বার্তা কাস্টমাইজেশন ও যোগাযোগ</span>
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>রোগীর বার্তা ও সরাসরি এসএমএস</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300" title="সরকারি অনুমোদিত বাল্ক এসএমএস সেন্ডার আইডি">
+                    <span>Sender ID: 8809617643375</span>
+                  </div>
+                  {smsBalance !== null && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                      <span>ব্যালেন্স: {smsBalance} টি এসএমএস</span>
+                    </div>
+                  )}
                 </div>
                 <h3 className="font-serif font-bold text-xl text-emerald-950 dark:text-emerald-50">
-                  রোগীকে কাস্টমাইজড মেসেজ পাঠান
+                  রোগীকে সরাসরি এসএমএস পাঠান
                 </h3>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                  নিচের বার্তাটি আপনার প্রয়োজনমতো সম্পাদনা করে সরাসরি রোগীর হোয়াটসঅ্যাপে বা এসএমএসে পাঠান
+                  নিচের বার্তাটি নির্বাচন বা সম্পাদনা করে এক ক্লিকে রোগীর মোবাইলে সরাসরি পাঠিয়ে দিন।
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setMessageModalApt(null)}
+                onClick={() => {
+                  setMessageModalApt(null);
+                  setSmsStatusMsg(null);
+                }}
                 className="p-2 rounded-full hover:bg-emerald-100/50 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -3446,7 +3528,7 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               <div>
                 <span className="text-emerald-600 dark:text-emerald-400 block font-semibold text-[11px]">রোগীর নাম ও নম্বর</span>
                 <span className="font-bold text-emerald-950 dark:text-emerald-100 text-sm">{messageModalApt.patientName}</span>
-                <span className="ml-2 font-mono text-emerald-700 dark:text-emerald-300">({messageModalApt.phone})</span>
+                <span className="ml-2 font-mono text-emerald-700 dark:text-emerald-300 font-bold">({messageModalApt.phone})</span>
               </div>
               <div>
                 <span className="text-emerald-600 dark:text-emerald-400 block font-semibold text-[11px]">সিরিয়াল ও চেম্বার</span>
@@ -3466,6 +3548,20 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                 এক ক্লিকে প্রিমেড টেমপ্লেট নির্বাচন করুন:
               </label>
               <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMessageTemplateType('compact');
+                    setCustomMessage(buildDefaultMessage(messageModalApt, 'compact'));
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    messageTemplateType === 'compact'
+                      ? 'bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-400'
+                      : 'bg-emerald-100/70 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/70 dark:hover:bg-emerald-900/60'
+                  }`}
+                >
+                  📱 সংক্ষিপ্ত এসএমএস (দ্রুত ও সাশ্রয়ী)
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -3555,12 +3651,12 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
 
             {/* Editable Text Area */}
             <div className="space-y-1.5">
-              <div className="flex justify-between items-center text-xs">
+              <div className="flex flex-wrap justify-between items-center text-xs gap-1">
                 <label className="font-bold text-emerald-950 dark:text-emerald-200">
                   বার্তাটি সম্পাদন করুন (Edit Text):
                 </label>
                 <span className="text-zinc-500 font-mono text-[11px]">
-                  {customMessage.length} অক্ষর
+                  {customMessage.length} অক্ষর (~{Math.max(1, Math.ceil(customMessage.length / 67))}টি এসএমএস পার্ট)
                 </span>
               </div>
               <textarea
@@ -3572,17 +3668,75 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
               />
             </div>
 
+            {/* Status Feedback Banner */}
+            {smsStatusMsg && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs flex items-start gap-2.5 transition-all animate-fade-in ${
+                  smsStatusMsg.type === 'success'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200'
+                    : 'bg-rose-50 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+                }`}
+              >
+                {smsStatusMsg.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 text-[12px] leading-relaxed">
+                  <span className="font-bold block mb-0.5">
+                    {smsStatusMsg.type === 'success' ? 'এসএমএস সফলভাবে প্রেরিত হয়েছে' : 'এসএমএস প্রেরণে সমস্যা'}
+                  </span>
+                  <span>{smsStatusMsg.text}</span>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-t border-emerald-900/10 dark:border-emerald-800/40">
-              <div className="grid grid-cols-2 sm:flex items-center gap-2">
+            <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-emerald-900/10 dark:border-emerald-800/40">
+              {/* Primary 1-Click Send Button & WhatsApp */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSendDirectSms}
+                  disabled={isSendingSms || !customMessage.trim()}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95 text-center"
+                  title="ক্লিক করলেই সরাসরি বাল্কএসএমএস গেটওয়ে দিয়ে রোগীর নম্বরে এসএমএস চলে যাবে"
+                >
+                  {isSendingSms ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>সরাসরি পাঠানো হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>সরাসরি এসএমএস পাঠান (১-ক্লিক)</span>
+                    </>
+                  )}
+                </button>
+
+                <a
+                  href={getWhatsAppUrl(messageModalApt.phone, customMessage)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95 text-center"
+                >
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span>হোয়াটসঅ্যাপ</span>
+                </a>
+              </div>
+
+              {/* Utility Buttons */}
+              <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={handleCopyMessage}
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer text-center"
                 >
                   {copiedToast ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedToast ? 'কপি হয়েছে!' : 'কপি করুন'}</span>
+                  <span>{copiedToast ? 'কপি হয়েছে!' : 'কপি'}</span>
                 </button>
+
                 <a
                   href={getSmsUrl(messageModalApt.phone, customMessage)}
                   onClick={() => {
@@ -3592,31 +3746,23 @@ ${isOffline ? `• চেম্বারের ঠিকানা: ২/১, জ�
                       setTimeout(() => setCopiedToast(false), 2000);
                     } catch {}
                   }}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 text-center"
-                  title="মোবাইল বা কম্পিউটারের এসএমএস অ্যাপে সরাসরি নম্বর ও টেমপ্লেট পাঠান"
+                  className="inline-flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[11px] font-semibold transition-all cursor-pointer text-center"
+                  title="মোবাইলের নিজস্ব মেসেজিং অ্যাপ খুলুন"
                 >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>এসএমএস অ্যাপ</span>
+                  <Phone className="w-3 h-3" />
+                  <span>ডিভাইস অ্যাপ</span>
                 </a>
-              </div>
 
-              <div className="grid grid-cols-2 sm:flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setMessageModalApt(null)}
-                  className="py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-center"
+                  onClick={() => {
+                    setMessageModalApt(null);
+                    setSmsStatusMsg(null);
+                  }}
+                  className="py-2 px-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-center"
                 >
                   বন্ধ করুন
                 </button>
-                <a
-                  href={getWhatsAppUrl(messageModalApt.phone, customMessage)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95 text-center"
-                >
-                  <MessageCircle className="w-4 h-4 fill-white" />
-                  <span>হোয়াটসঅ্যাপ</span>
-                </a>
               </div>
             </div>
           </div>

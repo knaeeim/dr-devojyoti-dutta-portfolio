@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: result.message,
       expiresInSeconds: result.expiresInSeconds,
-      challengeToken: (result as any).challengeToken,
-      debugCode: result.debugCode
+      challengeToken: result.challengeToken,
+      debugCode: result.debugCode,
+      smsSent: result.smsSent,
+      gatewayError: result.gatewayError
     });
   } catch (error: any) {
     return NextResponse.json(

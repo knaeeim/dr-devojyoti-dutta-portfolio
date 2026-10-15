@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { sendDirectSms } from '@/lib/sms/service';
 
 const OTP_SECRET =
   process.env.ADMIN_SESSION_SECRET ||
@@ -69,6 +70,8 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
   expiresInSeconds: number;
   challengeToken?: string;
   debugCode?: string;
+  smsSent?: boolean;
+  gatewayError?: string;
 }> {
   const normalized = normalizePhoneNumber(phone);
   
@@ -95,86 +98,44 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
     verified: false
   });
 
-  const smsText = `ডা. দেবজ্যোতি দত্তের চেম্বার অ্যাপয়েন্টমেন্ট যাচাইকরণ কোড (OTP): ${code}। এই কোডটি ৫ মিনিট কার্যকর থাকবে। কারো সাথে শেয়ার করবেন না।`;
+  const smsText = `ডা. দেবজ্যোতি দত্তের চেম্বার অ্যাপয়েন্টমেন্ট ওটিপি: ${code}। মেয়াদ ৫ মিনিট। কারো সাথে শেয়ার করবেন না। Dr. Devojyoti Dutta.`;
 
-  // 1. Try sending via configured SMS Gateway if credentials exist
-  const smsApiKey = process.env.SMS_API_KEY;
-  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-  const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+  // 1. Try sending via configured SMS Gateway (BulkSMSBD)
   let smsSent = false;
+  let gatewayError: string | undefined;
 
-  if (smsApiKey) {
-    try {
-      // Support BulkSMSBD API (http://bulksmsbd.net/api/smsapi) and generic Bangladesh gateways
-      const senderId = process.env.SMS_SENDER_ID || '';
-      const gatewayUrl = (process.env.SMS_GATEWAY_URL || 'http://bulksmsbd.net/api/smsapi').trim();
-      const cleanNumber = normalized.replace('+', '');
+  const smsResult = await sendDirectSms(normalized, smsText);
+  if (smsResult.success) {
+    smsSent = true;
+    console.log(`[BulkSMSBD] Dispatched real SMS OTP to ${normalized}`);
+  } else {
+    gatewayError = smsResult.error;
+    console.warn(`[BulkSMSBD OTP Warning]:`, gatewayError);
 
-      if (gatewayUrl.includes('bulksmsbd')) {
-        const endpoint = gatewayUrl.replace(/\?.*$/, '');
-        const params = new URLSearchParams({
-          api_key: smsApiKey,
-          type: 'text',
-          number: cleanNumber,
-          senderid: senderId,
-          message: smsText
-        });
-
-        const res = await fetch(endpoint, {
+    // Optional Twilio fallback if Twilio is configured
+    const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+    if (twilioSid && twilioToken) {
+      try {
+        const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+        const auth = Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
+        await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: params
-        });
-
-        const data = await res.json().catch(() => null);
-        console.log(`[BulkSMSBD API Response]`, data);
-
-        // BulkSMSBD returns { response_code: 202, success_message: '...' } on success
-        if (data && (data.response_code === 202 || data.response_code === '202')) {
-          smsSent = true;
-          console.log(`[BulkSMSBD] Dispatched real SMS OTP to ${cleanNumber}`);
-        } else {
-          console.warn(`[BulkSMSBD Notice] Gateway returned code ${data?.response_code}: ${data?.error_message || 'Check balance/sender ID'}`);
-        }
-      } else {
-        // Generic gateway (e.g. Greenweb, Alpha Net)
-        const res = await fetch(gatewayUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
           body: new URLSearchParams({
-            token: smsApiKey,
-            to: cleanNumber,
-            message: smsText
+            To: normalized,
+            From: twilioPhone || '',
+            Body: smsText
           })
         });
-        if (res.ok) {
-          smsSent = true;
-          console.log(`[SMS Gateway] Dispatched real SMS to ${cleanNumber}`);
-        }
+        smsSent = true;
+        console.log(`[Twilio SMS] Dispatched OTP to ${normalized}`);
+      } catch (err) {
+        console.error('[Twilio SMS Error]', err);
       }
-    } catch (err) {
-      console.error('[SMS Gateway Error]', err);
-    }
-  } else if (twilioSid && twilioToken) {
-    try {
-      const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
-      const auth = Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
-      await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          To: normalized,
-          From: twilioPhone || '',
-          Body: smsText
-        })
-      });
-      smsSent = true;
-      console.log(`[Twilio SMS] Dispatched OTP to ${normalized}`);
-    } catch (err) {
-      console.error('[Twilio SMS Error]', err);
     }
   }
 
@@ -195,7 +156,9 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
     expiresInSeconds: 300,
     challengeToken,
     // Provide debugCode for instant demo/testing if real SMS provider isn't configured
-    debugCode: !smsSent ? code : undefined
+    debugCode: !smsSent ? code : undefined,
+    smsSent,
+    gatewayError: !smsSent ? gatewayError : undefined
   };
 }
 
