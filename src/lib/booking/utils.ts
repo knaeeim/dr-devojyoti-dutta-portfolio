@@ -175,7 +175,8 @@ export function getEffectiveTimingForDay(
       endTime: dayConfig.endTime || '21:00',
       breakStart: dayConfig.breakStart || '18:30',
       breakDuration: Number(dayConfig.breakDuration || 30),
-      slotDuration: Number(dayConfig.slotDuration || 15)
+      slotDuration: Number(dayConfig.slotDuration || 15),
+      sessions: dayConfig.sessions && Array.isArray(dayConfig.sessions) ? dayConfig.sessions : undefined
     };
   }
 
@@ -187,7 +188,8 @@ export function getEffectiveTimingForDay(
     endTime: gen.endTime || '21:00',
     breakStart: gen.breakStart || '18:30',
     breakDuration: Number(gen.breakDuration || 30),
-    slotDuration: Number(gen.slotDuration || 15)
+    slotDuration: Number(gen.slotDuration || 15),
+    sessions: gen.sessions && Array.isArray(gen.sessions) ? gen.sessions : undefined
   };
 }
 
@@ -216,6 +218,61 @@ export function getEffectiveTimingForDate(
 export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[] {
   if (!timing || !timing.enabled) return [];
 
+  const slots: Slot[] = [];
+  const defaultDuration = Number(timing.slotDuration) || 15;
+
+  // 1. Multi-session mode: if sessions array exists and has at least one valid session
+  if (Array.isArray(timing.sessions) && timing.sessions.length > 0) {
+    const sortedSessions = [...timing.sessions].sort((a, b) => {
+      const aStart = parseTimeToMinutes(a.startTime);
+      const bStart = parseTimeToMinutes(b.startTime);
+      return aStart - bStart;
+    });
+
+    for (let sIdx = 0; sIdx < sortedSessions.length; sIdx++) {
+      const sess = sortedSessions[sIdx];
+      const startMin = parseTimeToMinutes(sess.startTime);
+      const endMin = parseTimeToMinutes(sess.endTime);
+      if (isNaN(startMin) || isNaN(endMin) || startMin >= endMin) continue;
+
+      const rawDuration = Number(sess.slotDuration || defaultDuration);
+      const duration = isNaN(rawDuration) || rawDuration < 1 ? 15 : Math.max(1, Math.min(240, rawDuration));
+
+      let cur = startMin;
+      let iterations = 0;
+      const MAX_SLOTS = 200;
+
+      while (cur + duration <= endMin && iterations++ < MAX_SLOTS) {
+        const slotEnd = cur + duration;
+        const startFormatted = formatTime12h(cur);
+        const endFormatted = formatTime12h(slotEnd);
+        const slotId = `slot_${cur}_${slotEnd}`;
+
+        if (!slots.some((s) => s.id === slotId)) {
+          slots.push({
+            id: slotId,
+            startMinutes: cur,
+            endMinutes: slotEnd,
+            timeEn: `${startFormatted.timeEn} - ${endFormatted.timeEn}`,
+            timeBn: `${startFormatted.timeBn} - ${endFormatted.timeBn}`,
+            shortEn: startFormatted.timeEn,
+            shortBn: startFormatted.timeBn,
+            period: startFormatted.period,
+            periodTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn,
+            sessionId: sess.id || `session_${sIdx + 1}`,
+            sessionTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn
+          });
+        }
+
+        cur += duration;
+      }
+    }
+
+    slots.sort((a, b) => a.startMinutes - b.startMinutes);
+    return slots;
+  }
+
+  // 2. Standard single block mode with optional break window
   const startMin = parseTimeToMinutes(timing.startTime);
   const endMin = parseTimeToMinutes(timing.endTime);
   if (isNaN(startMin) || isNaN(endMin) || startMin >= endMin) return [];
@@ -227,7 +284,6 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
   const breakStartMin = timing.breakStart ? parseTimeToMinutes(timing.breakStart) : -1;
   const breakEndMin = breakStartMin >= 0 ? breakStartMin + validBreakDuration : -1;
 
-  const slots: Slot[] = [];
   let cur = startMin;
   let iterations = 0;
   const MAX_SLOTS = 200; // Physical safety limit
@@ -359,7 +415,15 @@ export function getUpcomingDates(
       // If ended, completely skip today so it does not show up anymore!
       if (diffDays === 0) {
         const timing = getEffectiveTimingForDate(schedule, dateStr);
-        const endMin = timing ? parseTimeToMinutes(timing.endTime) : 0;
+        let endMin = 0;
+        if (timing?.sessions && timing.sessions.length > 0) {
+          for (const s of timing.sessions) {
+            const m = parseTimeToMinutes(s.endTime);
+            if (m > endMin) endMin = m;
+          }
+        } else if (timing) {
+          endMin = parseTimeToMinutes(timing.endTime);
+        }
         const isTodayEnded = endMin > 0 && endMin <= dhakaNow.currentMinutes;
         if (isTodayEnded) {
           // Today's chamber time is over, remove today completely

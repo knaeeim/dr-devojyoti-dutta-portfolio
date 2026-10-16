@@ -49,14 +49,17 @@ import {
   ArrowDown,
   Loader2,
   MessageSquare,
-  Coins
+  Coins,
+  Layers,
+  Split
 } from 'lucide-react';
 import {
   Appointment,
   AppointmentStatus,
   ChamberMode,
   ChamberSchedule,
-  DayScheduleConfig
+  DayScheduleConfig,
+  ScheduleSession
 } from '@/types/booking';
 import {
   defaultSchedules,
@@ -204,6 +207,8 @@ export default function AdminDashboardPage() {
   const [overrideBreakDuration, setOverrideBreakDuration] = useState(30);
   const [overrideSlotDuration, setOverrideSlotDuration] = useState(15);
   const [overrideEnabled, setOverrideEnabled] = useState(true);
+  const [overrideIsMultiSession, setOverrideIsMultiSession] = useState(false);
+  const [overrideSessions, setOverrideSessions] = useState<ScheduleSession[]>([]);
 
   // Password Change Modal State
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -1157,10 +1162,237 @@ export default function AdminDashboardPage() {
     });
   };
 
+  // Toggle between Single-Block mode and Multi-Session mode for a day
+  const handleToggleDayMultiSession = (dayIndex: number) => {
+    setSchedules((prev) => {
+      const chamber = { ...prev[scheduleActiveChamber] };
+      const daySchedules = { ...chamber.daySchedules };
+      const currentDay = daySchedules[dayIndex] || {
+        enabled: true,
+        dayNameBn: '',
+        startTime: '16:00',
+        endTime: '21:00',
+        breakStart: '18:30',
+        breakDuration: 30,
+        slotDuration: 15
+      };
+
+      if (Array.isArray(currentDay.sessions) && currentDay.sessions.length > 0) {
+        // Switch back to single block: clear sessions
+        daySchedules[dayIndex] = { ...currentDay, sessions: undefined };
+      } else {
+        // Switch to multi-session: initialize default sessions (e.g. morning, afternoon, evening)
+        const defaultDur = currentDay.slotDuration || 15;
+        const initialSessions: ScheduleSession[] = [
+          {
+            id: `sess_${Date.now()}_1`,
+            titleBn: 'সকাল সেশন',
+            startTime: '09:30',
+            endTime: '11:30',
+            slotDuration: defaultDur
+          },
+          {
+            id: `sess_${Date.now()}_2`,
+            titleBn: 'বিকাল সেশন',
+            startTime: '15:30',
+            endTime: '17:00',
+            slotDuration: defaultDur
+          },
+          {
+            id: `sess_${Date.now()}_3`,
+            titleBn: 'রাত সেশন',
+            startTime: '19:00',
+            endTime: '21:00',
+            slotDuration: defaultDur
+          }
+        ];
+        daySchedules[dayIndex] = { ...currentDay, sessions: initialSessions };
+      }
+
+      return {
+        ...prev,
+        [scheduleActiveChamber]: { ...chamber, daySchedules }
+      };
+    });
+  };
+
+  // Add a new session to a day
+  const handleAddDaySession = (dayIndex: number) => {
+    setSchedules((prev) => {
+      const chamber = { ...prev[scheduleActiveChamber] };
+      const daySchedules = { ...chamber.daySchedules };
+      const currentDay = daySchedules[dayIndex];
+      if (!currentDay) return prev;
+
+      const sessions = Array.isArray(currentDay.sessions) ? [...currentDay.sessions] : [];
+      const defaultDur = currentDay.slotDuration || 15;
+
+      let start = '19:00';
+      let end = '21:00';
+      let title = `সেশন ${sessions.length + 1}`;
+      if (sessions.length > 0) {
+        const last = sessions[sessions.length - 1];
+        const lastEndMin = parseTimeToMinutes(last.endTime);
+        const nextStartMin = Math.min(23 * 60, lastEndMin + 30);
+        const nextEndMin = Math.min(23 * 60 + 45, nextStartMin + 90);
+        start = `${String(Math.floor(nextStartMin / 60)).padStart(2, '0')}:${String(nextStartMin % 60).padStart(2, '0')}`;
+        end = `${String(Math.floor(nextEndMin / 60)).padStart(2, '0')}:${String(nextEndMin % 60).padStart(2, '0')}`;
+      }
+
+      sessions.push({
+        id: `sess_${Date.now()}_${sessions.length + 1}`,
+        titleBn: title,
+        startTime: start,
+        endTime: end,
+        slotDuration: defaultDur
+      });
+
+      daySchedules[dayIndex] = { ...currentDay, sessions };
+      return {
+        ...prev,
+        [scheduleActiveChamber]: { ...chamber, daySchedules }
+      };
+    });
+  };
+
+  // Update a session in a day
+  const handleUpdateDaySession = (
+    dayIndex: number,
+    sessionIndex: number,
+    field: keyof ScheduleSession,
+    value: any
+  ) => {
+    setSchedules((prev) => {
+      const chamber = { ...prev[scheduleActiveChamber] };
+      const daySchedules = { ...chamber.daySchedules };
+      const currentDay = daySchedules[dayIndex];
+      if (!currentDay || !Array.isArray(currentDay.sessions)) return prev;
+
+      const sessions = [...currentDay.sessions];
+      const target = { ...sessions[sessionIndex] };
+      if (field === 'slotDuration') {
+        target.slotDuration = Math.max(5, Math.min(120, Number(value) || 15));
+      } else {
+        (target as any)[field] = value;
+      }
+      sessions[sessionIndex] = target;
+
+      daySchedules[dayIndex] = { ...currentDay, sessions };
+      return {
+        ...prev,
+        [scheduleActiveChamber]: { ...chamber, daySchedules }
+      };
+    });
+  };
+
+  // Remove a session from a day
+  const handleRemoveDaySession = (dayIndex: number, sessionIndex: number) => {
+    setSchedules((prev) => {
+      const chamber = { ...prev[scheduleActiveChamber] };
+      const daySchedules = { ...chamber.daySchedules };
+      const currentDay = daySchedules[dayIndex];
+      if (!currentDay || !Array.isArray(currentDay.sessions)) return prev;
+
+      const sessions = currentDay.sessions.filter((_, i) => i !== sessionIndex);
+      daySchedules[dayIndex] = {
+        ...currentDay,
+        sessions: sessions.length > 0 ? sessions : undefined
+      };
+
+      return {
+        ...prev,
+        [scheduleActiveChamber]: { ...chamber, daySchedules }
+      };
+    });
+  };
+
+  // Multi-session handlers for Date Override Form
+  const handleToggleOverrideMultiSession = () => {
+    if (!overrideIsMultiSession) {
+      if (overrideSessions.length === 0) {
+        setOverrideSessions([
+          {
+            id: `session_1_${Date.now()}`,
+            titleBn: 'সকাল সেশন',
+            startTime: overrideStart || '09:30',
+            endTime: '11:30',
+            slotDuration: overrideSlotDuration || 15
+          },
+          {
+            id: `session_2_${Date.now() + 1}`,
+            titleBn: 'বিকাল সেশন',
+            startTime: '15:30',
+            endTime: overrideEnd || '17:00',
+            slotDuration: overrideSlotDuration || 15
+          }
+        ]);
+      }
+      setOverrideIsMultiSession(true);
+    } else {
+      setOverrideIsMultiSession(false);
+    }
+  };
+
+  const handleAddOverrideSession = () => {
+    const nextIdx = overrideSessions.length + 1;
+    const defaultTitle =
+      nextIdx === 1 ? 'সকাল সেশন' : nextIdx === 2 ? 'বিকাল সেশন' : nextIdx === 3 ? 'রাত সেশন' : `সেশন ${toBengaliNumber(nextIdx)}`;
+    const lastSession = overrideSessions[overrideSessions.length - 1];
+    let newStart = '19:00';
+    let newEnd = '21:00';
+    if (lastSession?.endTime) {
+      const parts = lastSession.endTime.split(':').map(Number);
+      const endMins = (parts[0] || 0) * 60 + (parts[1] || 0) + 60;
+      const sH = String(Math.floor(endMins / 60) % 24).padStart(2, '0');
+      const sM = String(endMins % 60).padStart(2, '0');
+      const eMins = endMins + 120;
+      const eH = String(Math.floor(eMins / 60) % 24).padStart(2, '0');
+      const eM = String(eMins % 60).padStart(2, '0');
+      newStart = `${sH}:${sM}`;
+      newEnd = `${eH}:${eM}`;
+    }
+    setOverrideSessions((prev) => [
+      ...prev,
+      {
+        id: `session_${Date.now()}`,
+        titleBn: defaultTitle,
+        startTime: newStart,
+        endTime: newEnd,
+        slotDuration: overrideSlotDuration || 15
+      }
+    ]);
+  };
+
+  const handleUpdateOverrideSession = (
+    sessionIndex: number,
+    field: keyof ScheduleSession,
+    value: any
+  ) => {
+    setOverrideSessions((prev) => {
+      const updated = [...prev];
+      const target = { ...updated[sessionIndex] };
+      if (field === 'slotDuration') {
+        target.slotDuration = Math.max(5, Math.min(120, Number(value) || 15));
+      } else {
+        (target as any)[field] = value;
+      }
+      updated[sessionIndex] = target;
+      return updated;
+    });
+  };
+
+  const handleRemoveOverrideSession = (sessionIndex: number) => {
+    setOverrideSessions((prev) => prev.filter((_, i) => i !== sessionIndex));
+  };
+
   // Add Date-Specific Override
   const handleAddDateOverride = () => {
     if (!overrideDate) {
       showAlert('অনুগ্রহ করে একটি নির্দিষ্ট তারিখ নির্বাচন করুন।', 'তারিখ নির্বাচন আবশ্যক', 'warning');
+      return;
+    }
+    if (overrideEnabled && overrideIsMultiSession && overrideSessions.length === 0) {
+      showAlert('সেশনভিত্তিক শিডিউলে কমপক্ষে একটি সেশন যোগ করুন।', 'সেশন প্রয়োজন', 'warning');
       return;
     }
     setSchedules((prev) => {
@@ -1173,7 +1405,8 @@ export default function AdminDashboardPage() {
         endTime: overrideEnd,
         breakStart: overrideBreakStart,
         breakDuration: Math.max(0, Number(overrideBreakDuration) || 0),
-        slotDuration: Math.max(5, Math.min(240, Number(overrideSlotDuration) || 15))
+        slotDuration: Math.max(5, Math.min(240, Number(overrideSlotDuration) || 15)),
+        sessions: overrideIsMultiSession && overrideSessions.length > 0 ? overrideSessions : undefined
       };
       return {
         ...prev,
@@ -1182,6 +1415,8 @@ export default function AdminDashboardPage() {
     });
     setOverrideDate('');
     setOverrideLabel('');
+    setOverrideSessions([]);
+    setOverrideIsMultiSession(false);
   };
 
   // Remove Date-Specific Override
@@ -1232,6 +1467,32 @@ export default function AdminDashboardPage() {
       cur += validDuration;
     }
     return count;
+  };
+
+  // Day total slot count helper (calculates sessions or single block)
+  const calcDaySlotCount = (dayObj?: DayScheduleConfig): number => {
+    if (!dayObj || !dayObj.enabled) return 0;
+    if (Array.isArray(dayObj.sessions) && dayObj.sessions.length > 0) {
+      return dayObj.sessions.reduce((acc, sess) => {
+        return (
+          acc +
+          calcSlotCount(
+            sess.startTime,
+            sess.endTime,
+            undefined,
+            0,
+            sess.slotDuration || dayObj.slotDuration || 15
+          )
+        );
+      }, 0);
+    }
+    return calcSlotCount(
+      dayObj.startTime,
+      dayObj.endTime,
+      dayObj.breakStart,
+      dayObj.breakDuration,
+      dayObj.slotDuration
+    );
   };
 
   // Calculations for stats
@@ -3175,15 +3436,8 @@ export default function AdminDashboardPage() {
                       slotDuration: 15
                     };
                     const isEnabled = dayObj.enabled;
-                    const daySlotCount = isEnabled
-                      ? calcSlotCount(
-                          dayObj.startTime,
-                          dayObj.endTime,
-                          dayObj.breakStart,
-                          dayObj.breakDuration,
-                          dayObj.slotDuration
-                        )
-                      : 0;
+                    const isMultiSession = Array.isArray(dayObj.sessions) && dayObj.sessions.length > 0;
+                    const daySlotCount = isEnabled ? calcDaySlotCount(dayObj) : 0;
 
                     return (
                       <div
@@ -3194,15 +3448,30 @@ export default function AdminDashboardPage() {
                             : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/20 opacity-70'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="font-serif font-bold text-sm text-emerald-950 dark:text-emerald-100">
+                        <div className="flex flex-wrap items-center justify-between gap-2.5">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-serif font-bold text-sm sm:text-base text-emerald-950 dark:text-emerald-100">
                               {dayObj.dayNameBn}
                             </span>
                             {isEnabled && (
-                              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
-                                মোট {toBengaliNumber(daySlotCount)}টি স্লট
-                              </span>
+                              <>
+                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                  মোট {toBengaliNumber(daySlotCount)}টি স্লট {isMultiSession ? `(${toBengaliNumber(dayObj.sessions!.length)}টি সেশন)` : ''}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleDayMultiSession(dayIdx)}
+                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border cursor-pointer active:scale-95 ${
+                                    isMultiSession
+                                      ? 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/80 dark:hover:bg-amber-900 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                                      : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+                                  }`}
+                                  title={isMultiSession ? 'একক সময় ব্লকে ফিরে যান' : 'সকাল, বিকাল ও রাত একাধিক ভাগে সেশন বিভক্ত করুন'}
+                                >
+                                  <Layers className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                  <span>{isMultiSession ? 'সেশন ভিত্তিক সক্রিয়' : 'একাধিক ভাগে সেশন করুন'}</span>
+                                </button>
+                              </>
                             )}
                           </div>
 
@@ -3221,116 +3490,233 @@ export default function AdminDashboardPage() {
 
                         {isEnabled && (
                           <div className="space-y-3 pt-3 border-t border-emerald-900/10 dark:border-emerald-800/40 text-xs">
-                            {/* Times: 3 Columns */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <TimePicker12h
-                                label="শুরুর সময়"
-                                value={dayObj.startTime || '16:00'}
-                                onChange={(val) => handleUpdateDayTiming(dayIdx, 'startTime', val)}
-                              />
-                              <TimePicker12h
-                                label="সমাপ্তির সময়"
-                                value={dayObj.endTime || '21:00'}
-                                onChange={(val) => handleUpdateDayTiming(dayIdx, 'endTime', val)}
-                              />
-                              <TimePicker12h
-                                label="বিরতির শুরু"
-                                value={dayObj.breakStart || '18:30'}
-                                onChange={(val) => handleUpdateDayTiming(dayIdx, 'breakStart', val)}
-                              />
-                            </div>
+                            {isMultiSession ? (
+                              /* MULTI-SESSION BUILDER FOR THIS DAY */
+                              <div className="space-y-2.5">
+                                <div className="flex flex-wrap items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
+                                  <span>এই দিনে একাধিক ভাগে সেশন নির্ধারিত (যেমন: সকাল, বিকাল, রাত):</span>
+                                  <span className="text-[10px] opacity-75">প্রয়োজনমতো সময় ও স্লট নির্ধারণ করুন</span>
+                                </div>
 
-                            {/* Durations: 2 Columns */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-emerald-900/10 dark:border-emerald-800/20 max-w-lg">
-                              <div>
-                                <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
-                                  বিরতির সময় (মিনিট)
-                                </label>
-                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    step="5"
-                                    value={dayObj.breakDuration ?? 30}
-                                    onChange={(e) =>
-                                      handleUpdateDayTiming(
-                                        dayIdx,
-                                        'breakDuration',
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <div className="flex items-center justify-between mb-1">
-                                  <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                                    প্রতি স্লটের সময়
-                                  </label>
-                                  <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                                    {toBengaliNumber(dayObj.slotDuration ?? 15)} মিনিট
-                                  </span>
-                                </div>
-                                <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const cur = Number(dayObj.slotDuration) || 15;
-                                      handleUpdateDayTiming(dayIdx, 'slotDuration', Math.max(5, cur - 5));
-                                    }}
-                                    className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
-                                    title="৫ মিনিট কমান"
-                                  >
-                                    <Minus className="w-3.5 h-3.5" />
-                                  </button>
-                                  <input
-                                    type="number"
-                                    min="5"
-                                    max="120"
-                                    step="5"
-                                    value={dayObj.slotDuration ?? 15}
-                                    onChange={(e) => {
-                                      const v = e.target.value === '' ? '' : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
-                                      handleUpdateDayTiming(dayIdx, 'slotDuration', v);
-                                    }}
-                                    onBlur={(e) => {
-                                      if (!e.target.value || Number(e.target.value) < 5) {
-                                        handleUpdateDayTiming(dayIdx, 'slotDuration', 15);
-                                      }
-                                    }}
-                                    className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const cur = Number(dayObj.slotDuration) || 15;
-                                      handleUpdateDayTiming(dayIdx, 'slotDuration', Math.min(120, cur + 5));
-                                    }}
-                                    className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
-                                    title="৫ মিনিট বাড়ান"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                  {[10, 15, 20, 30].map((mins) => (
-                                    <button
-                                      key={mins}
-                                      type="button"
-                                      onClick={() => handleUpdateDayTiming(dayIdx, 'slotDuration', mins)}
-                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                                        (dayObj.slotDuration ?? 15) === mins
-                                          ? 'bg-emerald-800 text-amber-300 shadow-xs'
-                                          : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
-                                      }`}
+                                {dayObj.sessions!.map((sess, sIdx) => {
+                                  const sessSlotCount = calcSlotCount(
+                                    sess.startTime,
+                                    sess.endTime,
+                                    undefined,
+                                    0,
+                                    sess.slotDuration || dayObj.slotDuration || 15
+                                  );
+
+                                  return (
+                                    <div
+                                      key={sess.id || sIdx}
+                                      className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 space-y-2.5 transition-all"
                                     >
-                                      {toBengaliNumber(mins)} মি.
-                                    </button>
-                                  ))}
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                          <span className="w-5 h-5 rounded-full bg-emerald-800 text-amber-300 flex items-center justify-center text-[10px] font-bold shrink-0">
+                                            {toBengaliNumber(sIdx + 1)}
+                                          </span>
+                                          <input
+                                            type="text"
+                                            value={sess.titleBn || ''}
+                                            placeholder="সেশনের নাম (যেমন: সকাল সেশন)"
+                                            onChange={(e) =>
+                                              handleUpdateDaySession(dayIdx, sIdx, 'titleBn', e.target.value)
+                                            }
+                                            className="py-1 px-2.5 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-[#13201a] text-xs font-bold text-emerald-950 dark:text-emerald-100 w-36 sm:w-44 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                          />
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800">
+                                            {toBengaliNumber(sessSlotCount)}টি স্লট
+                                          </span>
+                                          {dayObj.sessions!.length > 1 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleRemoveDaySession(dayIdx, sIdx)}
+                                              className="p-1 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                                              title="এই সেশনটি মুছুন"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                                        <TimePicker12h
+                                          label="শুরুর সময়"
+                                          value={sess.startTime || '09:30'}
+                                          onChange={(val) =>
+                                            handleUpdateDaySession(dayIdx, sIdx, 'startTime', val)
+                                          }
+                                        />
+                                        <TimePicker12h
+                                          label="সমাপ্তির সময়"
+                                          value={sess.endTime || '11:30'}
+                                          onChange={(val) =>
+                                            handleUpdateDaySession(dayIdx, sIdx, 'endTime', val)
+                                          }
+                                        />
+                                        <div>
+                                          <div className="flex items-center justify-between mb-1">
+                                            <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                              স্লটের সময়
+                                            </label>
+                                            <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                                              {toBengaliNumber(sess.slotDuration || dayObj.slotDuration || 15)} মি.
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-1 flex-wrap">
+                                            {[10, 15, 20, 30].map((mins) => (
+                                              <button
+                                                key={mins}
+                                                type="button"
+                                                onClick={() =>
+                                                  handleUpdateDaySession(dayIdx, sIdx, 'slotDuration', mins)
+                                                }
+                                                className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                                  (sess.slotDuration || dayObj.slotDuration || 15) === mins
+                                                    ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                                    : 'bg-white dark:bg-[#13201a] text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                                }`}
+                                              >
+                                                {toBengaliNumber(mins)} মি.
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddDaySession(dayIdx)}
+                                  className="w-full py-2.5 px-3 rounded-xl border border-dashed border-emerald-400 dark:border-emerald-700 bg-white/70 dark:bg-emerald-950/30 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                                >
+                                  <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                  <span>+ আরও একটি সেশন/শিফট যোগ করুন (যেমন: বিকাল বা রাত)</span>
+                                </button>
+                              </div>
+                            ) : (
+                              /* SINGLE CONTINUOUS BLOCK WITH OPTIONAL BREAK */
+                              <div className="space-y-3">
+                                {/* Times: 3 Columns */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  <TimePicker12h
+                                    label="শুরুর সময়"
+                                    value={dayObj.startTime || '16:00'}
+                                    onChange={(val) => handleUpdateDayTiming(dayIdx, 'startTime', val)}
+                                  />
+                                  <TimePicker12h
+                                    label="সমাপ্তির সময়"
+                                    value={dayObj.endTime || '21:00'}
+                                    onChange={(val) => handleUpdateDayTiming(dayIdx, 'endTime', val)}
+                                  />
+                                  <TimePicker12h
+                                    label="বিরতির শুরু"
+                                    value={dayObj.breakStart || '18:30'}
+                                    onChange={(val) => handleUpdateDayTiming(dayIdx, 'breakStart', val)}
+                                  />
+                                </div>
+
+                                {/* Durations: 2 Columns */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-emerald-900/10 dark:border-emerald-800/20 max-w-lg">
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
+                                      বিরতির সময় (মিনিট)
+                                    </label>
+                                    <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="5"
+                                        value={dayObj.breakDuration ?? 30}
+                                        onChange={(e) =>
+                                          handleUpdateDayTiming(
+                                            dayIdx,
+                                            'breakDuration',
+                                            Number(e.target.value)
+                                          )
+                                        }
+                                        className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                      <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                        প্রতি স্লটের সময়
+                                      </label>
+                                      <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                                        {toBengaliNumber(dayObj.slotDuration ?? 15)} মিনিট
+                                      </span>
+                                    </div>
+                                    <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const cur = Number(dayObj.slotDuration) || 15;
+                                          handleUpdateDayTiming(dayIdx, 'slotDuration', Math.max(5, cur - 5));
+                                        }}
+                                        className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                        title="৫ মিনিট কমান"
+                                      >
+                                        <Minus className="w-3.5 h-3.5" />
+                                      </button>
+                                      <input
+                                        type="number"
+                                        min="5"
+                                        max="120"
+                                        step="5"
+                                        value={dayObj.slotDuration ?? 15}
+                                        onChange={(e) => {
+                                          const v = e.target.value === '' ? '' : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
+                                          handleUpdateDayTiming(dayIdx, 'slotDuration', v);
+                                        }}
+                                        onBlur={(e) => {
+                                          if (!e.target.value || Number(e.target.value) < 5) {
+                                            handleUpdateDayTiming(dayIdx, 'slotDuration', 15);
+                                          }
+                                        }}
+                                        className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const cur = Number(dayObj.slotDuration) || 15;
+                                          handleUpdateDayTiming(dayIdx, 'slotDuration', Math.min(120, cur + 5));
+                                        }}
+                                        className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                        title="৫ মিনিট বাড়ান"
+                                      >
+                                        <Plus className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                      {[10, 15, 20, 30].map((mins) => (
+                                        <button
+                                          key={mins}
+                                          type="button"
+                                          onClick={() => handleUpdateDayTiming(dayIdx, 'slotDuration', mins)}
+                                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                            (dayObj.slotDuration ?? 15) === mins
+                                              ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                              : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
+                                          }`}
+                                        >
+                                          {toBengaliNumber(mins)} মি.
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -3399,110 +3785,274 @@ export default function AdminDashboardPage() {
 
                 {overrideEnabled && (
                   <div className="space-y-3 pt-3 border-t border-amber-100 dark:border-amber-900/30 text-xs">
-                    {/* Times: 3 Columns */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <TimePicker12h
-                        label="শুরুর সময়"
-                        value={overrideStart}
-                        onChange={(val) => setOverrideStart(val)}
-                      />
-                      <TimePicker12h
-                        label="সমাপ্তির সময়"
-                        value={overrideEnd}
-                        onChange={(val) => setOverrideEnd(val)}
-                      />
-                      <TimePicker12h
-                        label="বিরতির শুরু"
-                        value={overrideBreakStart}
-                        onChange={(val) => setOverrideBreakStart(val)}
-                      />
+                    {/* Session Mode Selector */}
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-800/60">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+                        <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                          সেশন বিভাজন (একাধিক ভাগ / শিফট)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleToggleOverrideMultiSession}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          overrideIsMultiSession
+                            ? 'bg-amber-600 text-white shadow-xs'
+                            : 'bg-white dark:bg-[#13201a] text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 hover:bg-amber-50'
+                        }`}
+                      >
+                        <Split className="w-3.5 h-3.5" />
+                        {overrideIsMultiSession ? 'সেশন ভিত্তিক সক্রিয়' : 'একাধিক ভাগে সেশন করুন'}
+                      </button>
                     </div>
 
-                    {/* Durations: 2 Columns */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-200/50 dark:border-amber-900/30 max-w-lg">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
-                          বিরতির সময় (মিনিট)
-                        </label>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
-                          <input
-                            type="number"
-                            min="0"
-                            step="5"
-                            value={overrideBreakDuration}
-                            onChange={(e) => setOverrideBreakDuration(Number(e.target.value))}
-                            className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                          />
+                    {overrideIsMultiSession ? (
+                      /* Multi-Session Builder for Specific Date */
+                      <div className="space-y-3 pt-1">
+                        <div className="space-y-2">
+                          {overrideSessions.map((session, sIdx) => {
+                            const sessSlots = calcSlotCount(
+                              session.startTime,
+                              session.endTime,
+                              undefined,
+                              0,
+                              session.slotDuration || overrideSlotDuration || 15
+                            );
+                            return (
+                              <div
+                                key={session.id || sIdx}
+                                className="p-3 rounded-xl bg-amber-100/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 space-y-2.5"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <span className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                      {toBengaliNumber(sIdx + 1)}
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={session.titleBn}
+                                      placeholder="যেমন: সকাল সেশন / বিকাল সেশন"
+                                      onChange={(e) =>
+                                        handleUpdateOverrideSession(sIdx, 'titleBn', e.target.value)
+                                      }
+                                      className="font-bold text-xs bg-white dark:bg-[#13201a] px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100 max-w-[200px]"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 font-mono">
+                                      {toBengaliNumber(sessSlots)}টি স্লট
+                                    </span>
+                                    {overrideSessions.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveOverrideSession(sIdx)}
+                                        className="p-1 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors"
+                                        title="এই সেশনটি মুছে ফেলুন"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                                  <TimePicker12h
+                                    label="শুরুর সময়"
+                                    value={session.startTime}
+                                    onChange={(val) =>
+                                      handleUpdateOverrideSession(sIdx, 'startTime', val)
+                                    }
+                                  />
+                                  <TimePicker12h
+                                    label="সমাপ্তির সময়"
+                                    value={session.endTime}
+                                    onChange={(val) =>
+                                      handleUpdateOverrideSession(sIdx, 'endTime', val)
+                                    }
+                                  />
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
+                                      প্রতি স্লট (মিনিট)
+                                    </label>
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        min="5"
+                                        max="120"
+                                        step="5"
+                                        value={session.slotDuration ?? overrideSlotDuration ?? 15}
+                                        onChange={(e) =>
+                                          handleUpdateOverrideSession(
+                                            sIdx,
+                                            'slotDuration',
+                                            Number(e.target.value)
+                                          )
+                                        }
+                                        className="w-full py-1.5 px-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] font-mono text-xs text-center font-bold text-emerald-950 dark:text-emerald-100"
+                                      />
+                                      <div className="flex gap-1">
+                                        {[10, 15, 20].map((mins) => (
+                                          <button
+                                            key={mins}
+                                            type="button"
+                                            onClick={() =>
+                                              handleUpdateOverrideSession(sIdx, 'slotDuration', mins)
+                                            }
+                                            className={`px-1.5 py-1 rounded text-[10px] font-bold cursor-pointer ${
+                                              (session.slotDuration ?? 15) === mins
+                                                ? 'bg-amber-600 text-white'
+                                                : 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                            }`}
+                                          >
+                                            {toBengaliNumber(mins)}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                            প্রতি স্লটের সময়
-                          </label>
-                          <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                            {toBengaliNumber(overrideSlotDuration || 15)} মিনিট
-                          </span>
-                        </div>
-                        <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
+
+                        <div className="flex items-center justify-between pt-1">
                           <button
                             type="button"
-                            onClick={() => {
-                              const cur = Number(overrideSlotDuration) || 15;
-                              setOverrideSlotDuration(Math.max(5, cur - 5));
-                            }}
-                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
-                            title="৫ মিনিট কমান"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <input
-                            type="number"
-                            min="5"
-                            max="120"
-                            step="5"
-                            value={overrideSlotDuration}
-                            onChange={(e) => {
-                              const v = e.target.value === '' ? 15 : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
-                              setOverrideSlotDuration(v);
-                            }}
-                            onBlur={(e) => {
-                              if (!e.target.value || Number(e.target.value) < 5) {
-                                setOverrideSlotDuration(15);
-                              }
-                            }}
-                            className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const cur = Number(overrideSlotDuration) || 15;
-                              setOverrideSlotDuration(Math.min(120, cur + 5));
-                            }}
-                            className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
-                            title="৫ মিনিট বাড়ান"
+                            onClick={handleAddOverrideSession}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-amber-400 text-amber-800 dark:text-amber-200 hover:bg-amber-100/50 dark:hover:bg-amber-950/50 text-xs font-bold transition-all cursor-pointer"
                           >
                             <Plus className="w-3.5 h-3.5" />
+                            <span>+ আরও একটি সেশন/শিফট যোগ করুন</span>
                           </button>
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                          {[10, 15, 20, 30].map((mins) => (
-                            <button
-                              key={mins}
-                              type="button"
-                              onClick={() => setOverrideSlotDuration(mins)}
-                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                                (overrideSlotDuration || 15) === mins
-                                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
-                                  : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
-                              }`}
-                            >
-                              {toBengaliNumber(mins)} মি.
-                            </button>
-                          ))}
+                          <span className="text-xs font-bold text-amber-900 dark:text-amber-200 font-mono">
+                            মোট স্লট:{' '}
+                            {toBengaliNumber(
+                              overrideSessions.reduce((acc, sess) => {
+                                return (
+                                  acc +
+                                  calcSlotCount(
+                                    sess.startTime,
+                                    sess.endTime,
+                                    undefined,
+                                    0,
+                                    sess.slotDuration || overrideSlotDuration || 15
+                                  )
+                                );
+                              }, 0)
+                            )}
+                            টি
+                          </span>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Single Continuous Block Controls */
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <TimePicker12h
+                            label="শুরুর সময়"
+                            value={overrideStart}
+                            onChange={(val) => setOverrideStart(val)}
+                          />
+                          <TimePicker12h
+                            label="সমাপ্তির সময়"
+                            value={overrideEnd}
+                            onChange={(val) => setOverrideEnd(val)}
+                          />
+                          <TimePicker12h
+                            label="বিরতির শুরু"
+                            value={overrideBreakStart}
+                            onChange={(val) => setOverrideBreakStart(val)}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-200/50 dark:border-amber-900/30 max-w-lg">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
+                              বিরতির সময় (মিনিট)
+                            </label>
+                            <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm">
+                              <input
+                                type="number"
+                                min="0"
+                                step="5"
+                                value={overrideBreakDuration}
+                                onChange={(e) => setOverrideBreakDuration(Number(e.target.value))}
+                                className="w-full py-1.5 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                প্রতি স্লটের সময়
+                              </label>
+                              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                                {toBengaliNumber(overrideSlotDuration || 15)} মিনিট
+                              </span>
+                            </div>
+                            <div className="p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] shadow-sm flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const cur = Number(overrideSlotDuration) || 15;
+                                  setOverrideSlotDuration(Math.max(5, cur - 5));
+                                }}
+                                className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                title="৫ মিনিট কমান"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <input
+                                type="number"
+                                min="5"
+                                max="120"
+                                step="5"
+                                value={overrideSlotDuration}
+                                onChange={(e) => {
+                                  const v = e.target.value === '' ? 15 : Math.max(1, Math.min(180, parseInt(e.target.value) || 15));
+                                  setOverrideSlotDuration(v);
+                                }}
+                                onBlur={(e) => {
+                                  if (!e.target.value || Number(e.target.value) < 5) {
+                                    setOverrideSlotDuration(15);
+                                  }
+                                }}
+                                className="w-full py-1 px-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/80 font-mono text-xs text-center text-emerald-950 dark:text-emerald-100 font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const cur = Number(overrideSlotDuration) || 15;
+                                  setOverrideSlotDuration(Math.min(120, cur + 5));
+                                }}
+                                className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:hover:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                                title="৫ মিনিট বাড়ান"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                              {[10, 15, 20, 30].map((mins) => (
+                                <button
+                                  key={mins}
+                                  type="button"
+                                  onClick={() => setOverrideSlotDuration(mins)}
+                                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
+                                    (overrideSlotDuration || 15) === mins
+                                      ? 'bg-emerald-800 text-amber-300 shadow-xs'
+                                      : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
+                                  }`}
+                                >
+                                  {toBengaliNumber(mins)} মি.
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -3510,7 +4060,7 @@ export default function AdminDashboardPage() {
                   <button
                     type="button"
                     onClick={handleAddDateOverride}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>বিশেষ তারিখ সংরক্ষণ করুন</span>
@@ -3527,22 +4077,15 @@ export default function AdminDashboardPage() {
                     </span>
                     <div className="divide-y divide-amber-200 dark:divide-amber-900/40 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-white dark:bg-[#13201a] overflow-hidden text-xs">
                       {Object.entries(currentChamber.dateOverrides).map(([dStr, cfg]) => {
-                        const slots = cfg.enabled
-                          ? calcSlotCount(
-                              cfg.startTime,
-                              cfg.endTime,
-                              cfg.breakStart,
-                              cfg.breakDuration,
-                              cfg.slotDuration
-                            )
-                          : 0;
+                        const slots = cfg.enabled ? calcDaySlotCount(cfg as any) : 0;
+                        const hasSessions = Array.isArray(cfg.sessions) && cfg.sessions.length > 0;
                         return (
                           <div
                             key={dStr}
                             className="p-3 flex flex-wrap items-center justify-between gap-3"
                           >
-                            <div>
-                              <div className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
+                            <div className="flex-1 min-w-[240px]">
+                              <div className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2 flex-wrap">
                                 <span className="font-mono">{dStr}</span>
                                 {cfg.dayNameBn && <span>({cfg.dayNameBn})</span>}
                                 <span
@@ -3552,22 +4095,57 @@ export default function AdminDashboardPage() {
                                       : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
                                   }`}
                                 >
-                                  {cfg.enabled ? `খোলা (${toBengaliNumber(slots)}টি স্লট)` : 'বন্ধ'}
+                                  {cfg.enabled
+                                    ? `খোলা (${toBengaliNumber(slots)}টি স্লট${hasSessions ? ` • ${toBengaliNumber(cfg.sessions!.length)}টি সেশন` : ''})`
+                                    : 'বন্ধ'}
                                 </span>
                               </div>
-                                {cfg.enabled && (
-                                  <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5">
-                                    সময়: {time24ToComponents(cfg.startTime).timeBn} ({time24ToComponents(cfg.startTime).timeEn}) - {time24ToComponents(cfg.endTime).timeBn} ({time24ToComponents(cfg.endTime).timeEn}) | বিরতি:{' '}
-                                    {cfg.breakStart ? `${time24ToComponents(cfg.breakStart).timeEn} (${toBengaliNumber(cfg.breakDuration)} মি.)` : 'নেই'} | স্লট:{' '}
-                                    {toBengaliNumber(cfg.slotDuration)} মি.
-                                  </div>
-                                )}
+
+                              {cfg.enabled && (
+                                <>
+                                  {hasSessions ? (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {cfg.sessions!.map((sess, sIdx) => {
+                                        const sessSlots = calcSlotCount(
+                                          sess.startTime,
+                                          sess.endTime,
+                                          undefined,
+                                          0,
+                                          sess.slotDuration || cfg.slotDuration || 15
+                                        );
+                                        return (
+                                          <span
+                                            key={sess.id || sIdx}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-950 dark:text-amber-200 text-[11px] font-semibold border border-amber-200/80 dark:border-amber-800/60"
+                                          >
+                                            <span className="font-bold text-amber-800 dark:text-amber-300">
+                                              {sess.titleBn}:
+                                            </span>
+                                            <span className="font-mono">
+                                              {time24ToComponents(sess.startTime).timeEn} - {time24ToComponents(sess.endTime).timeEn}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                              ({toBengaliNumber(sessSlots)}টি স্লট)
+                                            </span>
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  ) : (
+                                    <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5">
+                                      সময়: {time24ToComponents(cfg.startTime).timeBn} ({time24ToComponents(cfg.startTime).timeEn}) - {time24ToComponents(cfg.endTime).timeBn} ({time24ToComponents(cfg.endTime).timeEn}) | বিরতি:{' '}
+                                      {cfg.breakStart ? `${time24ToComponents(cfg.breakStart).timeEn} (${toBengaliNumber(cfg.breakDuration)} মি.)` : 'নেই'} | স্লট:{' '}
+                                      {toBengaliNumber(cfg.slotDuration)} মি.
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
 
                             <button
                               type="button"
                               onClick={() => handleRemoveDateOverride(dStr)}
-                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                               title="এই তারিখের বিশেষ শিডিউল মুছে ফেলুন"
                             >
                               <Trash2 className="w-4 h-4" />

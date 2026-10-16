@@ -6,6 +6,7 @@ import { defaultSchedules } from '@/lib/booking/utils';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const TMP_SCHEDULES_FILE = path.join(os.tmpdir(), 'dr_dutta_schedules.json');
+const DATA_SCHEDULES_FILE = path.join(process.cwd(), 'data', 'schedules.json');
 
 declare global {
   // eslint-disable-next-line no-var
@@ -16,6 +17,15 @@ function loadLocalSchedules(): Record<ChamberMode, ChamberSchedule> {
   if (globalThis.__drDuttaChamberSchedules) {
     return globalThis.__drDuttaChamberSchedules;
   }
+  try {
+    if (fs.existsSync(DATA_SCHEDULES_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(DATA_SCHEDULES_FILE, 'utf-8'));
+      if (parsed && parsed.offline && parsed.online) {
+        globalThis.__drDuttaChamberSchedules = parsed;
+        return parsed;
+      }
+    }
+  } catch {}
   try {
     if (fs.existsSync(TMP_SCHEDULES_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(TMP_SCHEDULES_FILE, 'utf-8'));
@@ -63,6 +73,11 @@ export async function saveChamberSchedules(
   schedules: Record<ChamberMode, ChamberSchedule>
 ): Promise<boolean> {
   globalThis.__drDuttaChamberSchedules = schedules;
+  try {
+    fs.writeFileSync(DATA_SCHEDULES_FILE, JSON.stringify(schedules, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not save schedules to data/schedules.json', err);
+  }
   try {
     fs.writeFileSync(TMP_SCHEDULES_FILE, JSON.stringify(schedules, null, 2), 'utf-8');
   } catch (err) {

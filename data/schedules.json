@@ -1,0 +1,165 @@
+{
+  "offline": {
+    "mode": "offline",
+    "feeBn": "১,০০০ টাকা",
+    "titleBn": "ঢাকা চেম্বার (সরাসরি)",
+    "titleEn": "Dhaka Chamber (In-Person)",
+    "addressBn": "২/১ জায়েদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী-১২০৭, ঢাকা",
+    "chamberId": "dhaka_chamber",
+    "timingType": "day_specific",
+    "daySchedules": {
+      "0": {
+        "enabled": false,
+        "endTime": "20:00",
+        "dayNameBn": "রবিবার",
+        "startTime": "16:00",
+        "breakStart": "18:00",
+        "slotDuration": 15,
+        "breakDuration": 30
+      },
+      "1": {
+        "enabled": false,
+        "endTime": "20:00",
+        "dayNameBn": "সোমবার",
+        "startTime": "16:00",
+        "breakStart": "18:00",
+        "slotDuration": 15,
+        "breakDuration": 30
+      },
+      "2": {
+        "enabled": false,
+        "endTime": "20:00",
+        "dayNameBn": "মঙ্গলবার",
+        "startTime": "16:00",
+        "breakStart": "18:00",
+        "slotDuration": 15,
+        "breakDuration": 30
+      },
+      "3": {
+        "enabled": false,
+        "endTime": "20:00",
+        "dayNameBn": "বুধবার",
+        "startTime": "16:00",
+        "breakStart": "18:00",
+        "slotDuration": 15,
+        "breakDuration": 30
+      },
+      "4": {
+        "enabled": false,
+        "endTime": "20:00",
+        "dayNameBn": "বৃহস্পতিবার",
+        "startTime": "16:00",
+        "breakStart": "18:00",
+        "slotDuration": 15,
+        "breakDuration": 30
+      },
+      "5": {
+        "enabled": true,
+        "endTime": "18:30",
+        "dayNameBn": "শুক্রবার",
+        "startTime": "11:30",
+        "breakStart": "13:00",
+        "slotDuration": 15,
+        "breakDuration": 90
+      },
+      "6": {
+        "enabled": true,
+        "endTime": "17:30",
+        "dayNameBn": "শনিবার",
+        "startTime": "09:30",
+        "breakStart": "13:00",
+        "slotDuration": 15,
+        "breakDuration": 60
+      }
+    },
+    "dateOverrides": {},
+    "generalTiming": {
+      "endTime": "21:00",
+      "startTime": "16:00",
+      "breakStart": "18:30",
+      "slotDuration": 15,
+      "breakDuration": 30
+    }
+  },
+  "online": {
+    "mode": "online",
+    "feeBn": "৮০০ টাকা",
+    "titleBn": "অনলাইন ভিডিও কনসালটেশন",
+    "titleEn": "Global Online Telehealth",
+    "addressBn": "জুম (Zoom) অথবা হোয়াটসঅ্যাপ ভিডিও কল",
+    "chamberId": "online_chamber",
+    "timingType": "day_specific",
+    "daySchedules": {
+      "0": {
+        "enabled": false,
+        "endTime": "22:30",
+        "dayNameBn": "রবিবার",
+        "startTime": "19:00",
+        "breakStart": "20:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      },
+      "1": {
+        "enabled": false,
+        "endTime": "13:30",
+        "dayNameBn": "সোমবার",
+        "startTime": "10:00",
+        "breakStart": "14:00",
+        "slotDuration": 15,
+        "breakDuration": 20
+      },
+      "2": {
+        "enabled": false,
+        "endTime": "22:30",
+        "dayNameBn": "মঙ্গলবার",
+        "startTime": "19:00",
+        "breakStart": "20:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      },
+      "3": {
+        "enabled": false,
+        "endTime": "22:30",
+        "dayNameBn": "বুধবার",
+        "startTime": "19:00",
+        "breakStart": "20:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      },
+      "4": {
+        "enabled": false,
+        "endTime": "22:30",
+        "dayNameBn": "বৃহস্পতিবার",
+        "startTime": "19:00",
+        "breakStart": "20:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      },
+      "5": {
+        "enabled": false,
+        "endTime": "23:00",
+        "dayNameBn": "শুক্রবার",
+        "startTime": "20:00",
+        "breakStart": "21:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      },
+      "6": {
+        "enabled": false,
+        "endTime": "23:00",
+        "dayNameBn": "শনিবার",
+        "startTime": "20:00",
+        "breakStart": "21:30",
+        "slotDuration": 15,
+        "breakDuration": 15
+      }
+    },
+    "generalTiming": {
+      "endTime": "22:30",
+      "startTime": "19:00",
+      "breakStart": "20:30",
+      "slotDuration": 15,
+      "breakDuration": 15
+    }
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -180,7 +180,9 @@ export default function BookingHub() {
   const activeSchedule = schedules[chamberMode] || defaultSchedules[chamberMode];
   const activeDateObj = calendarDates.find((d) => d.dateStr === selectedDate);
 
-  // Dynamic session grouping: automatically groups by morning, noon, afternoon, evening, and night
+  // Dynamic session grouping:
+  // If slots have explicit sessions configured, group them by their session in chronological order;
+  // otherwise group by standard time periods (morning, noon, afternoon, evening, night).
   const PERIOD_METADATA: Record<string, { title: string; icon: string }> = {
     morning: { title: 'সকাল সেশন', icon: '🌅' },
     noon: { title: 'দুপুর সেশন', icon: '☀️' },
@@ -189,14 +191,45 @@ export default function BookingHub() {
     night: { title: 'নৈশ সেশন', icon: '🌙' }
   };
 
-  const groupedSlots = (['morning', 'noon', 'afternoon', 'evening', 'night'] as const)
-    .map((p) => ({
-      period: p,
-      title: PERIOD_METADATA[p].title,
-      icon: PERIOD_METADATA[p].icon,
-      slots: availableSlots.filter((s) => s.period === p)
-    }))
-    .filter((g) => g.slots.length > 0);
+  const groupedSlots = useMemo(() => {
+    if (!availableSlots || availableSlots.length === 0) return [];
+
+    const hasExplicitSessions = availableSlots.some((s) => s.sessionId && s.sessionTitleBn);
+
+    if (hasExplicitSessions) {
+      const map = new Map<string, { period: string; title: string; icon: string; slots: Slot[] }>();
+
+      for (const slot of availableSlots) {
+        const key = slot.sessionId || slot.period || 'general';
+        const title = slot.sessionTitleBn || slot.periodTitleBn || 'সেশন';
+        const icon =
+          slot.period === 'morning'
+            ? '🌅'
+            : slot.period === 'noon'
+            ? '☀️'
+            : slot.period === 'afternoon'
+            ? '🌤️'
+            : slot.period === 'evening'
+            ? '🌆'
+            : '🌙';
+
+        if (!map.has(key)) {
+          map.set(key, { period: key, title, icon, slots: [] });
+        }
+        map.get(key)!.slots.push(slot);
+      }
+      return Array.from(map.values()).filter((g) => g.slots.length > 0);
+    }
+
+    return (['morning', 'noon', 'afternoon', 'evening', 'night'] as const)
+      .map((p) => ({
+        period: p,
+        title: PERIOD_METADATA[p].title,
+        icon: PERIOD_METADATA[p].icon,
+        slots: availableSlots.filter((s) => s.period === p)
+      }))
+      .filter((g) => g.slots.length > 0);
+  }, [availableSlots]);
 
   // Step 1: User clicks booking -> Trigger OTP dispatch
   const handleBookingSubmit = async (e: React.FormEvent) => {

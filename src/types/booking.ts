@@ -2,6 +2,14 @@ export type ChamberMode = 'offline' | 'online';
 
 export type TimingType = 'general' | 'day_specific';
 
+export interface ScheduleSession {
+  id?: string;
+  titleBn?: string;      // e.g. "সকাল সেশন", "বিকাল সেশন", "রাত সেশন"
+  startTime: string;    // "09:30"
+  endTime: string;      // "11:30"
+  slotDuration?: number; // 15
+}
+
 export interface DayScheduleConfig {
   enabled: boolean;
   dayNameBn: string;
@@ -10,6 +18,7 @@ export interface DayScheduleConfig {
   breakStart: string; // e.g. "18:30"
   breakDuration: number; // in minutes, e.g. 30
   slotDuration: number;  // in minutes, e.g. 15
+  sessions?: ScheduleSession[]; // Multi-session / multi-shift support
 }
 
 export interface GeneralTimingConfig {
@@ -18,6 +27,7 @@ export interface GeneralTimingConfig {
   breakStart: string;
   breakDuration: number;
   slotDuration: number;
+  sessions?: ScheduleSession[];
 }
 
 export interface ChamberSchedule {
@@ -45,6 +55,8 @@ export interface Slot {
   shortBn: string;
   period?: SlotPeriod;
   periodTitleBn?: string;
+  sessionId?: string;
+  sessionTitleBn?: string;
 }
 
 export interface CalendarDay {
