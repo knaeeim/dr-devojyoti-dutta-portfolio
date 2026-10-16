@@ -2,12 +2,97 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   getAllAppointments,
+  createAppointment,
   updateAppointmentStatus,
   deleteAppointment,
   registerDeletedIds
 } from '@/lib/db/appointments';
-import { AppointmentStatus } from '@/types/booking';
+import { AppointmentStatus, ChamberMode } from '@/types/booking';
 import { sendAppointmentConfirmationEmail } from '@/lib/email/service';
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getSessionFromCookies();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'অনুমতি নেই। অনুগ্রহ করে লগইন করুন।' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const {
+      patientName,
+      phone,
+      email,
+      chamberMode,
+      appointmentDate,
+      slotId,
+      slotTimeBn,
+      slotTimeEn,
+      complaints,
+      status = 'confirmed',
+      bypassPastCheck = true
+    } = body;
+
+    if (!patientName?.trim() || !phone?.trim()) {
+      return NextResponse.json(
+        { error: 'রোগীর নাম এবং মোবাইল নম্বর প্রদান করা আবশ্যক।' },
+        { status: 400 }
+      );
+    }
+
+    if (!chamberMode || !['offline', 'online'].includes(chamberMode)) {
+      return NextResponse.json(
+        { error: 'সঠিক চেম্বার মাধ্যম (offline বা online) নির্বাচন করুন।' },
+        { status: 400 }
+      );
+    }
+
+    if (!appointmentDate || !slotId) {
+      return NextResponse.json(
+        { error: 'তারিখ এবং সময় স্লট নির্বাচন করা আবশ্যক।' },
+        { status: 400 }
+      );
+    }
+
+    const newAppointment = await createAppointment({
+      patientName: patientName.trim(),
+      phone: phone.trim(),
+      email: email?.trim() || '',
+      chamberMode: chamberMode as ChamberMode,
+      appointmentDate,
+      slotId,
+      slotTimeBn: slotTimeBn || 'নির্ধারিত সময়',
+      slotTimeEn: slotTimeEn || 'Scheduled Time',
+      complaints: complaints?.trim() || '',
+      status: (status as AppointmentStatus) || 'confirmed',
+      bypassPastCheck: Boolean(bypassPastCheck)
+    });
+
+    let emailSent = false;
+    if (newAppointment.email && newAppointment.status === 'confirmed') {
+      try {
+        const emailResult = await sendAppointmentConfirmationEmail(newAppointment);
+        emailSent = emailResult.success;
+      } catch (err) {
+        console.warn('Could not send confirmation email for admin-booked appointment', err);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      appointment: newAppointment,
+      emailSent,
+      message: `সিরিয়াল (${newAppointment.serialNo}) সফলভাবে নিশ্চিত ও বুকিং সম্পন্ন হয়েছে!`
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.message || 'অ্যাপয়েন্টমেন্ট বুকিং তৈরি করতে ব্যর্থ হয়েছে।' },
+      { status: 400 }
+    );
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {

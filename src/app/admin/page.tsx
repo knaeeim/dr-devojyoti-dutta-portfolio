@@ -238,6 +238,25 @@ export default function AdminDashboardPage() {
   const [isSavingTemplates, setIsSavingTemplates] = useState(false);
   const [templateSaveFeedback, setTemplateSaveFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Admin Direct Booking Modal State (Admin Super Power - Direct Walk-in / Phone)
+  const [showDirectBookingModal, setShowDirectBookingModal] = useState(false);
+  const [directChamberMode, setDirectChamberMode] = useState<ChamberMode>('offline');
+  const [directDate, setDirectDate] = useState<string>('');
+  const [directSlotId, setDirectSlotId] = useState<string>('');
+  const [directSlotTimeBn, setDirectSlotTimeBn] = useState<string>('');
+  const [directSlotTimeEn, setDirectSlotTimeEn] = useState<string>('');
+  const [directPatientName, setDirectPatientName] = useState<string>('');
+  const [directPhone, setDirectPhone] = useState<string>('');
+  const [directEmail, setDirectEmail] = useState<string>('');
+  const [directComplaints, setDirectComplaints] = useState<string>('');
+  const [directBookedSlots, setDirectBookedSlots] = useState<string[]>([]);
+  const [directBookingLoading, setDirectBookingLoading] = useState(false);
+  const [directBookingFeedback, setDirectBookingFeedback] = useState<{
+    type: 'success' | 'error';
+    msg: string;
+  } | null>(null);
+  const [createdDirectAppointment, setCreatedDirectAppointment] = useState<Appointment | null>(null);
+
   // Cancellation Modal State
   const [cancelApt, setCancelApt] = useState<Appointment | null>(null);
   const [cancelReason, setCancelReason] = useState<string>('রোগীর পক্ষ থেকে বাতিল করতে অনুরোধ করা হয়েছে');
@@ -811,6 +830,117 @@ export default function AdminDashboardPage() {
     fetchBooked();
   }, [rescheduleApt, rescheduleDate]);
 
+  // Fetch booked slots for Direct Booking Modal
+  useEffect(() => {
+    if (!showDirectBookingModal || !directDate) return;
+    const fetchBooked = async () => {
+      try {
+        const res = await fetch(
+          `/api/appointments?date=${directDate}&mode=${directChamberMode}`
+        );
+        const data = await res.json();
+        if (data.success && Array.isArray(data.bookedSlotIds)) {
+          setDirectBookedSlots(data.bookedSlotIds);
+        }
+      } catch (err) {
+        console.error('Error fetching booked slots for direct booking', err);
+      }
+    };
+    fetchBooked();
+  }, [showDirectBookingModal, directDate, directChamberMode]);
+
+  // Open Direct Booking Modal (Admin Super Power - Direct Walk-in / Phone)
+  const handleOpenDirectBooking = () => {
+    const targetMode: ChamberMode = 'offline';
+    setDirectChamberMode(targetMode);
+    const chamber = schedules[targetMode];
+    const upcoming = chamber ? getUpcomingDates(chamber, 14) : [];
+    const initialDate = upcoming.length > 0 ? upcoming[0].dateStr : '';
+    setDirectDate(initialDate);
+    setDirectSlotId('');
+    setDirectSlotTimeBn('');
+    setDirectSlotTimeEn('');
+    setDirectPatientName('');
+    setDirectPhone('');
+    setDirectEmail('');
+    setDirectComplaints('');
+    setDirectBookingFeedback(null);
+    setCreatedDirectAppointment(null);
+    setShowDirectBookingModal(true);
+  };
+
+  const handleDirectChamberChange = (mode: ChamberMode) => {
+    setDirectChamberMode(mode);
+    const targetChamber = schedules[mode];
+    const upcoming = targetChamber ? getUpcomingDates(targetChamber, 14) : [];
+    const initialDate = upcoming.length > 0 ? upcoming[0].dateStr : '';
+    setDirectDate(initialDate);
+    setDirectSlotId('');
+    setDirectSlotTimeBn('');
+    setDirectSlotTimeEn('');
+  };
+
+  const handleDirectBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directPatientName.trim()) {
+      setDirectBookingFeedback({ type: 'error', msg: 'অনুগ্রহ করে রোগীর পুরো নাম প্রদান করুন।' });
+      return;
+    }
+    if (!directPhone.trim()) {
+      setDirectBookingFeedback({ type: 'error', msg: 'অনুগ্রহ করে রোগীর মোবাইল নম্বর প্রদান করুন।' });
+      return;
+    }
+    if (!directDate || !directSlotId) {
+      setDirectBookingFeedback({ type: 'error', msg: 'অনুগ্রহ করে একটি তারিখ এবং সময় স্লট নির্বাচন করুন।' });
+      return;
+    }
+
+    setDirectBookingLoading(true);
+    setDirectBookingFeedback(null);
+
+    try {
+      const res = await fetch('/api/admin/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: directPatientName.trim(),
+          phone: directPhone.trim(),
+          email: directEmail.trim(),
+          chamberMode: directChamberMode,
+          appointmentDate: directDate,
+          slotId: directSlotId,
+          slotTimeBn: directSlotTimeBn,
+          slotTimeEn: directSlotTimeEn,
+          complaints: directComplaints.trim(),
+          status: 'confirmed',
+          bypassPastCheck: true
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'সিরিয়াল তৈরি করতে ব্যর্থ হয়েছে');
+      }
+
+      const newApt: Appointment = data.appointment;
+      setAppointments((prev) => [newApt, ...prev]);
+      setCreatedDirectAppointment(newApt);
+      setDirectBookingFeedback({
+        type: 'success',
+        msg: `সিরিয়াল (${newApt.serialNo}) সফলভাবে নিশ্চিত ও বুকিং সম্পন্ন হয়েছে!`
+      });
+      setNotificationMsg(`নতুন সিরিয়াল (${newApt.serialNo}) তৈরি সম্পন্ন হয়েছে`);
+      setTimeout(() => setNotificationMsg(null), 5000);
+    } catch (err: any) {
+      setDirectBookingFeedback({
+        type: 'error',
+        msg: err?.message || 'বুকিং সম্পন্ন করা সম্ভব হয়নি।'
+      });
+    } finally {
+      setDirectBookingLoading(false);
+    }
+  };
+
   // Handle Search debounce / enter
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1177,6 +1307,15 @@ export default function AdminDashboardPage() {
       : null;
   const rescheduleSlots = generateSlotsFromTiming(rescheduleTiming);
 
+  // Direct Booking (Admin Super Power) Slots & Dates Calculations
+  const directChamber = schedules[directChamberMode];
+  const directUpcomingDates = directChamber ? getUpcomingDates(directChamber, 14) : [];
+  const directTiming =
+    directChamber && directDate
+      ? getEffectiveTimingForDate(directChamber, directDate)
+      : null;
+  const directSlots = generateSlotsFromTiming(directTiming);
+
   return (
     <div className="min-h-screen bg-[#fafbf9] dark:bg-[#0c1511] text-emerald-950 dark:text-emerald-50">
       {/* Top Header Bar */}
@@ -1219,6 +1358,17 @@ export default function AdminDashboardPage() {
 
             {/* Desktop / Tablet Single-Row Action Navigation (NEVER wraps to second line!) */}
             <div className="hidden sm:flex items-center gap-1.5 md:gap-2 shrink-0 flex-nowrap">
+              {/* Direct Walk-in / Phone Booking Button (Admin Super Power) */}
+              <button
+                type="button"
+                onClick={handleOpenDirectBooking}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-xs hover:shadow-sm transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                title="রোগীর সরাসরি সিরিয়াল বুকিং করুন (ওটিপি ছাড়া)"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                <span>নতুন সিরিয়াল</span>
+              </button>
+
               {/* Primary Management Tools */}
               <button
                 type="button"
@@ -1301,6 +1451,16 @@ export default function AdminDashboardPage() {
 
         {/* Mobile Swipeable Quick-Actions Bar (Horizontal Touch Bar) */}
         <div className="flex sm:hidden overflow-x-auto no-scrollbar gap-1.5 px-3 py-2 border-t border-emerald-900/5 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-950/30 touch-pan-x">
+          <button
+            type="button"
+            onClick={handleOpenDirectBooking}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold whitespace-nowrap shadow-xs active:scale-95 shrink-0"
+            title="নতুন সিরিয়াল বুকিং"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>নতুন সিরিয়াল</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setShowScheduleModal(true)}
@@ -1577,6 +1737,18 @@ export default function AdminDashboardPage() {
                 </button>
               )}
             </div>
+
+            {/* Direct Booking Shortcut Button */}
+            <button
+              type="button"
+              onClick={handleOpenDirectBooking}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-2xs hover:shadow-xs transition-all shrink-0 cursor-pointer"
+              title="নতুন রোগী সিরিয়াল তৈরি করুন"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">নতুন</span>
+              <span>সিরিয়াল</span>
+            </button>
 
             {/* Refresh */}
             <button
@@ -4753,6 +4925,366 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DIRECT WALK-IN / PHONE APPOINTMENT BOOKING MODAL (ADMIN SUPER POWER - NO OTP) */}
+      {showDirectBookingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto my-auto">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-950 dark:to-teal-950 text-emerald-850 dark:text-emerald-300 mb-1 border border-emerald-300 dark:border-emerald-800">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span>অ্যাডমিন সুপার পাওয়ার • নো ওটিপি</span>
+                </div>
+                <h3 className="font-serif font-bold text-xl text-emerald-950 dark:text-emerald-50">
+                  সরাসরি সিরিয়াল বুকিং
+                </h3>
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                  চেম্বার কাউন্টার বা ফোনে আসা রোগীর তাৎক্ষণিক কনফার্মড সিরিয়াল তৈরি করুন
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDirectBookingModal(false)}
+                className="p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* If Booking is created, display Confirmation & Quick Super Actions */}
+            {createdDirectAppointment ? (
+              <div className="text-center py-3 space-y-4 animate-scale-up">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-inner">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-bold mb-1.5 border border-emerald-300 dark:border-emerald-800">
+                    সিরিয়াল কনফার্মড ও সংরক্ষিত
+                  </span>
+                  <h3 className="text-2xl font-serif font-black text-emerald-950 dark:text-emerald-50">
+                    বুকিং সফলভাবে সম্পন্ন হয়েছে!
+                  </h3>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1 max-w-md mx-auto">
+                    সিরিয়ালটি ডাটাবেজে কনফার্মড হিসেবে যুক্ত হয়েছে এবং রোগীর ইমেইল প্রদান করা থাকলে স্বয়ংক্রিয় কনফার্মেশন মেইল পাঠানো হয়েছে।
+                  </p>
+                </div>
+
+                {/* Serial details card */}
+                <div className="max-w-md mx-auto p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-left space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between border-b border-emerald-900/10 dark:border-emerald-800/40 pb-2">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">সিরিয়াল নম্বর:</span>
+                    <span className="font-mono font-black text-base text-emerald-900 dark:text-emerald-100 bg-white dark:bg-[#192a23] px-3 py-0.5 rounded-lg border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                      {createdDirectAppointment.serialNo}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">রোগীর নাম:</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100">{createdDirectAppointment.patientName}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">মোবাইল নম্বর:</span>
+                    <span className="font-mono text-emerald-900 dark:text-emerald-200">{createdDirectAppointment.phone}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">তারিখ ও সময়:</span>
+                    <span className="font-medium text-emerald-950 dark:text-emerald-100">
+                      {createdDirectAppointment.dateFormattedBn || createdDirectAppointment.appointmentDate} ({createdDirectAppointment.slotTimeBn})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">চেম্বার মাধ্যম:</span>
+                    <span className="font-medium text-emerald-950 dark:text-emerald-100">
+                      {createdDirectAppointment.chamberMode === 'online' ? 'অনলাইন ভিডিও কনসালটেশন' : 'শ্যামলী চেম্বার (সরাসরি)'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Instant Super Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-md mx-auto pt-2">
+                  <button
+                    type="button"
+                    onClick={() => printSinglePageSerialSlip(createdDirectAppointment)}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>রিসিপ্ট স্লিপ প্রিন্ট করুন</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDirectBookingModal(false);
+                      handleOpenMessageModal(createdDirectAppointment, 'confirm');
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-900 border border-emerald-300 dark:border-emerald-700 font-bold text-xs shadow-xs transition-all cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>মেসেজ / হোয়াটসঅ্যাপ পাঠান</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleOpenDirectBooking}
+                    className="text-xs text-emerald-700 dark:text-emerald-400 hover:underline font-bold cursor-pointer"
+                  >
+                    + আরেকটি নতুন সিরিয়াল দিন
+                  </button>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowDirectBookingModal(false)}
+                    className="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium cursor-pointer"
+                  >
+                    সম্পন্ন ও বন্ধ করুন
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleDirectBookingSubmit} className="space-y-4 sm:space-y-5">
+                {/* Feedback Error / Notice */}
+                {directBookingFeedback && (
+                  <div
+                    className={`p-3 rounded-xl text-xs font-medium flex items-center gap-2 ${
+                      directBookingFeedback.type === 'error'
+                        ? 'bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300'
+                        : 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300'
+                    }`}
+                  >
+                    {directBookingFeedback.type === 'error' ? (
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+                    )}
+                    <span>{directBookingFeedback.msg}</span>
+                  </div>
+                )}
+
+                {/* Chamber Mode Selector Tabs */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                    ১. চেম্বার মাধ্যম নির্বাচন করুন:
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-emerald-50/70 dark:bg-emerald-950/60 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60">
+                    <button
+                      type="button"
+                      onClick={() => handleDirectChamberChange('offline')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        directChamberMode === 'offline'
+                          ? 'bg-emerald-700 text-white shadow-sm'
+                          : 'text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40'
+                      }`}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>শ্যামলী চেম্বার (সরাসরি)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDirectChamberChange('online')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        directChamberMode === 'online'
+                          ? 'bg-emerald-700 text-white shadow-sm'
+                          : 'text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40'
+                      }`}
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>অনলাইন ভিডিও কনসালটেশন</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Patient Information Inputs */}
+                <div className="space-y-2.5">
+                  <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                    ২. রোগীর বিবরণ (নাম ও মোবাইল নম্বর আবশ্যক):
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block mb-1">
+                        রোগীর পুরো নাম <span className="text-rose-500">*</span>
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={directPatientName}
+                        onChange={(e) => setDirectPatientName(e.target.value)}
+                        placeholder="যেমন: মোঃ রফিকুল ইসলাম"
+                        className="w-full py-2 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block mb-1">
+                        মোবাইল নম্বর <span className="text-rose-500">*</span>
+                      </span>
+                      <input
+                        type="tel"
+                        required
+                        value={directPhone}
+                        onChange={(e) => setDirectPhone(e.target.value)}
+                        placeholder="যেমন: 01712345678"
+                        className="w-full py-2 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block mb-1">
+                        ইমেইল এড্রেস (ঐচ্ছিক - কনফার্মেশন যাবে)
+                      </span>
+                      <input
+                        type="email"
+                        value={directEmail}
+                        onChange={(e) => setDirectEmail(e.target.value)}
+                        placeholder="patient@example.com"
+                        className="w-full py-2 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block mb-1">
+                        শারীরিক সমস্যা / লক্ষণ (ঐচ্ছিক)
+                      </span>
+                      <input
+                        type="text"
+                        value={directComplaints}
+                        onChange={(e) => setDirectComplaints(e.target.value)}
+                        placeholder="যেমন: বাত-ব্যথা, পাইলস, পেটের সমস্যা"
+                        className="w-full py-2 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3: Select Date */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                    ৩. তারিখ নির্বাচন করুন:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1">
+                    {directUpcomingDates.map((day) => {
+                      const isSelected = directDate === day.dateStr;
+                      return (
+                        <button
+                          key={day.dateStr}
+                          type="button"
+                          onClick={() => {
+                            setDirectDate(day.dateStr);
+                            setDirectSlotId('');
+                            setDirectSlotTimeBn('');
+                            setDirectSlotTimeEn('');
+                          }}
+                          className={`p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-emerald-600 bg-emerald-800 text-white shadow-md'
+                              : 'border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-950 dark:text-emerald-100'
+                          }`}
+                        >
+                          <div className="font-bold">{day.fullBn}</div>
+                          <div className={`text-[11px] ${isSelected ? 'text-emerald-200' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                            {day.dayNameBn}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Step 4: Select Slot */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                      ৪. সময় স্লট নির্বাচন করুন:
+                    </label>
+                    {directSlotTimeBn && (
+                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 font-mono">
+                        নির্বাচিত: {directSlotTimeBn}
+                      </span>
+                    )}
+                  </div>
+
+                  {directSlots.length === 0 ? (
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs">
+                      এই তারিখে চেম্বার বন্ধ বা কোনো সময় স্লট উপলব্ধ নেই। অনুগ্রহ করে অন্য তারিখ নির্বাচন করুন।
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                      {directSlots.map((slot) => {
+                        const isBooked = directBookedSlots.includes(slot.id);
+                        const isPast = isSlotPastTime(directDate, slot.startMinutes);
+                        const isSelected = directSlotId === slot.id;
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            disabled={isBooked}
+                            onClick={() => {
+                              if (!isBooked) {
+                                setDirectSlotId(slot.id);
+                                setDirectSlotTimeBn(slot.timeBn);
+                                setDirectSlotTimeEn(slot.timeEn);
+                              }
+                            }}
+                            className={`min-h-[56px] h-full p-2 rounded-xl border text-xs font-mono font-medium transition-all flex flex-col items-center justify-center cursor-pointer ${
+                              isBooked
+                                ? 'opacity-40 bg-gray-100 dark:bg-gray-800/40 border-gray-300 cursor-not-allowed text-gray-500 line-through'
+                                : isSelected
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-700 shadow-md font-bold'
+                                : isPast
+                                ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 hover:border-amber-500'
+                                : 'bg-white dark:bg-[#192a23] border-emerald-200 dark:border-emerald-800 hover:border-emerald-500 text-emerald-950 dark:text-emerald-100'
+                            }`}
+                          >
+                            <div>{slot.shortBn || slot.timeBn}</div>
+                            <div className="text-[10px] opacity-80 font-sans">
+                              {isBooked ? 'বুকড' : isPast ? 'ওয়াক-ইন / চলতি' : slot.shortEn}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit & Cancel Buttons */}
+                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowDirectBookingModal(false)}
+                    className="w-full sm:w-auto py-2.5 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer text-center"
+                  >
+                    বাতিল
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={directBookingLoading || !directSlotId || !directPatientName.trim() || !directPhone.trim()}
+                    className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {directBookingLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>সিরিয়াল নিশ্চিত করা হচ্ছে...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                        <span>সরাসরি সিরিয়াল নিশ্চিত করুন</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

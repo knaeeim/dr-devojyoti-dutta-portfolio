@@ -254,13 +254,15 @@ export async function createAppointment(params: {
   slotTimeBn: string;
   slotTimeEn: string;
   complaints?: string;
+  status?: AppointmentStatus;
+  bypassPastCheck?: boolean;
 }): Promise<Appointment> {
   const allAppointments = await getAllAppointments();
 
   // Check if slot time has passed (Time Over check)
   const slotParts = params.slotId.replace('slot_', '').split('_').map(Number);
   const startMin = slotParts[0] || 0;
-  if (isSlotPastTime(params.appointmentDate, startMin)) {
+  if (!params.bypassPastCheck && isSlotPastTime(params.appointmentDate, startMin)) {
     throw new Error('এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত সময় বেছে নিন।');
   }
 
@@ -300,7 +302,7 @@ export async function createAppointment(params: {
     slotTimeBn: params.slotTimeBn,
     slotTimeEn: params.slotTimeEn,
     complaints: params.complaints || '',
-    status: 'pending',
+    status: params.status || 'pending',
     createdAt: new Date().toISOString()
   };
 
