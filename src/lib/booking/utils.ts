@@ -129,7 +129,8 @@ export const defaultSchedules: Record<ChamberMode, ChamberSchedule> = {
       6: { enabled: true, dayNameBn: 'শনিবার', startTime: '14:30', endTime: '20:30', breakStart: '17:00', breakDuration: 30, slotDuration: 15 }
     },
     addressBn: '২/১ জায়েদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী-১২০৭, ঢাকা',
-    feeBn: '১,০০০ টাকা'
+    feeBn: '১,০০০ টাকা',
+    followUpFeeBn: '৬০০ টাকা (৩ মাসের মধ্যে)'
   },
   online: {
     chamberId: 'online_chamber',
@@ -154,7 +155,8 @@ export const defaultSchedules: Record<ChamberMode, ChamberSchedule> = {
       6: { enabled: false, dayNameBn: 'শনিবার', startTime: '20:00', endTime: '23:00', breakStart: '21:30', breakDuration: 15, slotDuration: 15 }
     },
     addressBn: 'জুম (Zoom) অথবা হোয়াটসঅ্যাপ ভিডিও কল',
-    feeBn: '৮০০ টাকা'
+    feeBn: '৮০০ টাকা',
+    followUpFeeBn: '৬০০ টাকা (৩ মাসের মধ্যে)'
   }
 };
 

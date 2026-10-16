@@ -43,6 +43,7 @@ export interface ChamberSchedule {
   dateOverrides?: Record<string, DayScheduleConfig>;
   addressBn: string;
   feeBn: string;
+  followUpFeeBn?: string;
 }
 
 export type SlotPeriod = 'morning' | 'noon' | 'afternoon' | 'evening' | 'night';

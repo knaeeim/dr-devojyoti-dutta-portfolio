@@ -523,17 +523,23 @@ export default function BookingHub() {
           </div>
 
           {/* Chamber Summary Meta Card */}
-          <div className="mt-3 p-3 rounded-xl bg-white/80 dark:bg-emerald-950/40 border border-emerald-900/10 dark:border-emerald-800/40 text-center text-xs text-emerald-800 dark:text-emerald-300 flex flex-wrap items-center justify-center gap-4">
-            <span>
+          <div className="mt-3 p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-emerald-900/10 dark:border-emerald-800/40 text-xs text-emerald-900 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-center gap-y-2 gap-x-4">
+            <span className="flex items-center gap-1">
               <strong>স্থান/মাধ্যম:</strong> {activeSchedule.addressBn}
             </span>
-            <span>•</span>
-            <span>
-              <strong>পরামর্শ ফি:</strong> {activeSchedule.feeBn}
+            <span className="text-emerald-300 dark:text-emerald-700 hidden sm:inline">•</span>
+            <span className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1 rounded-xl border border-emerald-200/70 dark:border-emerald-700/50 flex-wrap justify-center">
+              <span>
+                <strong>পরামর্শ ফি:</strong> <span className="font-bold text-emerald-800 dark:text-emerald-200">{chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}</span>
+              </span>
+              <span className="text-emerald-400">|</span>
+              <span className="text-amber-700 dark:text-amber-300 font-medium">
+                <strong>ফলোআপ ভিজিট:</strong> <span className="font-bold">৬০০ টাকা</span> (৩ মাসের মধ্যে)
+              </span>
             </span>
-            <span>•</span>
-            <span className="text-amber-600 dark:text-amber-400 font-medium">
-              হোয়াটসঅ্যাপে তাৎক্ষণিক সিরিয়াল স্লিপ পাঠানো হয়
+            <span className="text-emerald-300 dark:text-emerald-700 hidden sm:inline">•</span>
+            <span className="text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
+              ✓ তাৎক্ষণিক ডিজিটাল সিরিয়াল স্লিপ ও এসএমএস
             </span>
           </div>
         </div>
@@ -761,11 +767,14 @@ export default function BookingHub() {
                   </div>
 
                   {/* Fee */}
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">পরামর্শ ফি</span>
-                    <span className="font-bold text-emerald-850 dark:text-emerald-200 text-xs">
-                      💳 {activeSchedule.feeBn || (chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা')}
-                    </span>
+                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-1 shadow-xs">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">পরামর্শ ও ফলোআপ ফি</span>
+                    <div className="font-bold text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-1">
+                      💳 পরামর্শ ফি: <span>{chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}</span>
+                    </div>
+                    <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                      🔄 ফলোআপ ভিজিট: ৬০০ টাকা (৩ মাসের মধ্যে)
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1149,6 +1158,18 @@ export default function BookingHub() {
                 <div>
                   <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">বরাদ্দকৃত সময়:</span>
                   <span className="font-bold text-amber-700 dark:text-amber-400 font-semibold">{confirmedAppointment.slotTimeBn}</span>
+                </div>
+                <div>
+                  <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">পরামর্শ ফি:</span>
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">
+                    {confirmedAppointment.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}
+                  </span>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">ফলোআপ ভিজিট:</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-400 text-xs">
+                    ৬০০ টাকা (৩ মাসের মধ্যে)
+                  </span>
                 </div>
                 {confirmedAppointment.email && (
                   <div className="col-span-2">

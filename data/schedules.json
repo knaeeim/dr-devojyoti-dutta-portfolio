@@ -2,6 +2,7 @@
   "offline": {
     "mode": "offline",
     "feeBn": "১,০০০ টাকা",
+    "followUpFeeBn": "৬০০ টাকা (৩ মাসের মধ্যে)",
     "titleBn": "ঢাকা চেম্বার (সরাসরি)",
     "titleEn": "Dhaka Chamber (In-Person)",
     "addressBn": "২/১ জায়েদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী-১২০৭, ঢাকা",
@@ -84,6 +85,7 @@
   "online": {
     "mode": "online",
     "feeBn": "৮০০ টাকা",
+    "followUpFeeBn": "৬০০ টাকা (৩ মাসের মধ্যে)",
     "titleBn": "অনলাইন ভিডিও কনসালটেশন",
     "titleEn": "Global Online Telehealth",
     "addressBn": "জুম (Zoom) অথবা হোয়াটসঅ্যাপ ভিডিও কল",

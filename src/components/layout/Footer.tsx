@@ -33,15 +33,21 @@ export default function Footer() {
               চেম্বার ও শিডিউল
             </h4>
             <ul className="space-y-3 text-sm text-emerald-200/80">
-              <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40">
+              <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40 space-y-1">
                 <strong className="text-white block font-medium">🏛️ ঢাকা চেম্বার (সরাসরি):</strong>
                 <span>প্রতি শুক্রবার ও শনিবার</span>
-                <p className="text-xs text-emerald-400 mt-0.5">২/১ জাহেদা ভিলা, ১ নং রোড, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭</p>
+                <p className="text-xs text-amber-300 font-semibold">
+                  পরামর্শ ফি: ১,০০০ টাকা • ফলোআপ: ৬০০ টাকা (৩ মাসের মধ্যে)
+                </p>
+                <p className="text-xs text-emerald-400">২/১ জাহেদা ভিলা, ১ নং রোড, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭</p>
               </li>
-              <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40">
+              <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40 space-y-1">
                 <strong className="text-white block font-medium">🌐 অনলাইন ভিডিও কনসালটেশন:</strong>
                 <span>রবি থেকে বৃহস্পতিবার</span>
-                <p className="text-xs text-emerald-400 mt-0.5">জুম বা হোয়াটসঅ্যাপ ভিডিও কল</p>
+                <p className="text-xs text-amber-300 font-semibold">
+                  পরামর্শ ফি: ৮০০ টাকা • ফলোআপ: ৬০০ টাকা (৩ মাসের মধ্যে)
+                </p>
+                <p className="text-xs text-emerald-400">জুম বা হোয়াটসঅ্যাপ ভিডিও কল</p>
               </li>
             </ul>
           </div>

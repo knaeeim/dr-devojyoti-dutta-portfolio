@@ -32,7 +32,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
   }
 
   const subject = `আপনার অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে — দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
-  const fee = appointment.chamberMode === 'offline' ? '১,০০০ টাকা' : '১,২০০ টাকা';
+  const fee = appointment.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -106,6 +106,10 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
         <tr>
           <td class="label">পরামর্শ ফি:</td>
           <td class="value">${fee}</td>
+        </tr>
+        <tr>
+          <td class="label">ফলোআপ ভিজিট:</td>
+          <td class="value" style="color: #047857; font-weight: bold;">৬০০ টাকা (৩ মাসের মধ্যে)</td>
         </tr>
       </table>
 

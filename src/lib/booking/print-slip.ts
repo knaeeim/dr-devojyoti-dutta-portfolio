@@ -76,6 +76,10 @@ export function printSinglePageSerialSlip(apt: Appointment) {
             <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">পরামর্শ ফি:</td>
             <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #111827; font-weight: bold;">${fee}</td>
           </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">ফলোআপ ভিজিট:</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #047857; font-weight: bold;">৬০০ টাকা (৩ মাসের মধ্যে)</td>
+          </tr>
           ${
             apt.chamberMode === 'offline'
               ? `<tr>
@@ -166,7 +170,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
                 ? '<span style="display:inline-block; padding: 2px 8px; border-radius: 9999px; background: #eff6ff; color: #1d4ed8; font-weight: 700; border: 1px solid #bfdbfe;">সম্পন্ন</span>'
                 : '<span style="display:inline-block; padding: 2px 8px; border-radius: 9999px; background: #fffbeb; color: #b45309; font-weight: 700; border: 1px solid #fde68a;">অপেক্ষমাণ</span>';
 
-            const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '১,২০০ টাকা';
+            const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
 
             return `
               <tr>
