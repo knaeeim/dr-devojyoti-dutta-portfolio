@@ -2164,16 +2164,16 @@ export default function AdminDashboardPage() {
           ) : (
             <>
               {/* DESKTOP TABLE VIEW (Shown on Large screens: hidden lg:block) */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-bold border-b border-emerald-900/10 dark:border-emerald-800/40">
+              <div className="hidden lg:block overflow-x-auto rounded-2xl border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[1080px]">
+                  <thead className="bg-emerald-50/80 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 font-bold border-b border-emerald-900/10 dark:border-emerald-800/40 select-none">
                     <tr>
                       <th
                         onClick={() => setSortBy(sortBy === 'serial_asc' ? 'serial_desc' : 'serial_asc')}
-                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        className="py-3.5 px-4 w-[155px] min-w-[155px] cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
                         title="সিরিয়াল অনুযায়ী সর্ট করুন"
                       >
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span>সিরিয়াল নং</span>
                           {sortBy === 'serial_asc' ? (
                             <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
@@ -2186,10 +2186,10 @@ export default function AdminDashboardPage() {
                       </th>
                       <th
                         onClick={() => setSortBy(sortBy === 'name_asc' ? 'name_desc' : 'name_asc')}
-                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        className="py-3.5 px-4 w-[210px] min-w-[195px] cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
                         title="রোগীর নাম অনুযায়ী সর্ট করুন"
                       >
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span>রোগীর নাম ও যোগাযোগ</span>
                           {sortBy === 'name_asc' ? (
                             <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
@@ -2200,13 +2200,13 @@ export default function AdminDashboardPage() {
                           )}
                         </div>
                       </th>
-                      <th className="py-3 px-3.5">চেম্বার</th>
+                      <th className="py-3.5 px-4 w-[130px] min-w-[125px] whitespace-nowrap">চেম্বার</th>
                       <th
                         onClick={() => setSortBy(sortBy === 'date_asc' ? 'date_desc' : 'date_asc')}
-                        className="py-3 px-3.5 cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
+                        className="py-3.5 px-4 w-[185px] min-w-[175px] cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
                         title="তারিখ অনুযায়ী সর্ট করুন"
                       >
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span>তারিখ ও সময় স্লট</span>
                           {sortBy === 'date_asc' ? (
                             <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
@@ -2217,9 +2217,9 @@ export default function AdminDashboardPage() {
                           )}
                         </div>
                       </th>
-                      <th className="py-3 px-3.5">সমস্যার বিবরণ</th>
-                      <th className="py-3 px-3.5">স্ট্যাটাস</th>
-                      <th className="py-3 px-3.5 text-right">অ্যাকশন ও যোগাযোগ</th>
+                      <th className="py-3.5 px-4 w-[170px] max-w-[185px] whitespace-nowrap">সমস্যার বিবরণ</th>
+                      <th className="py-3.5 px-4 w-[170px] min-w-[160px] whitespace-nowrap">স্ট্যাটাস</th>
+                      <th className="py-3.5 px-4 w-[235px] min-w-[230px] text-right whitespace-nowrap">অ্যাকশন ও যোগাযোগ</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-900/5 dark:divide-emerald-800/30">
@@ -2233,51 +2233,65 @@ export default function AdminDashboardPage() {
                         }`}
                       >
                         {/* Serial */}
-                        <td className="py-3.5 px-3.5 font-mono font-bold text-emerald-900 dark:text-emerald-200">
-                          <div>{apt.serialNo}</div>
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/80 border border-emerald-300/70 dark:border-emerald-800/80 font-mono text-xs font-bold text-emerald-950 dark:text-emerald-200 tracking-tight shadow-2xs select-all">
+                            <span>{apt.serialNo}</span>
+                          </div>
                           {apt.status === 'cancelled' && (
-                            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-                              বাতিলকৃত
-                            </span>
+                            <div className="mt-1">
+                              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800 whitespace-nowrap">
+                                বাতিলকৃত
+                              </span>
+                            </div>
                           )}
                         </td>
 
                         {/* Patient */}
-                        <td className="py-3.5 px-3.5 min-w-[180px]">
-                          <div className="font-semibold text-emerald-950 dark:text-emerald-100">
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="font-bold text-emerald-950 dark:text-emerald-100 text-[13px] leading-snug">
                             {apt.patientName}
                           </div>
-                          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">
+                          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium mt-0.5">
                             {apt.phone}
                           </div>
                           {apt.email && (
-                            <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 flex items-center gap-1 mt-0.5 font-sans">
-                              <Mail className="w-3 h-3 shrink-0" />
+                            <div
+                              className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 flex items-center gap-1 mt-0.5 font-sans"
+                              title={apt.email}
+                            >
+                              <Mail className="w-3 h-3 shrink-0 opacity-70" />
                               <span className="truncate max-w-[160px]">{apt.email}</span>
                             </div>
                           )}
                         </td>
 
                         {/* Chamber */}
-                        <td className="py-3.5 px-3.5">
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                           <span
-                            className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                               apt.chamberMode === 'offline'
-                                ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
-                                : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300'
+                                ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/60'
+                                : 'bg-sky-100 dark:bg-sky-950/60 text-sky-900 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60'
                             }`}
                           >
-                            {apt.chamberTitleBn}
+                            {apt.chamberMode === 'offline' ? (
+                              <MapPin className="w-3 h-3 shrink-0 text-emerald-700 dark:text-emerald-400" />
+                            ) : (
+                              <Video className="w-3 h-3 shrink-0 text-sky-700 dark:text-sky-400" />
+                            )}
+                            <span>{apt.chamberTitleBn}</span>
                           </span>
                         </td>
 
                         {/* Date & Slot */}
-                        <td className="py-3.5 px-3.5">
-                          <div className="font-medium text-emerald-950 dark:text-emerald-100">
-                            {apt.dateFormattedBn}
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                          <div className="font-semibold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5 text-xs">
+                            <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>{apt.dateFormattedBn}</span>
                           </div>
-                          <div className="text-xs text-amber-700 dark:text-amber-400 font-semibold font-mono">
-                            {apt.slotTimeBn}
+                          <div className="text-xs text-amber-700 dark:text-amber-400 font-semibold font-mono flex items-center gap-1.5 mt-0.5">
+                            <Clock className="w-3.5 h-3.5 shrink-0" />
+                            <span>{apt.slotTimeBn}</span>
                           </div>
                           {apt.status === 'cancelled' && (
                             <div className="mt-1 text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
@@ -2288,22 +2302,37 @@ export default function AdminDashboardPage() {
                         </td>
 
                         {/* Complaints */}
-                        <td className="py-3.5 px-3.5 max-w-xs text-xs text-emerald-800/90 dark:text-emerald-300/90">
-                          <div className="truncate">{apt.complaints || '—'}</div>
+                        <td className="py-3.5 px-4 align-middle w-[170px] max-w-[185px]">
+                          {apt.complaints ? (
+                            <div
+                              className="text-xs text-emerald-900/90 dark:text-emerald-200/90 line-clamp-2 leading-relaxed cursor-help"
+                              title={apt.complaints}
+                            >
+                              {apt.complaints.length > 30 ? `${apt.complaints.slice(0, 30)}...` : apt.complaints}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-emerald-800/40 dark:text-emerald-500/40 font-mono">—</span>
+                          )}
                           {apt.rescheduledReason && (
-                            <div className="text-[11px] text-indigo-700 dark:text-indigo-300 mt-1 font-medium bg-indigo-50 dark:bg-indigo-950/60 p-1 rounded border border-indigo-200 dark:border-indigo-800">
-                              রিশিডিউল: {apt.rescheduledReason}
+                            <div
+                              className="text-[10px] text-indigo-700 dark:text-indigo-300 mt-1 font-medium bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 truncate"
+                              title={`রিশিডিউল: ${apt.rescheduledReason}`}
+                            >
+                              রিশিডিউল: {apt.rescheduledReason.length > 18 ? `${apt.rescheduledReason.slice(0, 18)}...` : apt.rescheduledReason}
                             </div>
                           )}
                           {apt.cancellationReason && (
-                            <div className="text-[11px] text-rose-700 dark:text-rose-300 mt-1 font-medium bg-rose-50 dark:bg-rose-950/60 p-1 rounded border border-rose-200 dark:border-rose-900/60">
-                              বাতিল: {apt.cancellationReason}
+                            <div
+                              className="text-[10px] text-rose-700 dark:text-rose-300 mt-1 font-medium bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/60 truncate"
+                              title={`বাতিল: ${apt.cancellationReason}`}
+                            >
+                              বাতিল: {apt.cancellationReason.length > 18 ? `${apt.cancellationReason.slice(0, 18)}...` : apt.cancellationReason}
                             </div>
                           )}
                         </td>
 
                         {/* Status Badges & Quick Dropdown */}
-                        <td className="py-3.5 px-3.5 space-y-1.5">
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap space-y-1.5">
                           <div>
                             {apt.status === 'pending' && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
@@ -2325,6 +2354,7 @@ export default function AdminDashboardPage() {
                             )}
                             {apt.status === 'completed' && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60">
+                                <CheckCircle2 className="w-3 h-3" />
                                 সম্পন্ন (Completed)
                               </span>
                             )}
@@ -2342,7 +2372,7 @@ export default function AdminDashboardPage() {
                               onChange={(e) =>
                                 handleUpdateStatus(apt.id, e.target.value as AppointmentStatus)
                               }
-                              className="py-1 px-2 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none"
+                              className="w-full py-1 px-2 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
                             >
                               <option value="pending">অপেক্ষমাণ (Pending)</option>
                               <option value="confirmed">নিশ্চিত করুন (Confirm & Mail)</option>
@@ -2357,137 +2387,135 @@ export default function AdminDashboardPage() {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3.5 px-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                            {apt.status === 'cancelled' ? (
-                              <>
-                                {/* 1. Print Slip */}
-                                <button
-                                  type="button"
-                                  onClick={() => printSinglePageSerialSlip(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="১ পৃষ্ঠার ডিজিটাল স্লিপ দেখুন বা প্রিন্ট করুন"
-                                >
-                                  <Printer className="w-3.5 h-3.5" />
-                                  <span>স্লিপ প্রিন্ট</span>
-                                </button>
+                        <td className="py-3.5 px-4 align-middle text-right whitespace-nowrap">
+                          {apt.status === 'cancelled' ? (
+                            <div className="grid grid-cols-2 gap-1.5 w-[220px] ml-auto">
+                              {/* 1. Print Slip */}
+                              <button
+                                type="button"
+                                onClick={() => printSinglePageSerialSlip(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="১ পৃষ্ঠার ডিজিটাল স্লিপ দেখুন বা প্রিন্ট করুন"
+                              >
+                                <Printer className="w-3.5 h-3.5 shrink-0" />
+                                <span>স্লিপ প্রিন্ট</span>
+                              </button>
 
-                                {/* 2. Send Custom Message */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenMessageModal(apt, 'cancel')}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
-                                  title="রোগীকে কাস্টমাইজড বাতিল বার্তা বা নোটিশ পাঠান"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5 fill-white" />
-                                  <span>মেসেজ পাঠান</span>
-                                </button>
+                              {/* 2. Send Custom Message */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenMessageModal(apt, 'cancel')}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
+                                title="রোগীকে কাস্টমাইজড বাতিল বার্তা বা নোটিশ পাঠান"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 fill-white shrink-0" />
+                                <span>মেসেজ পাঠান</span>
+                              </button>
 
-                                {/* 3. Restore Appointment */}
-                                <button
-                                  type="button"
-                                  onClick={() => setRestoreTargetApt(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="বাতিল সিরিয়ালটি পুনরায় সক্রিয় করুন (যদি স্লটটি ফাঁকা থাকে)"
-                                >
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  <span>পুনরায় সক্রিয়</span>
-                                </button>
+                              {/* 3. Restore Appointment */}
+                              <button
+                                type="button"
+                                onClick={() => setRestoreTargetApt(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="বাতিল সিরিয়ালটি পুনরায় সক্রিয় করুন"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                                <span>সক্রিয় করুন</span>
+                              </button>
 
-                                {/* 4. Delete Permanently */}
-                                <button
-                                  type="button"
-                                  onClick={() => setDeleteTargetApt(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>মুছে ফেলুন</span>
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                {/* Quick Confirm button for pending */}
-                                {apt.status === 'pending' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleConfirmAndNotifyPrompt(apt)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer animate-pulse hover:animate-none"
-                                    title="সিরিয়াল নিশ্চিত করুন ও রোগীর ইমেইলে কনফার্মেশন পাঠান"
-                                  >
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>সিরিয়াল নিশ্চিত করুন</span>
-                                  </button>
-                                )}
+                              {/* 4. Delete Permanently */}
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTargetApt(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                <span>মুছে ফেলুন</span>
+                              </button>
+                            </div>
+                          ) : apt.status === 'pending' ? (
+                            <div className="grid grid-cols-2 gap-1.5 w-[220px] ml-auto">
+                              {/* Primary Confirm */}
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmAndNotifyPrompt(apt)}
+                                className="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer animate-pulse hover:animate-none"
+                                title="সিরিয়াল নিশ্চিত করুন ও রোগীর ইমেইলে কনফার্মেশন পাঠান"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                <span>সিরিয়াল নিশ্চিত করুন</span>
+                              </button>
 
-                                {/* 1. Reschedule Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenReschedule(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="সিরিয়ালের তারিখ ও সময় পরিবর্তন এবং রোগীকে ইমেইল নোটিফিকেশন প্রদান"
-                                >
-                                  <Clock className="w-3.5 h-3.5" />
-                                  <span>রিশিডিউল</span>
-                                </button>
+                              {/* Reschedule */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReschedule(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="সিরিয়ালের তারিখ ও সময় পরিবর্তন"
+                              >
+                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                <span>রিশিডিউল</span>
+                              </button>
 
-                                {/* 2. Print Single-Page Slip */}
-                                <button
-                                  type="button"
-                                  disabled={apt.status === 'pending'}
-                                  onClick={() => {
-                                    if (apt.status === 'pending') {
-                                      showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর ডিজিটাল স্লিপ প্রিন্ট করা যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
-                                      return;
-                                    }
-                                    printSinglePageSerialSlip(apt);
-                                  }}
-                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold shadow-xs transition-all ${
-                                    apt.status === 'pending'
-                                      ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50'
-                                      : 'border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 cursor-pointer'
-                                  }`}
-                                  title={apt.status === 'pending' ? 'প্রথমে সিরিয়াল নিশ্চিত করুন, এরপর স্লিপ প্রিন্ট সক্রিয় হবে' : '১ পৃষ্ঠার অফিসিয়াল ডিজিটাল স্লিপ প্রিন্ট করুন'}
-                                >
-                                  {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <Printer className="w-3.5 h-3.5" />}
-                                  <span>স্লিপ প্রিন্ট</span>
-                                </button>
+                              {/* Cancel */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCancelModal(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="সিরিয়াল বাতিল করুন"
+                              >
+                                <Ban className="w-3.5 h-3.5 shrink-0" />
+                                <span>বাতিল</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-1.5 w-[220px] ml-auto">
+                              {/* 1. Reschedule Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReschedule(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="সিরিয়ালের তারিখ ও সময় পরিবর্তন এবং রোগীকে ইমেইল নোটিফিকেশন প্রদান"
+                              >
+                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                <span>রিশিডিউল</span>
+                              </button>
 
-                                {/* 3. Doctor Customizable Message / WhatsApp Communication */}
-                                <button
-                                  type="button"
-                                  disabled={apt.status === 'pending'}
-                                  onClick={() => {
-                                    if (apt.status === 'pending') {
-                                      showAlert('প্রথমে সিরিয়াল নিশ্চিত করুন। তারপর রোগীকে কনফার্মেশন বার্তা পাঠানো যাবে।', 'সিরিয়াল অপেক্ষমাণ', 'warning');
-                                      return;
-                                    }
-                                    handleOpenMessageModal(apt, 'confirm');
-                                  }}
-                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-xs transition-all ${
-                                    apt.status === 'pending'
-                                      ? 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed opacity-50'
-                                      : 'bg-[#25D366] hover:bg-[#20bd5a] cursor-pointer'
-                                  }`}
-                                  title={apt.status === 'pending' ? 'প্রথমে সিরিয়াল নিশ্চিত করুন, এরপর মেসেজ পাঠানো সক্রিয় হবে' : 'বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান'}
-                                >
-                                  {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <MessageCircle className="w-3.5 h-3.5 fill-white" />}
-                                  <span>মেসেজ পাঠান</span>
-                                </button>
+                              {/* 2. Print Single-Page Slip */}
+                              <button
+                                type="button"
+                                onClick={() => printSinglePageSerialSlip(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="১ পৃষ্ঠার অফিসিয়াল ডিজিটাল স্লিপ প্রিন্ট করুন"
+                              >
+                                <Printer className="w-3.5 h-3.5 shrink-0" />
+                                <span>স্লিপ প্রিন্ট</span>
+                              </button>
 
-                                {/* 4. Cancel Appointment Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenCancelModal(apt)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
-                                  title="সিরিয়াল বাতিল করুন এবং স্লটটি তৎক্ষণাৎ নতুন রোগীর জন্য উন্মুক্ত করে দিন"
-                                >
-                                  <Ban className="w-3.5 h-3.5" />
-                                  <span>বাতিল</span>
-                                </button>
-                              </>
-                            )}
-                          </div>
+                              {/* 3. Send Message */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenMessageModal(apt, 'confirm')}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
+                                title="বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 fill-white shrink-0" />
+                                <span>মেসেজ পাঠান</span>
+                              </button>
+
+                              {/* 4. Cancel Appointment */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCancelModal(apt)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                                title="সিরিয়াল বাতিল করুন এবং স্লটটি তৎক্ষণাৎ নতুন রোগীর জন্য উন্মুক্ত করে দিন"
+                              >
+                                <Ban className="w-3.5 h-3.5 shrink-0" />
+                                <span>বাতিল</span>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
