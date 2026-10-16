@@ -59,43 +59,8 @@ export function registerDeletedIds(ids: string[]) {
   }
 }
 
-// Initial seed data if file does not exist yet
-const INITIAL_SEED: Appointment[] = [
-  {
-    id: 'APT-1001',
-    serialNo: 'DD-DH-261016-01',
-    patientName: 'তানভীর আহমেদ',
-    phone: '+880 1711-223344',
-    email: 'tanvir.ahmed@gmail.com',
-    chamberMode: 'offline',
-    chamberTitleBn: 'ঢাকা চেম্বার (সরাসরি)',
-    appointmentDate: '2026-10-16',
-    dateFormattedBn: '১৬ অক্টোবর, ২০২৬ (শুক্রবার)',
-    slotId: 'slot_960_975',
-    slotTimeBn: '০৪:০০ অপরাহ্ন - ০৪:১৫ অপরাহ্ন',
-    slotTimeEn: '04:00 PM - 04:15 PM',
-    complaints: 'টাইপ-২ ডায়াবেটিস ও পেটের দীর্ঘদিনের গ্যাস/আইবিএস সমস্যা।',
-    status: 'confirmed',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'APT-1002',
-    serialNo: 'DD-ON-261018-01',
-    patientName: 'নাজমা বেগম',
-    phone: '+880 1819-887766',
-    email: '',
-    chamberMode: 'online',
-    chamberTitleBn: 'অনলাইন ভিডিও কনসালটেশন',
-    appointmentDate: '2026-10-18',
-    dateFormattedBn: '১৮ অক্টোবর, ২০২৬ (রবিবার)',
-    slotId: 'slot_1140_1155',
-    slotTimeBn: '০৭:০০ অপরাহ্ন - ০৭:১৫ অপরাহ্ন',
-    slotTimeEn: '07:00 PM - 07:15 PM',
-    complaints: 'হরমোনের ভারসাম্যহীনতা ও ফ্যাটি লিভার।',
-    status: 'confirmed',
-    createdAt: new Date().toISOString()
-  }
-];
+// Initial seed data (empty - real appointments are stored in Supabase and data/appointments.json)
+const INITIAL_SEED: Appointment[] = [];
 
 // Helper to safely read appointments with multi-layer fallback
 function readStoredAppointments(): Appointment[] {
