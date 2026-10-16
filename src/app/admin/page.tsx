@@ -1557,20 +1557,21 @@ export default function AdminDashboardPage() {
 
             {/* Date Filter */}
             <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
-              <span className="text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shrink-0">
-                তারিখ:
+              <span className="text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shrink-0 flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>তারিখ:</span>
               </span>
               <input
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="flex-1 sm:flex-initial py-1.5 px-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="flex-1 sm:flex-initial py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-medium text-emerald-950 dark:text-emerald-100 dark:[color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               />
               {filterDate && (
                 <button
                   type="button"
                   onClick={() => setFilterDate('')}
-                  className="text-xs text-red-500 hover:underline shrink-0"
+                  className="text-xs text-red-500 hover:underline shrink-0 font-medium"
                 >
                   রিসেট
                 </button>
@@ -3181,7 +3182,7 @@ export default function AdminDashboardPage() {
                       type="date"
                       value={overrideDate}
                       onChange={(e) => setOverrideDate(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-mono"
+                      className="w-full p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-mono text-emerald-950 dark:text-emerald-100 dark:[color-scheme:dark] cursor-pointer"
                     />
                   </div>
 

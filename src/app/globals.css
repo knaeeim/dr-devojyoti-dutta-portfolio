@@ -66,6 +66,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: #fafbf9;
   --foreground: #13271e;
   --primary: #21503c;
@@ -102,6 +103,7 @@
 
 .dark,
 [data-theme="dark"] {
+  color-scheme: dark;
   --background: #0c1511;
   --foreground: #ecf7f1;
   --primary: #549f7c;
@@ -383,6 +385,29 @@ h1, h2, h3, .font-bengali-serif {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Date Input native calendar indicator styling for 100% dark mode visibility */
+input[type="date"] {
+  color-scheme: light;
+}
+
+.dark input[type="date"],
+[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.9;
+  filter: brightness(1.2);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  filter: brightness(1.4);
 }
 
 /* Print Styles: Strictly print only the official appointment slip / reception sheet */
