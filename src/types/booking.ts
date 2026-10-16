@@ -8,6 +8,8 @@ export interface ScheduleSession {
   startTime: string;    // "09:30"
   endTime: string;      // "11:30"
   slotDuration?: number; // 15
+  breakStart?: string;   // e.g. "10:30"
+  breakDuration?: number; // in minutes, e.g. 20 (0 or undefined = no break)
 }
 
 export interface DayScheduleConfig {

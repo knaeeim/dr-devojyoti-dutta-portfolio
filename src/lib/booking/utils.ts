@@ -238,30 +238,45 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
       const rawDuration = Number(sess.slotDuration || defaultDuration);
       const duration = isNaN(rawDuration) || rawDuration < 1 ? 15 : Math.max(1, Math.min(240, rawDuration));
 
+      const validBreakDuration = Math.max(0, Number(sess.breakDuration) || 0);
+      const breakStartMin = sess.breakStart && validBreakDuration > 0 ? parseTimeToMinutes(sess.breakStart) : -1;
+      const breakEndMin = breakStartMin >= 0 && validBreakDuration > 0 ? breakStartMin + validBreakDuration : -1;
+
       let cur = startMin;
       let iterations = 0;
       const MAX_SLOTS = 200;
 
       while (cur + duration <= endMin && iterations++ < MAX_SLOTS) {
         const slotEnd = cur + duration;
-        const startFormatted = formatTime12h(cur);
-        const endFormatted = formatTime12h(slotEnd);
-        const slotId = `slot_${cur}_${slotEnd}`;
 
-        if (!slots.some((s) => s.id === slotId)) {
-          slots.push({
-            id: slotId,
-            startMinutes: cur,
-            endMinutes: slotEnd,
-            timeEn: `${startFormatted.timeEn} - ${endFormatted.timeEn}`,
-            timeBn: `${startFormatted.timeBn} - ${endFormatted.timeBn}`,
-            shortEn: startFormatted.timeEn,
-            shortBn: startFormatted.timeBn,
-            period: startFormatted.period,
-            periodTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn,
-            sessionId: sess.id || `session_${sIdx + 1}`,
-            sessionTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn
-          });
+        // Check if slot overlaps break window
+        const overlapsBreak =
+          breakStartMin >= 0 &&
+          breakEndMin > breakStartMin &&
+          ((cur >= breakStartMin && cur < breakEndMin) ||
+            (slotEnd > breakStartMin && slotEnd <= breakEndMin) ||
+            (cur <= breakStartMin && slotEnd >= breakEndMin));
+
+        if (!overlapsBreak) {
+          const startFormatted = formatTime12h(cur);
+          const endFormatted = formatTime12h(slotEnd);
+          const slotId = `slot_${cur}_${slotEnd}`;
+
+          if (!slots.some((s) => s.id === slotId)) {
+            slots.push({
+              id: slotId,
+              startMinutes: cur,
+              endMinutes: slotEnd,
+              timeEn: `${startFormatted.timeEn} - ${endFormatted.timeEn}`,
+              timeBn: `${startFormatted.timeBn} - ${endFormatted.timeBn}`,
+              shortEn: startFormatted.timeEn,
+              shortBn: startFormatted.timeBn,
+              period: startFormatted.period,
+              periodTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn,
+              sessionId: sess.id || `session_${sIdx + 1}`,
+              sessionTitleBn: sess.titleBn?.trim() || startFormatted.periodTitleBn
+            });
+          }
         }
 
         cur += duration;
@@ -281,8 +296,8 @@ export function generateSlotsFromTiming(timing: DayScheduleConfig | null): Slot[
   const duration = isNaN(rawDuration) || rawDuration < 1 ? 15 : Math.max(1, Math.min(240, rawDuration));
 
   const validBreakDuration = Math.max(0, Number(timing.breakDuration) || 0);
-  const breakStartMin = timing.breakStart ? parseTimeToMinutes(timing.breakStart) : -1;
-  const breakEndMin = breakStartMin >= 0 ? breakStartMin + validBreakDuration : -1;
+  const breakStartMin = timing.breakStart && validBreakDuration > 0 ? parseTimeToMinutes(timing.breakStart) : -1;
+  const breakEndMin = breakStartMin >= 0 && validBreakDuration > 0 ? breakStartMin + validBreakDuration : -1;
 
   let cur = startMin;
   let iterations = 0;
