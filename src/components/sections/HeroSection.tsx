@@ -26,7 +26,7 @@ export default function HeroSection() {
               <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA) জয়পুর প্রাক্তনী</span>
               <span className="w-1 h-1 rounded-full bg-emerald-500" />
-              <span className="text-amber-700 dark:text-amber-300 font-bold">BAMS • B.Sc</span>
+              <span className="text-amber-700 dark:text-amber-300 font-bold">BAMS • B.Sc in BGE</span>
             </div>
 
             {/* Main Headline */}
@@ -36,14 +36,14 @@ export default function HeroSection() {
 
             {/* Subtitle: Short, clean & punchy */}
             <p className="text-sm sm:text-base lg:text-lg text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed max-w-xl">
-              লক্ষণ চেপে রাখা নয়, রোগের গভীর শিকড় থেকে স্থায়ী আরোগ্য। <strong>আয়ুর্বেদাচার্য ডা. দেবজ্যোতি দত্তের</strong> বৈজ্ঞানিক চিকিৎসা দর্শনে ফিরে পান প্রাকৃতিক সুস্থতা ও দীর্ঘস্থায়ী নিরাময়।
+              লক্ষণ চেপে রাখা নয়, রোগের গভীর শিকড় থেকে স্থায়ী আরোগ্য। <strong>আয়ুর্বেদাচার্য দেবজ্যোতি দত্তের</strong> বৈজ্ঞানিক চিকিৎসা দর্শনে ফিরে পান প্রাকৃতিক সুস্থতা ও দীর্ঘস্থায়ী নিরাময়।
             </p>
 
             {/* Quick Trust Highlights (Minimal, Sleek Pills) */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-emerald-900/90 dark:text-emerald-200/90 font-medium">
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                ক্লাসিক্যাল নাড়ি পরীক্ষা
+                শাস্ত্রীয় আয়ুর্বেদিক চিকিৎসা
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -108,7 +108,7 @@ export default function HeroSection() {
                 <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-emerald-950">
                   <Image
                     src="/assets/dr-devojyoti-dutta.png"
-                    alt="আয়ুর্বেদাচার্য ডা. দেবজ্যোতি দত্ত"
+                    alt="আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত"
                     fill
                     sizes="(max-width: 768px) 100vw, 450px"
                     priority
@@ -122,10 +122,10 @@ export default function HeroSection() {
                       শীর্ষ আয়ুর্বেদ চিকিৎসক ও গবেষক
                     </span>
                     <h2 className="font-serif text-2xl font-bold text-white leading-tight">
-                      ডা. দেবজ্যোতি দত্ত
+                      দেবজ্যোতি দত্ত
                     </h2>
                     <p className="text-xs text-emerald-200">
-                      B.A.M.S. (NIA Jaipur) • B.Sc. (Biotech, KU)
+                      B.A.M.S. (NIA Jaipur) • B.Sc in BGE
                     </p>
                     <div className="text-[11px] text-emerald-300/90 flex items-center gap-1 pt-1">
                       <Award className="w-3.5 h-3.5 text-amber-400" />

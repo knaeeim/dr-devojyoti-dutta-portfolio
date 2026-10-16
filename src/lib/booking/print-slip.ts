@@ -27,8 +27,8 @@ export function printSinglePageSerialSlip(apt: Appointment) {
     <div style="font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif; color: #064e3b; background: #ffffff; padding: 12px; line-height: 1.45; font-size: 12px; max-width: 540px; margin: 0 auto;">
       <div style="border: 2px solid #047857; border-radius: 12px; padding: 16px; background: #ffffff;">
         <div style="text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 10px; margin-bottom: 12px;">
-          <div style="font-size: 20px; font-weight: 800; color: #064e3b; letter-spacing: -0.3px;">ডা. দেবজ্যোতি দত্ত</div>
-          <div style="font-size: 11px; color: #047857; font-weight: 600; margin-top: 2px;">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU)</div>
+          <div style="font-size: 20px; font-weight: 800; color: #064e3b; letter-spacing: -0.3px;">দেবজ্যোতি দত্ত</div>
+          <div style="font-size: 11px; color: #047857; font-weight: 600; margin-top: 2px;">B.A.M.S. (NIA, Jaipur) • B.Sc in BGE</div>
           <div style="font-size: 11px; color: #047857; font-weight: 600;">চিকিৎসা বিশেষজ্ঞ ও লেখক — "স্বাস্থ্য দর্পণ"</div>
           <div style="display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-top: 5px;">ডিজিটাল সিরিয়াল ও বুকিং স্লিপ</div>
         </div>
@@ -322,8 +322,8 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
     <body>
       <div class="header">
         <div>
-          <div class="doctor-name">ডা. দেবজ্যোতি দত্ত</div>
-          <div class="doctor-sub">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU) • লেখক — "স্বাস্থ্য দর্পণ"</div>
+          <div class="doctor-name">দেবজ্যোতি দত্ত</div>
+          <div class="doctor-sub">B.A.M.S. (NIA, Jaipur) • B.Sc in BGE • লেখক — "স্বাস্থ্য দর্পণ"</div>
           <div class="doc-badge">চেম্বার রিসিপশন সিরিয়াল ও রোগী তালিকা (Daily Reception Roster)</div>
         </div>
         <div class="meta-box">
@@ -404,7 +404,7 @@ export function downloadReceptionReport(appointments: Appointment[]) {
   </style>
 </head>
 <body>
-  <h1>ডা. দেবজ্যোতি দত্ত — চেম্বার রিসিপশন সিরিয়াল তালিকা</h1>
+  <h1>দেবজ্যোতি দত্ত — চেম্বার রিসিপশন সিরিয়াল তালিকা</h1>
   <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')} | মোট সক্রিয় রোগী: ${activeApts.length} জন (বাতিলকৃত স্লট বাদ দেওয়া হয়েছে)</p>
   <table>
     <thead>

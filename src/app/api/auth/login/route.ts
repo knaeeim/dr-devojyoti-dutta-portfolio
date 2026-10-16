@@ -47,15 +47,15 @@ export async function POST(request: NextRequest) {
     const token = await createSessionToken({
       sub: 'dr-devojyoti-dutta',
       role: 'doctor',
-      name: 'আয়ুর্বেদাচার্য ডা. দেবজ্যোতি দত্ত'
+      name: 'আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত'
     });
 
     const response = NextResponse.json({
       success: true,
       message: 'সফলভাবে লগইন সম্পন্ন হয়েছে!',
       doctor: {
-        name: 'ডা. দেবজ্যোতি দত্ত',
-        degrees: 'B.A.M.S. (NIA Jaipur) • B.Sc. (Biotech, KU)',
+        name: 'দেবজ্যোতি দত্ত',
+        degrees: 'B.A.M.S. (NIA Jaipur) • B.Sc in BGE',
         role: 'doctor'
       }
     });

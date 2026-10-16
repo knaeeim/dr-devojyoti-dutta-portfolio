@@ -322,7 +322,7 @@ export function isSlotPastTime(dateStr: string, slotStartMinutes: number): boole
 
 export function getUpcomingDates(
   schedule: ChamberSchedule,
-  count = 10
+  count = 6
 ): CalendarDay[] {
   const enabledDays: number[] = [];
   if (schedule.daySchedules) {
@@ -354,25 +354,28 @@ export function getUpcomingDates(
     if (isDayActive) {
       const diffTime = d.getTime() - todayMidnight.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-      let isBookingOpen = diffDays <= 7;
-      let statusLabel = override?.dayNameBn
-        ? `${override.dayNameBn} • বিশেষ সময়`
-        : isBookingOpen
-        ? 'বুকিং খোলা'
-        : 'পরবর্তী সপ্তাহে উন্মুক্ত';
 
+      // Check if today's chamber hours have already ended.
+      // If ended, completely skip today so it does not show up anymore!
       if (diffDays === 0) {
         const timing = getEffectiveTimingForDate(schedule, dateStr);
         const endMin = timing ? parseTimeToMinutes(timing.endTime) : 0;
         const isTodayEnded = endMin > 0 && endMin <= dhakaNow.currentMinutes;
         if (isTodayEnded) {
-          statusLabel = 'আজকের সময় সমাপ্ত';
-          isBookingOpen = false;
-        } else {
-          statusLabel = 'আজকে উন্মুক্ত';
-          isBookingOpen = true;
+          // Today's chamber time is over, remove today completely
+          continue;
         }
       }
+
+      // 5 দিন আগে থেকে অগ্রিম শুক্র-শনিবারের ও সাধারণ চেম্বার সিরিয়াল উন্মুক্ত হবে
+      const isBookingOpen = diffDays <= 5;
+      const statusLabel = override?.dayNameBn
+        ? `${override.dayNameBn} • বিশেষ সময়`
+        : diffDays === 0
+        ? 'আজকে উন্মুক্ত'
+        : isBookingOpen
+        ? 'বুকিং খোলা'
+        : '৫ দিন পূর্বে উন্মুক্ত';
 
       dates.push({
         dateStr,

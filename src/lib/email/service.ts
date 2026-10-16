@@ -31,7 +31,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
     return { success: false, error: 'রোগীর কোনো ইমেইল ঠিকানা নেই।' };
   }
 
-  const subject = `আপনার অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে — ডা. দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
+  const subject = `আপনার অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে — দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
   const fee = appointment.chamberMode === 'offline' ? '১,০০০ টাকা' : '১,২০০ টাকা';
 
   const htmlContent = `
@@ -63,8 +63,8 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
 <body>
   <div class="container">
     <div class="header">
-      <div class="doctor-name">ডা. দেবজ্যোতি দত্ত</div>
-      <div class="doctor-creds">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU) • লেখক "স্বাস্থ্য দর্পণ"</div>
+      <div class="doctor-name">দেবজ্যোতি দত্ত</div>
+      <div class="doctor-creds">B.A.M.S. (NIA, Jaipur) • B.Sc in BGE • লেখক "স্বাস্থ্য দর্পণ"</div>
       <span class="badge">অফিশিয়াল অ্যাপয়েন্টমেন্ট কনফার্মেশন</span>
     </div>
 
@@ -138,7 +138,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
     </div>
 
     <div class="footer">
-      <div>ডা. দেবজ্যোতি দত্ত ক্লিনিক্যাল সার্ভিসেস • ঢাকা চেম্বার ও গ্লোবাল টেলিহেলথ</div>
+      <div>দেবজ্যোতি দত্ত ক্লিনিক্যাল সার্ভিসেস • ঢাকা চেম্বার ও গ্লোবাল টেলিহেলথ</div>
       <div style="margin-top: 4px;">নতুন অ্যাপয়েন্টমেন্ট নির্ধারণ বা পরিবর্তনের জন্য হোয়াটসঅ্যাপ: <strong>01712854941</strong></div>
       <div style="margin-top: 6px; font-size: 11px; color: #9ca3af;">[!] বিঃদ্রঃ এখানে উল্লেখিত সময়টি আনুমানিক মাত্র। প্রয়োজন অনুযায়ী সময় ও অ্যাপয়েন্টমেন্ট পরিবর্তনের সম্পূর্ণ অধিকার কর্তৃপক্ষ সংরক্ষণ করে।</div>
     </div>
@@ -173,7 +173,7 @@ export async function sendAppointmentRescheduleEmail(
     return { success: false, error: 'রোগীর কোনো ইমেইল ঠিকানা নেই।' };
   }
 
-  const subject = `গুরুত্বপূর্ণ: অ্যাপয়েন্টমেন্টের সময়সূচী পরিবর্তন — ডা. দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
+  const subject = `গুরুত্বপূর্ণ: অ্যাপয়েন্টমেন্টের সময়সূচী পরিবর্তন — দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -203,8 +203,8 @@ export async function sendAppointmentRescheduleEmail(
 <body>
   <div class="container">
     <div class="header">
-      <div class="doctor-name">ডা. দেবজ্যোতি দত্ত</div>
-      <div style="font-size: 13px; color: #fed7aa; margin-bottom: 8px;">B.A.M.S. (NIA, Jaipur) • B.Sc. (KU)</div>
+      <div class="doctor-name">দেবজ্যোতি দত্ত</div>
+      <div style="font-size: 13px; color: #fed7aa; margin-bottom: 8px;">B.A.M.S. (NIA, Jaipur) • B.Sc in BGE</div>
       <span class="badge">সময়সূচী পরিবর্তন নোটিফিকেশন</span>
     </div>
 
@@ -263,7 +263,7 @@ export async function sendAppointmentRescheduleEmail(
     </div>
 
     <div class="footer">
-      <div>ডা. দেবজ্যোতি দত্ত ক্লিনিক্যাল সার্ভিসেস • ঢাকা চেম্বার ও গ্লোবাল টেলিহেলথ</div>
+      <div>দেবজ্যোতি দত্ত ক্লিনিক্যাল সার্ভিসেস • ঢাকা চেম্বার ও গ্লোবাল টেলিহেলথ</div>
       <div style="margin-top: 4px;">হেল্পলাইন: +880 1711-223344</div>
     </div>
   </div>
@@ -300,7 +300,7 @@ async function dispatchEmail(params: {
   const emailFrom =
     process.env.EMAIL_FROM ||
     process.env.RESEND_FROM_EMAIL ||
-    (smtpUser ? `ডা. দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'ডা. দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
+    (smtpUser ? `দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
 
   if (smtpHost && smtpUser && smtpPass) {
     try {

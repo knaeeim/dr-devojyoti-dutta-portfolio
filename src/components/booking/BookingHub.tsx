@@ -21,7 +21,8 @@ import {
   MessageCircle,
   ShieldCheck,
   RotateCw,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import {
   ChamberMode,
@@ -49,6 +50,7 @@ export default function BookingHub() {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [bookedSlotIds, setBookedSlotIds] = useState<string[]>([]);
+  const [isLoadingBookedSlots, setIsLoadingBookedSlots] = useState<boolean>(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   // Live Bangladesh time state (refreshes every 30 seconds)
@@ -111,10 +113,10 @@ export default function BookingHub() {
     loadSchedules();
   }, []);
 
-  // 2. Compute calendar dates whenever chamberMode or schedules update
+  // 2. Compute calendar dates whenever chamberMode or schedules update (capped at 5-6 dates)
   useEffect(() => {
     const currentSchedule = schedules[chamberMode] || defaultSchedules[chamberMode];
-    const dates = getUpcomingDates(currentSchedule, 10);
+    const dates = getUpcomingDates(currentSchedule, 6);
     setCalendarDates(dates);
 
     // Default select first available open date
@@ -128,10 +130,11 @@ export default function BookingHub() {
     setSelectedSlot(null);
   }, [chamberMode, schedules]);
 
-  // 3. Compute slots & fetch booked slots for selectedDate
+  // 3. Compute slots & fetch booked slots for selectedDate with strict no-cache & abort controller
   useEffect(() => {
     if (!selectedDate) {
       setAvailableSlots([]);
+      setBookedSlotIds([]);
       return;
     }
 
@@ -140,22 +143,38 @@ export default function BookingHub() {
     const slots = generateSlotsFromTiming(timing);
     setAvailableSlots(slots);
     setSelectedSlot(null);
+    setIsLoadingBookedSlots(true);
 
-    // Fetch booked slots from API
+    const controller = new AbortController();
+
     async function fetchBooked() {
       try {
-        const res = await fetch(`/api/appointments?date=${selectedDate}&mode=${chamberMode}`);
+        const res = await fetch(
+          `/api/appointments?date=${selectedDate}&mode=${chamberMode}&_t=${Date.now()}`,
+          {
+            cache: 'no-store',
+            signal: controller.signal
+          }
+        );
         const data = await res.json();
         if (data.success && Array.isArray(data.bookedSlotIds)) {
           setBookedSlotIds(data.bookedSlotIds);
         } else {
           setBookedSlotIds([]);
         }
-      } catch (e) {
-        setBookedSlotIds([]);
+      } catch (e: any) {
+        if (e.name !== 'AbortError') {
+          setBookedSlotIds([]);
+        }
+      } finally {
+        setIsLoadingBookedSlots(false);
       }
     }
     fetchBooked();
+
+    return () => {
+      controller.abort();
+    };
   }, [selectedDate, chamberMode, schedules]);
 
   const activeSchedule = schedules[chamberMode] || defaultSchedules[chamberMode];
@@ -502,7 +521,7 @@ export default function BookingHub() {
                 এই চেম্বারে বর্তমানে কোনো সক্রিয় দিন নির্ধারিত নেই। অনুগ্রহ করে অন্য চেম্বার নির্বাচন করুন।
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2.5 sm:gap-3">
                 {calendarDates.map((item) => {
                   const isSelected = selectedDate === item.dateStr;
                   return (
@@ -550,12 +569,20 @@ export default function BookingHub() {
           {selectedDate && (
             <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-slide-up">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
-                    ২
-                  </span>
-                  স্লট পছন্দ করুন
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
+                      ২
+                    </span>
+                    স্লট পছন্দ করুন
+                  </h3>
+                  {isLoadingBookedSlots && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium animate-pulse bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                      <span>যাচাই হচ্ছে...</span>
+                    </span>
+                  )}
+                </div>
                 {activeDateObj && (
                   <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-medium">
                     📅 {activeDateObj.fullBn}
@@ -596,7 +623,7 @@ export default function BookingHub() {
                           const isBooked = bookedSlotIds.includes(slot.id);
                           const isPast = isSlotPastTime(selectedDate, slot.startMinutes);
                           const isSelected = selectedSlot?.id === slot.id;
-                          const isDisabled = isBooked || isPast;
+                          const isDisabled = isBooked || isPast || isLoadingBookedSlots;
 
                           return (
                             <button
@@ -925,7 +952,7 @@ export default function BookingHub() {
 
                 <a
                   href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
-                    `নমস্কার ডা. দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
+                    `নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1081,7 +1108,7 @@ export default function BookingHub() {
               {/* Instructions */}
               <div className="p-2.5 rounded-xl bg-white/70 dark:bg-emerald-950/60 text-[11px] text-emerald-800 dark:text-emerald-300 space-y-1">
                 <p>
-                  📌 <strong>নির্দেশনা:</strong> স্লিপটি ডাউনলোড করে বা ডিজিটাল কপি সংরক্ষণ করুন। ডাক্তার চেম্বার থেকে সিরিয়াল কনফার্ম করলে আপনার ইমেইলে কনফার্মেশন স্লিপ পৌঁছে যাবে।
+                  📌 <strong>নির্দেশনা:</strong> স্লিপটি ডাউনলোড করে বা ডিজিটাল কপি সংরক্ষণ করুন। চেম্বার থেকে সিরিয়াল কনফার্ম করলে আপনার ইমেইলে কনফার্মেশন স্লিপ পৌঁছে যাবে।
                 </p>
               </div>
             </div>

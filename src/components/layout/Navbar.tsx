@@ -128,7 +128,7 @@ export default function Navbar() {
 
   // Secondary links housed neatly inside the arrow dropdown menu
   const secondaryNavLinks = [
-    { href: '#skills', label: 'ক্লিনিক্যাল দক্ষতা ও পঞ্চকর্ম', desc: 'ক্লাসিক্যাল নাড়ি পরীক্ষা ও থেরাপি', icon: Stethoscope },
+    { href: '#skills', label: 'ক্লিনিক্যাল দক্ষতা ও পঞ্চকর্ম', desc: 'ক্লাসিক্যাল পঞ্চকর্ম ও ভেষজ থেরাপি', icon: Stethoscope },
     { href: '#research', label: 'বই ও গবেষণা', desc: '"স্বাস্থ্য দর্পণ" ও বৈজ্ঞানিক প্রকাশনা', icon: BookOpen },
     { href: '#testimonials', label: 'রোগী অভিমত ও আরোগ্য বার্তা', desc: 'আইবিএস ও জটিল রোগের সুস্থতার গল্প', icon: HeartPulse },
     { href: '#faq', label: 'সাধারণ জিজ্ঞাসা (FAQ)', desc: 'সিরিয়াল ও চিকিৎসা সংক্রান্ত উত্তর', icon: HelpCircle },
@@ -210,7 +210,7 @@ export default function Navbar() {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="font-serif font-bold text-base text-emerald-950 dark:text-emerald-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors leading-tight whitespace-nowrap">
-                    ডা. দেবজ্যোতি দত্ত
+                    দেবজ্যোতি দত্ত
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300/40">
                     BAMS

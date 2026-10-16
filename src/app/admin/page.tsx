@@ -317,7 +317,7 @@ export default function AdminDashboardPage() {
 • সময়: ${timeFormatted}
 • মোড: ${isOnline ? 'অনলাইন ভিডিও কনসালটেশন' : 'শ্যামলী চেম্বার, ঢাকা'}
 
-ডাঃ দেবজ্যোতি দত্তের চেম্বার থেকে বার্তা: `;
+দেবজ্যোতি দত্তের চেম্বার থেকে বার্তা: `;
     }
 
     const templateSource =
@@ -1330,7 +1330,7 @@ export default function AdminDashboardPage() {
               <div className="shrink-0">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <h1 className="font-serif font-bold text-sm sm:text-base md:text-lg text-emerald-950 dark:text-emerald-50 leading-tight whitespace-nowrap">
-                    ডা. দেবজ্যোতি দত্ত
+                    দেবজ্যোতি দত্ত
                   </h1>
                   <span className="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 shrink-0">
                     অ্যাডমিন
@@ -2358,7 +2358,7 @@ export default function AdminDashboardPage() {
                         <a
                           href={getWhatsAppUrl(
                             apt.phone,
-                            `নমস্কার ${apt.patientName}, ডা. দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
+                            `নমস্কার ${apt.patientName}, দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -4226,7 +4226,7 @@ export default function AdminDashboardPage() {
                     <span>লাইভ রিসিপশন তালিকা • বাতিলকৃত স্লট বাদ দেওয়া হয়েছে</span>
                   </div>
                   <h3 className="font-serif font-bold text-lg sm:text-2xl text-emerald-950">
-                    ডা. দেবজ্যোতি দত্ত — চেম্বার রিসিপশন তালিকা
+                    দেবজ্যোতি দত্ত — চেম্বার রিসিপশন তালিকা
                   </h3>
                   <div className="flex items-center gap-2 mt-1 text-[11px] sm:text-xs text-zinc-600 flex-wrap">
                     <span>মুদ্রণ: {formatDateToBn(new Date().toISOString().slice(0, 10))}</span>
@@ -4405,7 +4405,7 @@ export default function AdminDashboardPage() {
                   * বাতিলকৃত কোনো সিরিয়াল এই তালিকায় অন্তর্ভুক্ত নয়। রিসিপশন ডেস্ক সর্বদা কেবল সক্রিয় রোগীদের দেখতে পাবে।
                 </div>
                 <div className="text-emerald-800 font-medium">
-                  ডা. দেবজ্যোতি দত্ত চেম্বার পোর্টাল
+                  দেবজ্যোতি দত্ত চেম্বার পোর্টাল
                 </div>
               </div>
             </div>

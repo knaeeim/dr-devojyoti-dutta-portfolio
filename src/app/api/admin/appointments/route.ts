@@ -10,6 +10,9 @@ import {
 import { AppointmentStatus, ChamberMode } from '@/types/booking';
 import { sendAppointmentConfirmationEmail } from '@/lib/email/service';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getSessionFromCookies();

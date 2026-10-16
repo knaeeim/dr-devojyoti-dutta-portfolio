@@ -9,6 +9,9 @@ import { isPhoneVerified } from '@/lib/security/otp';
 import { ChamberMode } from '@/types/booking';
 import { isSlotPastTime } from '@/lib/booking/utils';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -23,7 +26,16 @@ export async function GET(request: NextRequest) {
     }
 
     const bookedSlotIds = await getBookedSlotsForDate(date, mode);
-    return NextResponse.json({ success: true, bookedSlotIds });
+    return NextResponse.json(
+      { success: true, bookedSlotIds },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'স্লট তথ্য লোড করতে ব্যর্থ হয়েছে।' },

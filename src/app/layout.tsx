@@ -2,17 +2,16 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ডা. দেবজ্যোতি দত্ত | আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট সিরিয়াল বুকিং',
+  title: 'দেবজ্যোতি দত্ত | আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট সিরিয়াল বুকিং',
   description:
-    'Ayurvedacharya Dr. Devojyoti Dutta (B.A.M.S., NIA Jaipur & B.Sc. Biotechnology, KU) — প্রাচীন শাস্ত্রীয় নাড়ি পরীক্ষা, পঞ্চকর্ম ও আধুনিক এপিজেনেটিক্সের সমন্বয়ে জটিল ও দীর্ঘস্থায়ী রোগ নিরাময় এবং স্মার্ট স্লট বুকিং প্ল্যাটফর্ম।',
+    'Ayurvedacharya Devojyoti Dutta (B.A.M.S., NIA Jaipur & B.Sc in BGE) — শাস্ত্রীয় আয়ুর্বেদিক চিকিৎসা, পঞ্চকর্ম ও আধুনিক এপিজেনেটিক্সের সমন্বয়ে জটিল ও দীর্ঘস্থায়ী রোগ নিরাময় এবং স্মার্ট স্লট বুকিং প্ল্যাটফর্ম।',
   keywords: [
-    'Dr. Devojyoti Dutta',
-    'ডা. দেবজ্যোতি দত্ত',
+    'Devojyoti Dutta',
+    'দেবজ্যোতি দত্ত',
     'Ayurvedacharya',
     'BAMS NIA Jaipur',
+    'B.Sc in BGE',
     'Ayurveda Dhaka',
-    'Pulse Diagnosis',
-    'নাড়ি পরীক্ষা',
     'পঞ্চকর্ম',
     'Prakriti Test',
     'Epigenetics',
@@ -20,14 +19,14 @@ export const metadata: Metadata = {
     'ডায়াবেটিস রিভার্সাল',
     'IBS treatment'
   ],
-  authors: [{ name: 'ডা. দেবজ্যোতি দত্ত' }],
+  authors: [{ name: 'দেবজ্যোতি দত্ত' }],
   metadataBase: new URL('https://drdevojyotidutta.com'),
   openGraph: {
-    title: 'ডা. দেবজ্যোতি দত্ত — আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট স্লট বুকিং',
+    title: 'দেবজ্যোতি দত্ত — আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট স্লট বুকিং',
     description:
-      'প্রাচীন শাস্ত্রীয় আয়ুর্বেদ বিজ্ঞান (NIA Jaipur) ও আধুনিক এপিজেনেটিক্স (KU)। স্মার্ট স্লট বুকিং ও ডিজিটাল সিরিয়াল সিস্টেম।',
+      'শাস্ত্রীয় আয়ুর্বেদ বিজ্ঞান (NIA Jaipur) ও আধুনিক এপিজেনেটিক্স (B.Sc in BGE)। স্মার্ট স্লট বুকিং ও ডিজিটাল সিরিয়াল সিস্টেম।',
     url: 'https://drdevojyotidutta.com',
-    siteName: 'ডা. দেবজ্যোতি দত্ত পোর্টাল',
+    siteName: 'দেবজ্যোতি দত্ত পোর্টাল',
     locale: 'bn_BD',
     type: 'website',
     images: [
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
         url: '/assets/dr-devojyoti-dutta.jpg',
         width: 800,
         height: 1000,
-        alt: 'ডা. দেবজ্যোতি দত্ত (B.A.M.S., NIA Jaipur)'
+        alt: 'দেবজ্যোতি দত্ত (B.A.M.S., NIA Jaipur & B.Sc in BGE)'
       }
     ]
   },

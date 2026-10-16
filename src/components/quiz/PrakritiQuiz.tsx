@@ -284,7 +284,7 @@ export default function PrakritiQuiz() {
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition-all"
                 >
                   <Calendar className="w-4 h-4 text-amber-300" />
-                  <span>নাড়ি পরীক্ষা ও পূর্ণাঙ্গ চিকিৎসার জন্য সিরিয়াল নিন</span>
+                  <span>শাস্ত্রীয় রোগনিদান ও পূর্ণাঙ্গ চিকিৎসার জন্য সিরিয়াল নিন</span>
                 </a>
               </div>
             </div>

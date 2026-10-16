@@ -13,16 +13,16 @@ export default function Footer() {
                 DD
               </div>
               <div>
-                <h3 className="font-serif font-bold text-lg text-white">ডা. দেবজ্যোতি দত্ত</h3>
+                <h3 className="font-serif font-bold text-lg text-white">দেবজ্যোতি দত্ত</h3>
                 <p className="text-xs text-emerald-400">Ayurvedacharya & Biotechnologist</p>
               </div>
             </div>
             <p className="text-sm text-emerald-200/80 leading-relaxed">
-              শাস্ত্রীয় আয়ুর্বেদ চিকিৎসা, বৈদিক নাড়ি পরীক্ষা ও আধুনিক এপিজেনেটিক্সের সমন্বয়ে জটিল ও দীর্ঘস্থায়ী রোগের মূল শিকড় (Root-cause) নিরাময়ে নিবেদিতপ্রাণ।
+              শাস্ত্রীয় আয়ুর্বেদ চিকিৎসা ও আধুনিক এপিজেনেটিক্সের সমন্বয়ে জটিল ও দীর্ঘস্থায়ী রোগের মূল শিকড় (Root-cause) নিরাময়ে নিবেদিতপ্রাণ।
             </p>
             <div className="flex items-center gap-2 text-xs text-amber-300/90 font-medium">
               <Award className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>B.A.M.S. (NIA Jaipur) • B.Sc. Biotech (KU)</span>
+              <span>B.A.M.S. (NIA Jaipur) • B.Sc in BGE</span>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export default function Footer() {
                 <a href="#about" className="hover:text-amber-300 transition-colors">চিকিৎসা দর্শন ও গবেষণা</a>
               </li>
               <li>
-                <a href="#skills" className="hover:text-amber-300 transition-colors">নাড়ি পরীক্ষা ও পঞ্চকর্ম</a>
+                <a href="#skills" className="hover:text-amber-300 transition-colors">ক্লিনিক্যাল দক্ষতা ও পঞ্চকর্ম</a>
               </li>
               <li>
                 <a href="#treatments" className="hover:text-amber-300 transition-colors">মেটাবলিক ও ক্রনিক রোগ নিরাময়</a>
@@ -108,7 +108,7 @@ export default function Footer() {
                 className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-700/50 transition-colors"
               >
                 <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>ডাক্তার ও স্টাফ লগইন</span>
+                <span>অ্যাডমিন ও স্টাফ লগইন</span>
               </Link>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function Footer() {
             </p>
           </div>
           <p className="text-emerald-400/60 text-[11px] max-w-xl">
-            সতর্কতা: ওয়েবসাইটের তথ্য ও প্রকৃতি পরীক্ষা শুধুমাত্র সচেতনতামূলক উদ্দেশ্যে প্রদত্ত। কোনো দীর্ঘস্থায়ী স্বাস্থ্য সমস্যার জন্য ব্যক্তিগত নাড়ি পরীক্ষা ও চিকিৎসকের সরাসরি পরামর্শ গ্রহণ করুন।
+            সতর্কতা: ওয়েবসাইটের তথ্য ও প্রকৃতি পরীক্ষা শুধুমাত্র সচেতনতামূলক উদ্দেশ্যে প্রদত্ত। কোনো দীর্ঘস্থায়ী স্বাস্থ্য সমস্যার জন্য চিকিৎসকের সরাসরি পরামর্শ গ্রহণ করুন।
           </p>
         </div>
       </div>

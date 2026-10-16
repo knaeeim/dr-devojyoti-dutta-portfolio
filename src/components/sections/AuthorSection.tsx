@@ -26,7 +26,7 @@ export default function AuthorSection() {
               </h2>
 
               <p className="text-sm sm:text-base text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed mt-2">
-                ডা. দেবজ্যোতি দত্ত রচিত <em>"স্বাস্থ্য দর্পণ"</em> আধুনিক পাঠক ও সচেতন রোগীদের জন্য এক অনন্য স্বাস্থ্যগাইড। বইটিতে বৈজ্ঞানিক রেফারেন্স ও বৈদিক ক্লাসিক্যাল সূত্রের সমন্বয়ে বুঝিয়ে দেওয়া হয়েছে কীভাবে মানুষ নিজের জীবনযাপন ও খাদ্য পরিবর্তনের মাধ্যমে দীর্ঘস্থায়ী রোগ থেকে মুক্ত থাকতে পারে।
+                দেবজ্যোতি দত্ত রচিত <em>"স্বাস্থ্য দর্পণ"</em> আধুনিক পাঠক ও সচেতন রোগীদের জন্য এক অনন্য স্বাস্থ্যগাইড। বইটিতে বৈজ্ঞানিক রেফারেন্স ও বৈদিক ক্লাসিক্যাল সূত্রের সমন্বয়ে বুঝিয়ে দেওয়া হয়েছে কীভাবে মানুষ নিজের জীবনযাপন ও খাদ্য পরিবর্তনের মাধ্যমে দীর্ঘস্থায়ী রোগ থেকে মুক্ত থাকতে পারে।
               </p>
             </ScrollReveal>
 
@@ -54,7 +54,7 @@ export default function AuthorSection() {
                   href="#booking"
                   className="btn-butter inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md hover:shadow-lg cursor-pointer"
                 >
-                  <span>ডাক্তারের সাথে অ্যাপয়েন্টমেন্ট বুক করুন</span>
+                  <span>অ্যাপয়েন্টমেন্ট বুক করুন</span>
                 </a>
 
                 <a
@@ -77,7 +77,7 @@ export default function AuthorSection() {
                 <div className="w-24 h-32 mx-auto rounded-xl bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white p-3 shadow-xl flex flex-col justify-between transform -rotate-3 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
                   <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">Health Book</span>
                   <span className="font-serif font-black text-sm leading-tight">স্বাস্থ্য দর্পণ</span>
-                  <span className="text-[8px] opacity-90">ডা. দেবজ্যোতি দত্ত</span>
+                  <span className="text-[8px] opacity-90">দেবজ্যোতি দত্ত</span>
                 </div>
 
                 <div className="space-y-2">
@@ -97,7 +97,7 @@ export default function AuthorSection() {
                 <div className="p-4 rounded-xl bg-white/80 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-800/40 text-xs text-emerald-900 dark:text-emerald-200 space-y-2 text-left">
                   <div className="flex justify-between border-b border-emerald-200 dark:border-emerald-800/40 pb-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">লেখক:</span>
-                    <span className="font-bold">ডা. দেবজ্যোতি দত্ত</span>
+                    <span className="font-bold">দেবজ্যোতি দত্ত</span>
                   </div>
                   <div className="flex justify-between border-b border-emerald-200 dark:border-emerald-800/40 pb-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">বিষয়বস্তু:</span>

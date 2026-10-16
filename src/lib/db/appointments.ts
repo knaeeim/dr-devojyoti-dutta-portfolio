@@ -172,6 +172,13 @@ function writeStoredAppointments(list: Appointment[]) {
 
 export async function getAllAppointments(): Promise<Appointment[]> {
   const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  const apptMap = new Map<string, Appointment>();
+
+  // 1. Seed from local store
+  const stored = readStoredAppointments();
+  stored.filter((a) => !deleted.has(a.id)).forEach((a) => apptMap.set(a.id, a));
+
+  // 2. Merge from Supabase
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
@@ -181,67 +188,87 @@ export async function getAllAppointments(): Promise<Appointment[]> {
         .order('appointment_date', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        return data
+      if (!error && Array.isArray(data)) {
+        data
           .filter((row) => !deleted.has(row.id))
-          .map((row) => ({
-            id: row.id,
-            serialNo: row.serial_no,
-            patientName: row.patient_name,
-            phone: row.phone,
-            email: row.email || undefined,
-            chamberMode: row.chamber_mode as ChamberMode,
-            chamberTitleBn: row.chamber_title_bn,
-            appointmentDate: row.appointment_date,
-            dateFormattedBn: row.date_formatted_bn,
-            slotId: row.slot_id,
-            slotTimeBn: row.slot_time_bn,
-            slotTimeEn: row.slot_time_en,
-            complaints: row.complaints,
-            status: row.status as AppointmentStatus,
-            rescheduledReason: row.rescheduled_reason || undefined,
-            rescheduledAt: row.rescheduled_at || undefined,
-            cancellationReason: row.cancellation_reason || undefined,
-            cancelledAt: row.cancelled_at || undefined,
-            createdAt: row.created_at
-          }));
+          .forEach((row) => {
+            apptMap.set(row.id, {
+              id: row.id,
+              serialNo: row.serial_no,
+              patientName: row.patient_name,
+              phone: row.phone,
+              email: row.email || undefined,
+              chamberMode: row.chamber_mode as ChamberMode,
+              chamberTitleBn: row.chamber_title_bn,
+              appointmentDate: row.appointment_date,
+              dateFormattedBn: row.date_formatted_bn,
+              slotId: row.slot_id,
+              slotTimeBn: row.slot_time_bn,
+              slotTimeEn: row.slot_time_en,
+              complaints: row.complaints,
+              status: row.status as AppointmentStatus,
+              rescheduledReason: row.rescheduled_reason || undefined,
+              rescheduledAt: row.rescheduled_at || undefined,
+              cancellationReason: row.cancellation_reason || undefined,
+              cancelledAt: row.cancelled_at || undefined,
+              createdAt: row.created_at
+            });
+          });
       }
     } catch (e) {
-      console.warn('Supabase query failed, falling back to local file store', e);
+      console.warn('Supabase query failed, using local file store', e);
     }
   }
 
-  const stored = readStoredAppointments();
-  return stored.filter((a) => !deleted.has(a.id));
+  const result = Array.from(apptMap.values()).sort((a, b) => {
+    const dDiff = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
+    if (dDiff !== 0) return dDiff;
+    const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return tB - tA;
+  });
+
+  return result;
 }
 
 /**
  * Returns booked slots for a given date and chamber mode.
- * CRITICAL: Cancelled appointments NEVER count as booked, so the slot becomes instantly free!
+ * CRITICAL: Combines local store and Supabase, so a booked slot is NEVER missed!
+ * Cancelled appointments NEVER count as booked.
  */
 export async function getBookedSlotsForDate(dateStr: string, mode: ChamberMode): Promise<string[]> {
+  const bookedSet = new Set<string>();
+
+  // 1. Check local file store
+  try {
+    const local = readStoredAppointments();
+    local
+      .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled')
+      .forEach((a) => bookedSet.add(a.slotId));
+  } catch (err) {
+    console.warn('Local read in getBookedSlotsForDate error:', err);
+  }
+
+  // 2. Check Supabase and merge
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('appointments')
-        .select('slot_id')
+        .select('slot_id, status')
         .eq('appointment_date', dateStr)
         .eq('chamber_mode', mode)
         .neq('status', 'cancelled');
 
-      if (!error && data) {
-        return data.map((d) => d.slot_id);
+      if (!error && Array.isArray(data)) {
+        data.forEach((d) => bookedSet.add(d.slot_id));
       }
     } catch (e) {
-      console.warn('Supabase slot query failed, using local file fallback', e);
+      console.warn('Supabase slot query failed, using local store', e);
     }
   }
 
-  const all = await getAllAppointments();
-  return all
-    .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled')
-    .map((a) => a.slotId);
+  return Array.from(bookedSet);
 }
 
 export async function createAppointment(params: {
