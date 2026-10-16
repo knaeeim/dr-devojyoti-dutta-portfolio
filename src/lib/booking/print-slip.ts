@@ -1,4 +1,5 @@
 import { Appointment } from '@/types/booking';
+import { getDhakaCurrentTime } from '@/lib/booking/utils';
 
 export function printSinglePageSerialSlip(apt: Appointment) {
   if (typeof window === 'undefined') return;
@@ -152,7 +153,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
   const doc = iframe.contentWindow?.document;
   if (!doc) return;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getDhakaCurrentTime().dateStr;
   const title = `ডা-দেবজ্যোতি-দত্ত-রিসিপশন-সিরিয়াল-তালিকা-${todayStr}`;
 
   const rowsHtml =
@@ -390,7 +391,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
 export function downloadReceptionReport(appointments: Appointment[]) {
   if (typeof window === 'undefined') return;
   const activeApts = appointments.filter((apt) => apt.status !== 'cancelled');
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getDhakaCurrentTime().dateStr;
   const title = `ডা-দেবজ্যোতি-দত্ত-রিসিপশন-সিরিয়াল-তালিকা-${todayStr}`;
 
   let content = `<!DOCTYPE html>

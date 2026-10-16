@@ -71,7 +71,8 @@ import {
   getUpcomingDates,
   generateSlotsFromTiming,
   getEffectiveTimingForDate,
-  isSlotPastTime
+  isSlotPastTime,
+  getDhakaCurrentTime
 } from '@/lib/booking/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
@@ -774,11 +775,8 @@ export default function AdminDashboardPage() {
         deletedIds = JSON.parse(localStorage.getItem('dr_dutta_deleted_ids') || '[]');
       } catch {}
 
-      // 1. Fetch appointments
+      // 1. Fetch appointments (fetch all so top KPI stats remain 100% accurate)
       const queryParams = new URLSearchParams();
-      if (filterMode && filterMode !== 'all') queryParams.set('mode', filterMode);
-      if (filterDate) queryParams.set('date', filterDate);
-      if (searchQuery) queryParams.set('query', searchQuery);
       if (deletedIds.length > 0) {
         queryParams.set('deleted_ids', JSON.stringify(deletedIds));
       }
@@ -811,7 +809,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, [filterMode, filterDate]);
+  }, []);
 
   // Fetch booked slots for reschedule date
   useEffect(() => {
@@ -1498,8 +1496,9 @@ export default function AdminDashboardPage() {
     );
   };
 
-  // Calculations for stats
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Calculations for stats using Bangladesh Standard Time
+  const todayDhaka = getDhakaCurrentTime();
+  const todayStr = todayDhaka.dateStr;
   const totalCount = appointments.length;
   const pendingCount = appointments.filter((a) => a.status === 'pending').length;
   const confirmedCount = appointments.filter((a) => a.status === 'confirmed').length;
@@ -1514,6 +1513,12 @@ export default function AdminDashboardPage() {
   const ITEMS_PER_PAGE = 10;
 
   const displayedAppointments = appointments.filter((a) => {
+    if (filterMode && filterMode !== 'all') {
+      if (a.chamberMode !== filterMode) return false;
+    }
+    if (filterDate) {
+      if (a.appointmentDate !== filterDate) return false;
+    }
     if (filterStatus && filterStatus !== 'all') {
       if (a.status !== filterStatus) return false;
     }
@@ -1866,18 +1871,33 @@ export default function AdminDashboardPage() {
             </span>
           </div>
 
-          {/* Card 3 */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
-            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
-              আজকের সিরিয়াল
-            </span>
+          {/* Card 3 - Today's Appointments */}
+          <button
+            type="button"
+            onClick={() => setFilterDate(filterDate === todayStr ? '' : todayStr)}
+            className={`p-4 sm:p-5 rounded-2xl border shadow-sm space-y-1 text-left transition-all cursor-pointer ${
+              filterDate === todayStr
+                ? 'bg-emerald-100 dark:bg-emerald-900/60 border-emerald-500 ring-2 ring-emerald-500/40'
+                : 'bg-white dark:bg-[#13201a] border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400'
+            }`}
+            title="ক্লিক করে আজকের সিরিয়ালগুলো ফিল্টার করুন"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
+                আজকের সিরিয়াল
+              </span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+                {todayDhaka.day}/{todayDhaka.month}
+              </span>
+            </div>
             <div className="font-serif text-2xl sm:text-3xl font-black text-emerald-950 dark:text-emerald-50">
               {toBengaliNumber(todayCount)}
             </div>
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-500">
-              আজকের অ্যাপয়েন্টমেন্ট
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-500 flex items-center justify-between">
+              <span>আজকের অ্যাপয়েন্টমেন্ট</span>
+              {filterDate === todayStr && <span className="text-amber-500 font-bold text-[10px]">(ফিল্টার সক্রিয়)</span>}
             </span>
-          </div>
+          </button>
 
           {/* Card 4 */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-sm space-y-1">
@@ -5265,7 +5285,7 @@ export default function AdminDashboardPage() {
                     দেবজ্যোতি দত্ত — চেম্বার রিসিপশন তালিকা
                   </h3>
                   <div className="flex items-center gap-2 mt-1 text-[11px] sm:text-xs text-zinc-600 flex-wrap">
-                    <span>মুদ্রণ: {formatDateToBn(new Date().toISOString().slice(0, 10))}</span>
+                    <span>মুদ্রণ: {formatDateToBn(getDhakaCurrentTime().dateStr)}</span>
                     <span>•</span>
                     <span className="font-bold text-emerald-800">
                       সক্রিয় রোগী: {toBengaliNumber(receptionAppointments.length)} জন
