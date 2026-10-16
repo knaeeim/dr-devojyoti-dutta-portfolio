@@ -79,6 +79,7 @@ export default function BookingHub() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpPending, setOtpPending] = useState(false);
+  const [isFinalizingBooking, setIsFinalizingBooking] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpTimer, setOtpTimer] = useState(0);
   const [otpToken, setOtpToken] = useState<string | null>(null);
@@ -325,14 +326,15 @@ export default function BookingHub() {
 
       const verifiedToken = data.token;
       setOtpToken(verifiedToken);
-      setShowOtpModal(false);
       setOtpPending(false);
+      setIsFinalizingBooking(true);
 
-      // Execute appointment creation
+      // Execute appointment creation while KEEPING the modal open with live loader
       executeFinalBooking(verifiedToken);
     } catch (err) {
       setOtpError('যাচাই প্রক্রিয়ায় ত্রুটি ঘটেছে।');
       setOtpPending(false);
+      setIsFinalizingBooking(false);
     }
   };
 
@@ -393,7 +395,8 @@ export default function BookingHub() {
         const result = await res.json();
 
         if (!res.ok || !result.success) {
-          setErrorMsg(result.error || 'বুকিং সম্পন্ন করা যায়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।');
+          setIsFinalizingBooking(false);
+          setOtpError(result.error || 'বুকিং সম্পন্ন করা যায়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।');
           return;
         }
 
@@ -409,8 +412,11 @@ export default function BookingHub() {
         setOtpDebugCode(null);
         setOtpToken(null);
         setOtpChallengeToken(null);
+        setIsFinalizingBooking(false);
+        setShowOtpModal(false);
       } catch (err: any) {
-        setErrorMsg('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+        setIsFinalizingBooking(false);
+        setOtpError('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
       }
     });
   };
@@ -881,140 +887,191 @@ export default function BookingHub() {
       {showOtpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
           <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
-            {/* Close Button */}
-            <button
-              onClick={() => setShowOtpModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 mx-auto flex items-center justify-center shadow-inner">
-                <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
-                মোবাইল নম্বর যাচাইকরণ (OTP)
-              </h3>
-              <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                ফলস বুকিং রোধে আপনার নম্বরে একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
-              </p>
-              <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
-                {phone}
-              </div>
-            </div>
-
-            {/* Demo / Sandbox Helper Badge if real SMS gateway is not configured */}
-            {otpDebugCode && (
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1.5">
-                <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block">
-                  🧪 টেস্ট মোড ওটিপি (Sandbox Demo):
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setOtpCode(otpDebugCode)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-200 dark:bg-amber-900 text-amber-950 dark:text-amber-100 font-mono font-bold text-sm hover:bg-amber-300 cursor-pointer transition-colors"
-                  title="ক্লিক করে কোড বসান"
-                >
-                  <span>{otpDebugCode}</span>
-                  <span className="text-[10px] font-normal underline">(ক্লিক করে বসান)</span>
-                </button>
-                {otpGatewayNotice && (
-                  <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed px-1">
-                    {otpGatewayNotice}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* OTP Error message */}
-            {otpError && (
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleVerifyOtpAndProceed} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-center text-emerald-900 dark:text-emerald-200 mb-2">
-                  ৬-সংখ্যার কোডটি লিখুন
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  required
-                  autoFocus
-                  value={otpCode}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const bnMap: Record<string, string> = {
-                      '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
-                      '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
-                    };
-                    const converted = val.replace(/[০-৯]/g, (d) => bnMap[d] || d).replace(/[^0-9]/g, '');
-                    setOtpCode(converted);
-                  }}
-                  placeholder="• • • • • •"
-                  className="w-full text-center tracking-[0.5em] font-mono text-2xl font-bold py-3 px-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-50 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/40"
-                />
-              </div>
-
-              {/* Countdown and Resend */}
-              <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 px-1">
-                {otpTimer > 0 ? (
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-amber-500" />
-                    পুনরায় কোড পাঠানোর সময়: <strong>{otpTimer}s</strong>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={otpPending}
-                    className="text-emerald-800 dark:text-emerald-300 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <RotateCw className="w-3.5 h-3.5" />
-                    <span>কোড পুনরায় পাঠান</span>
-                  </button>
-                )}
-
-                <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
-                    `নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-[#25D366] hover:underline flex items-center gap-1"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>হোয়াটসঅ্যাপ সহায়তা</span>
-                </a>
-              </div>
-
-              {/* Submit Button */}
+            {/* Close Button (Hidden while finalizing booking) */}
+            {!isFinalizingBooking && (
               <button
-                type="submit"
-                disabled={otpPending || otpCode.length !== 6}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                onClick={() => setShowOtpModal(false)}
+                className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
-                {otpPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>যাচাই করা হচ্ছে...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-amber-300" />
-                    <span>যাচাই সম্পন্ন করুন ও সিরিয়াল কনফার্ম করুন</span>
-                  </>
-                )}
+                <X className="w-5 h-5" />
               </button>
-            </form>
+            )}
+
+            {isFinalizingBooking ? (
+              /* LIVE IN-MODAL BOOKING FINALIZATION LOADER */
+              <div className="py-6 sm:py-8 text-center space-y-5 animate-fade-in">
+                {/* Animated Spinner & Shield Check */}
+                <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-4 border-emerald-500/20 border-t-emerald-600 animate-spin" />
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center shadow-inner">
+                    <ShieldCheck className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                  </div>
+                </div>
+
+                {/* Title & Info */}
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/90 dark:bg-emerald-900/70 text-emerald-900 dark:text-emerald-200 text-xs font-bold shadow-2xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>মোবাইল নম্বর সফলভাবে যাচাই হয়েছে</span>
+                  </div>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-emerald-950 dark:text-emerald-50">
+                    আপনার সিরিয়াল নিশ্চিত করা হচ্ছে...
+                  </h3>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 max-w-xs mx-auto leading-relaxed">
+                    সার্ভারে তথ্য সংরক্ষণ ও আপনার অফিশিয়াল ডিজিটাল সিরিয়াল স্লিপ প্রস্তুত করা হচ্ছে।
+                  </p>
+                </div>
+
+                {/* Live Step Progress Box */}
+                <div className="max-w-xs mx-auto p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60 text-left space-y-2.5 text-xs">
+                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200 font-medium">
+                    <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">✓</span>
+                    <span>ওটিপি কোড যাচাই সম্পন্ন</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-100 font-bold">
+                    <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin shrink-0" />
+                    <span>সিরিয়াল নম্বর বরাদ্দ ও কনফার্মেশন হচ্ছে</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 text-[11px]">
+                    <span className="w-4 h-4 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-[10px] shrink-0">3</span>
+                    <span>ডিজিটাল প্রেসক্রিপশন স্লিপ প্রদর্শন</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 italic">
+                  অনুগ্রহ করে কয়েক সেকেন্ড অপেক্ষা করুন, পেজটি রিলোড করবেন না...
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 mx-auto flex items-center justify-center shadow-inner">
+                    <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
+                    মোবাইল নম্বর যাচাইকরণ (OTP)
+                  </h3>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                    ফলস বুকিং রোধে আপনার নম্বরে একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
+                  </p>
+                  <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
+                    {phone}
+                  </div>
+                </div>
+
+                {/* Demo / Sandbox Helper Badge if real SMS gateway is not configured */}
+                {otpDebugCode && (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1.5">
+                    <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block">
+                      🧪 টেস্ট মোড ওটিপি (Sandbox Demo):
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpCode(otpDebugCode)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-200 dark:bg-amber-900 text-amber-950 dark:text-amber-100 font-mono font-bold text-sm hover:bg-amber-300 cursor-pointer transition-colors"
+                      title="ক্লিক করে কোড বসান"
+                    >
+                      <span>{otpDebugCode}</span>
+                      <span className="text-[10px] font-normal underline">(ক্লিক করে বসান)</span>
+                    </button>
+                    {otpGatewayNotice && (
+                      <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed px-1">
+                        {otpGatewayNotice}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* OTP Error message */}
+                {otpError && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{otpError}</span>
+                  </div>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleVerifyOtpAndProceed} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-center text-emerald-900 dark:text-emerald-200 mb-2">
+                      ৬-সংখ্যার কোডটি লিখুন
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      required
+                      autoFocus
+                      value={otpCode}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const bnMap: Record<string, string> = {
+                          '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+                          '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+                        };
+                        const converted = val.replace(/[০-৯]/g, (d) => bnMap[d] || d).replace(/[^0-9]/g, '');
+                        setOtpCode(converted);
+                      }}
+                      placeholder="• • • • • •"
+                      className="w-full text-center tracking-[0.5em] font-mono text-2xl font-bold py-3 px-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-50 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/40"
+                    />
+                  </div>
+
+                  {/* Countdown and Resend */}
+                  <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 px-1">
+                    {otpTimer > 0 ? (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                        পুনরায় কোড পাঠানোর সময়: <strong>{otpTimer}s</strong>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={otpPending}
+                        className="text-emerald-800 dark:text-emerald-300 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <RotateCw className="w-3.5 h-3.5" />
+                        <span>কোড পুনরায় পাঠান</span>
+                      </button>
+                    )}
+
+                    <a
+                      href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
+                        `নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-[#25D366] hover:underline flex items-center gap-1"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>হোয়াটসঅ্যাপ সহায়তা</span>
+                    </a>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={otpPending || otpCode.length !== 6}
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {otpPending ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>যাচাই করা হচ্ছে...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-amber-300" />
+                        <span>যাচাই সম্পন্ন করুন ও সিরিয়াল কনফার্ম করুন</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
