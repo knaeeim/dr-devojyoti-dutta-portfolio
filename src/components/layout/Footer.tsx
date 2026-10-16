@@ -116,9 +116,18 @@ export default function Footer() {
 
         {/* Bottom Disclaimer & Copyright */}
         <div className="pt-8 border-t border-emerald-900/60 text-xs text-emerald-400/80 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-          <p>
-            © {new Date().getFullYear()} ডা. দেবজ্যোতি দত্ত (B.A.M.S., NIA Jaipur & B.Sc. Biotech)। সর্বস্বত্ব সংরক্ষিত।
-          </p>
+          <div className="space-y-1.5">
+            <p className="text-emerald-200/90 font-medium">
+              © {new Date().getFullYear()} সর্বস্বত্ব <span className="text-white font-bold tracking-wide">Zynovate</span> কর্তৃক সংরক্ষিত।
+            </p>
+            <p className="text-[11px] text-emerald-400/70 flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
+              <span>Developed & Maintained by</span>
+              <span className="font-bold text-amber-400 tracking-wider inline-flex items-center gap-1.5 bg-emerald-900/70 px-2 py-0.5 rounded-md border border-emerald-800/80">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Zynovate
+              </span>
+            </p>
+          </div>
           <p className="text-emerald-400/60 text-[11px] max-w-xl">
             সতর্কতা: ওয়েবসাইটের তথ্য ও প্রকৃতি পরীক্ষা শুধুমাত্র সচেতনতামূলক উদ্দেশ্যে প্রদত্ত। কোনো দীর্ঘস্থায়ী স্বাস্থ্য সমস্যার জন্য ব্যক্তিগত নাড়ি পরীক্ষা ও চিকিৎসকের সরাসরি পরামর্শ গ্রহণ করুন।
           </p>

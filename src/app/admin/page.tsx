@@ -2668,6 +2668,17 @@ export default function AdminDashboardPage() {
             </>
           )}
         </div>
+
+        {/* Admin Dashboard Bottom Footer Note */}
+        <div className="pt-8 pb-4 text-center text-xs text-emerald-800/60 dark:text-emerald-400/50 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-emerald-900/10 dark:border-emerald-800/30 mt-8">
+          <div>
+            © {new Date().getFullYear()} সর্বস্বত্ব <span className="font-semibold text-emerald-950 dark:text-emerald-200">Zynovate</span> কর্তৃক সংরক্ষিত।
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>Designed & Developed by</span>
+            <span className="font-bold text-emerald-700 dark:text-emerald-300">Zynovate</span>
+          </div>
+        </div>
       </main>
 
       {/* RESCHEDULE APPOINTMENT MODAL */}
