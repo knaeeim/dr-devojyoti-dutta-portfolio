@@ -448,15 +448,15 @@ export function getUpcomingDates(
         }
       }
 
-      // 5 দিন আগে থেকে অগ্রিম শুক্র-শনিবারের ও সাধারণ চেম্বার সিরিয়াল উন্মুক্ত হবে
-      const isBookingOpen = diffDays <= 5;
+      // ৬ দিন আগে থেকে অগ্রিম শুক্র-শনিবারের ও সাধারণ চেম্বার সিরিয়াল উন্মুক্ত হবে (রবিবার থেকেই শুক্র ও শনিবার নেওয়া যাবে)
+      const isBookingOpen = diffDays <= 6;
       const statusLabel = override?.dayNameBn
         ? `${override.dayNameBn} • বিশেষ সময়`
         : diffDays === 0
         ? 'আজকে উন্মুক্ত'
         : isBookingOpen
         ? 'বুকিং খোলা'
-        : '৫ দিন পূর্বে উন্মুক্ত';
+        : '৬ দিন পূর্বে উন্মুক্ত';
 
       dates.push({
         dateStr,
