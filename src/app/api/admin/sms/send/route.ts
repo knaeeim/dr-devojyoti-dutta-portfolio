@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { sendDirectSms } from '@/lib/sms/service';
+import { markAppointmentMessageSent } from '@/lib/db/appointments';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse request body
     const body = await request.json();
-    const { phone, message } = body;
+    const { phone, message, appointmentId } = body;
 
     if (!phone || typeof phone !== 'string') {
       return NextResponse.json(
@@ -45,10 +46,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 4. Mark appointment as messaged if appointmentId is supplied
+    if (appointmentId) {
+      await markAppointmentMessageSent(appointmentId, 'sms');
+    }
+
     return NextResponse.json({
       success: true,
       message: result.message || 'রোগীর মোবাইলে সফলভাবে এসএমএস পাঠানো হয়েছে!',
-      responseCode: result.responseCode
+      responseCode: result.responseCode,
+      messageSent: true
     });
   } catch (err: unknown) {
     console.error('[Admin Send SMS API Error]:', err);

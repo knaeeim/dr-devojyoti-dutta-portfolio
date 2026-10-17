@@ -124,13 +124,13 @@ export default function Footer() {
         <div className="pt-8 border-t border-emerald-900/60 text-xs text-emerald-400/80 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
           <div className="space-y-1.5">
             <p className="text-emerald-200/90 font-medium">
-              © {new Date().getFullYear()} সর্বস্বত্ব <span className="text-white font-bold tracking-wide">Zynovate</span> কর্তৃক সংরক্ষিত।
+              © {new Date().getFullYear()} সর্বস্বত্ব <span className="text-white font-bold tracking-wide">WebZen Bangladesh</span> কর্তৃক সংরক্ষিত।
             </p>
             <p className="text-[11px] text-emerald-400/70 flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
               <span>Developed & Maintained by</span>
               <span className="font-bold text-amber-400 tracking-wider inline-flex items-center gap-1.5 bg-emerald-900/70 px-2 py-0.5 rounded-md border border-emerald-800/80">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Zynovate
+                WebZen Bangladesh
               </span>
             </p>
           </div>

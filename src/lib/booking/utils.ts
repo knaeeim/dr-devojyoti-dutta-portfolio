@@ -20,6 +20,43 @@ export function toBengaliNumber(num: number | string | null | undefined): string
   return num.toString().replace(/\d/g, (d) => bnDigits[parseInt(d, 10)]);
 }
 
+/**
+ * Formats an ISO date/time string into human-friendly Bengali relative time
+ * E.g. "এইমাত্র", "৫ মিনিট আগে", "১ ঘণ্টা ২০ মিনিট আগে", "৩ ঘণ্টা আগে", "গতকাল", "৩ দিন আগে"
+ */
+export function formatRelativeTimeBn(isoString?: string | null): string {
+  if (!isoString) return '';
+  const now = Date.now();
+  const created = new Date(isoString).getTime();
+  if (isNaN(created)) return '';
+
+  const diffSec = Math.max(0, Math.floor((now - created) / 1000));
+  if (diffSec < 45) return 'এইমাত্র';
+
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${toBengaliNumber(diffMin)} মিনিট আগে`;
+
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) {
+    const remMins = diffMin % 60;
+    if (diffHours < 3 && remMins > 0) {
+      return `${toBengaliNumber(diffHours)} ঘণ্টা ${toBengaliNumber(remMins)} মিনিট আগে`;
+    }
+    return `${toBengaliNumber(diffHours)} ঘণ্টা আগে`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'গতকাল';
+  if (diffDays < 30) return `${toBengaliNumber(diffDays)} দিন আগে`;
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${toBengaliNumber(diffMonths)} মাস আগে`;
+
+  const diffYears = Math.floor(diffDays / 365);
+  return `${toBengaliNumber(diffYears)} বছর আগে`;
+}
+
+
 export function parseTimeToMinutes(timeStr: string): number {
   if (!timeStr) return 0;
   const parts = timeStr.split(':').map(Number);

@@ -101,6 +101,12 @@ export interface Appointment {
   slotTimeEn: string;
   complaints: string;
   status: AppointmentStatus;
+  messageSent?: boolean;
+  messageSentAt?: string;
+  messageChannel?: 'sms' | 'whatsapp' | 'manual';
+  previousDate?: string;
+  previousSlotId?: string;
+  previousSlotTimeBn?: string;
   rescheduledReason?: string;
   rescheduledAt?: string;
   cancellationReason?: string;

@@ -73,7 +73,8 @@ import {
   getEffectiveTimingForDate,
   isSlotPastTime,
   getDhakaCurrentTime,
-  parseSlotTimeToMinutes
+  parseSlotTimeToMinutes,
+  formatRelativeTimeBn
 } from '@/lib/booking/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
@@ -455,12 +456,55 @@ export default function AdminDashboardPage() {
     return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
   };
 
+  // Toggle or mark message sent status for an appointment
+  const handleToggleMessageSent = async (
+    aptId: string,
+    channel: 'sms' | 'whatsapp' | 'manual' = 'manual',
+    sent = true
+  ) => {
+    const nowIso = new Date().toISOString();
+    setAppointments((prev) =>
+      prev.map((a) =>
+        a.id === aptId
+          ? {
+              ...a,
+              messageSent: sent,
+              messageSentAt: sent ? nowIso : undefined,
+              messageChannel: sent ? channel : undefined
+            }
+          : a
+      )
+    );
+    if (messageModalApt && messageModalApt.id === aptId) {
+      setMessageModalApt((prev) =>
+        prev
+          ? {
+              ...prev,
+              messageSent: sent,
+              messageSentAt: sent ? nowIso : undefined,
+              messageChannel: sent ? channel : undefined
+            }
+          : null
+      );
+    }
+    try {
+      await fetch('/api/admin/appointments/message-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId: aptId, channel, sent })
+      });
+    } catch (err) {
+      console.warn('Failed to persist message status update', err);
+    }
+  };
+
   // Send via WhatsApp
   const handleSendCustomWhatsApp = () => {
     if (!messageModalApt) return;
     if (messageModalApt.status === 'pending') {
       handleUpdateStatus(messageModalApt.id, 'confirmed');
     }
+    handleToggleMessageSent(messageModalApt.id, 'whatsapp', true);
     const url = getWhatsAppUrl(messageModalApt.phone, customMessage);
     const link = document.createElement('a');
     link.href = url;
@@ -476,6 +520,7 @@ export default function AdminDashboardPage() {
   // Send via SMS app
   const handleSendCustomSms = () => {
     if (!messageModalApt) return;
+    handleToggleMessageSent(messageModalApt.id, 'sms', true);
     try {
       navigator.clipboard.writeText(customMessage);
       setCopiedToast(true);
@@ -585,7 +630,8 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: messageModalApt.phone,
-          message: customMessage.trim()
+          message: customMessage.trim(),
+          appointmentId: messageModalApt.id
         })
       });
 
@@ -600,6 +646,7 @@ export default function AdminDashboardPage() {
         if (messageModalApt.status === 'pending') {
           handleUpdateStatus(messageModalApt.id, 'confirmed');
         }
+        handleToggleMessageSent(messageModalApt.id, 'sms', true);
         setSmsStatusMsg({
           type: 'success',
           text: data?.message || `সফলভাবে রোগীর মোবাইলে (${messageModalApt.phone}) এসএমএস পাঠানো হয়েছে!`
@@ -2345,6 +2392,15 @@ export default function AdminDashboardPage() {
                               <span className="truncate max-w-[140px]">{apt.email}</span>
                             </div>
                           )}
+                          {apt.createdAt && (
+                            <div
+                              className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-1 font-sans"
+                              title={`অনুরোধ আসার সময়: ${new Date(apt.createdAt).toLocaleString('bn-BD')}`}
+                            >
+                              <Clock className="w-2.5 h-2.5 shrink-0 opacity-70 text-emerald-600 dark:text-emerald-400" />
+                              <span>অনুরোধ: <strong className="font-semibold text-emerald-900 dark:text-emerald-300">{formatRelativeTimeBn(apt.createdAt)}</strong></span>
+                            </div>
+                          )}
                         </td>
 
                         {/* Chamber */}
@@ -2415,7 +2471,7 @@ export default function AdminDashboardPage() {
 
                         {/* Status Badges & Quick Dropdown */}
                         <td className="py-3 px-3.5 align-middle whitespace-nowrap space-y-1">
-                          <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             {apt.status === 'pending' && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
                                 <AlertTriangle className="w-2.5 h-2.5" />
@@ -2447,6 +2503,35 @@ export default function AdminDashboardPage() {
                               </span>
                             )}
                           </div>
+
+                          {/* Message Sent Track Badge / Action Indicator */}
+                          {apt.status !== 'cancelled' && (
+                            <div className="pt-0.5">
+                              {apt.messageSent ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleMessageSent(apt.id, apt.messageChannel || 'manual', false)}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:hover:bg-teal-900/80 dark:text-teal-300 border border-teal-300 dark:border-teal-700 transition-all cursor-pointer"
+                                  title={apt.messageSentAt ? `বার্তা পাঠানো হয়েছে (${formatRelativeTimeBn(apt.messageSentAt)}) — ক্লিক করে রিমুভ করুন` : 'ক্লিক করে রিমুভ করুন'}
+                                >
+                                  <Check className="w-2.5 h-2.5 text-teal-600 dark:text-teal-400 stroke-[3]" />
+                                  <span>মেসেজ প্রেরিত</span>
+                                  {apt.messageChannel === 'whatsapp' && <span className="opacity-75 font-mono text-[9px]">(WA)</span>}
+                                  {apt.messageChannel === 'sms' && <span className="opacity-75 font-mono text-[9px]">(SMS)</span>}
+                                </button>
+                              ) : apt.status === 'confirmed' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenMessageModal(apt, 'confirm')}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 hover:bg-amber-100/80 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300/70 dark:border-amber-700/50 transition-all cursor-pointer"
+                                  title="রোগীকে কনফার্মেশন মেসেজ পাঠান"
+                                >
+                                  <MessageCircle className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                                  <span>মেসেজ বাকি</span>
+                                </button>
+                              ) : null}
+                            </div>
+                          )}
 
                           {apt.status !== 'cancelled' ? (
                             <select
@@ -2579,11 +2664,19 @@ export default function AdminDashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenMessageModal(apt, 'confirm')}
-                                className="inline-flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-[11px] font-bold shadow-xs cursor-pointer transition-all"
-                                title="বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান"
+                                className={`inline-flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-lg text-[11px] font-bold shadow-xs cursor-pointer transition-all ${
+                                  apt.messageSent
+                                    ? 'bg-teal-700 hover:bg-teal-800 text-white'
+                                    : 'bg-[#25D366] hover:bg-[#20bd5a] text-white'
+                                }`}
+                                title={apt.messageSent ? 'বার্তা ইতিমধ্যে পাঠানো হয়েছে (পুনরায় পাঠাতে বা দেখতে ক্লিক করুন)' : 'বার্তাটি পছন্দমতো কাস্টমাইজ করে হোয়াটসঅ্যাপে বা এসএমএসে পাঠান'}
                               >
-                                <MessageCircle className="w-3 h-3 fill-white shrink-0" />
-                                <span>মেসেজ</span>
+                                {apt.messageSent ? (
+                                  <Check className="w-3 h-3 text-white stroke-[2.5]" />
+                                ) : (
+                                  <MessageCircle className="w-3 h-3 fill-white shrink-0" />
+                                )}
+                                <span>{apt.messageSent ? 'মেসেজ প্রেরিত' : 'মেসেজ'}</span>
                               </button>
 
                               {/* 4. Cancel Appointment */}
@@ -2655,8 +2748,19 @@ export default function AdminDashboardPage() {
                         )}
                       </div>
 
-                      {/* Status Badges & Quick Delete */}
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Status Badges, Message Sent Tracking & Quick Delete */}
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                        {apt.messageSent && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleMessageSent(apt.id, apt.messageChannel || 'manual', false)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950 dark:hover:bg-teal-900 dark:text-teal-300 border border-teal-300 dark:border-teal-700/60 cursor-pointer transition-colors"
+                            title={apt.messageSentAt ? `মেসেজ পাঠানো হয়েছে (${formatRelativeTimeBn(apt.messageSentAt)}) — ক্লিক করে রিমুভ করুন` : 'ক্লিক করে রিমুভ করুন'}
+                          >
+                            <Check className="w-2.5 h-2.5 text-teal-600 dark:text-teal-400 stroke-[3]" />
+                            <span>মেসেজ প্রেরিত</span>
+                          </button>
+                        )}
                         {apt.status === 'pending' && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
                             <AlertTriangle className="w-2.5 h-2.5" />
@@ -2717,6 +2821,15 @@ export default function AdminDashboardPage() {
                             <span className="truncate max-w-[200px]">{apt.email}</span>
                           </div>
                         )}
+                        {apt.createdAt && (
+                          <div
+                            className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-1 font-sans"
+                            title={`অনুরোধ আসার সময়: ${new Date(apt.createdAt).toLocaleString('bn-BD')}`}
+                          >
+                            <Clock className="w-2.5 h-2.5 shrink-0 opacity-70 text-emerald-600 dark:text-emerald-400" />
+                            <span>অনুরোধ: <strong className="font-semibold text-emerald-900 dark:text-emerald-300">{formatRelativeTimeBn(apt.createdAt)}</strong></span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Direct One-Touch Call & WhatsApp Shortcuts */}
@@ -2734,6 +2847,7 @@ export default function AdminDashboardPage() {
                             apt.phone,
                             `নমস্কার ${apt.patientName}, দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
                           )}
+                          onClick={() => handleToggleMessageSent(apt.id, 'whatsapp', true)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-8 h-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center hover:bg-[#20bd5a] transition-colors shadow-xs active:scale-90"
@@ -2904,14 +3018,22 @@ export default function AdminDashboardPage() {
                                 }
                                 handleOpenMessageModal(apt, 'confirm');
                               }}
-                              className={`inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg text-xs font-bold shadow-xs active:scale-95 ${
+                              className={`inline-flex items-center justify-center gap-1 py-2 px-2 rounded-lg text-xs font-bold shadow-xs active:scale-95 transition-all ${
                                 apt.status === 'pending'
                                   ? 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 opacity-50 cursor-not-allowed'
-                                  : 'bg-[#25D366] text-white'
+                                  : apt.messageSent
+                                  ? 'bg-teal-700 hover:bg-teal-800 text-white'
+                                  : 'bg-[#25D366] hover:bg-[#20bd5a] text-white'
                               }`}
                             >
-                              {apt.status === 'pending' ? <Lock className="w-3.5 h-3.5 text-zinc-400" /> : <MessageCircle className="w-3.5 h-3.5 fill-white" />}
-                              <span>মেসেজ পাঠান</span>
+                              {apt.status === 'pending' ? (
+                                <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                              ) : apt.messageSent ? (
+                                <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                              ) : (
+                                <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                              )}
+                              <span>{apt.messageSent ? 'মেসেজ প্রেরিত' : 'মেসেজ পাঠান'}</span>
                             </button>
 
                             {/* 4. Cancel */}
@@ -3046,11 +3168,11 @@ export default function AdminDashboardPage() {
         {/* Admin Dashboard Bottom Footer Note */}
         <div className="pt-8 pb-4 text-center text-xs text-emerald-800/60 dark:text-emerald-400/50 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-emerald-900/10 dark:border-emerald-800/30 mt-8">
           <div>
-            © {new Date().getFullYear()} সর্বস্বত্ব <span className="font-semibold text-emerald-950 dark:text-emerald-200">Zynovate</span> কর্তৃক সংরক্ষিত।
+            © {new Date().getFullYear()} সর্বস্বত্ব <span className="font-semibold text-emerald-950 dark:text-emerald-200">WebZen Bangladesh</span> কর্তৃক সংরক্ষিত।
           </div>
           <div className="flex items-center gap-1.5">
             <span>Designed & Developed by</span>
-            <span className="font-bold text-emerald-700 dark:text-emerald-300">Zynovate</span>
+            <span className="font-bold text-emerald-700 dark:text-emerald-300">WebZen Bangladesh</span>
           </div>
         </div>
       </main>
@@ -4936,6 +5058,34 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
+            {/* Patient Message Status Tracking Bar */}
+            <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-zinc-600 dark:text-zinc-400">মেসেজ ট্র্যাকিং:</span>
+                {messageModalApt.messageSent ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300 dark:border-teal-700">
+                    <Check className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 stroke-[3]" />
+                    <span>বার্তা ইতিমধ্যে পাঠানো হয়েছে {messageModalApt.messageSentAt ? `(${formatRelativeTimeBn(messageModalApt.messageSentAt)})` : ''}</span>
+                    {messageModalApt.messageChannel && (
+                      <span className="font-mono text-[10px] opacity-75">[{messageModalApt.messageChannel.toUpperCase()}]</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                    <Clock className="w-3.5 h-3.5 text-amber-500" />
+                    <span>রোগীকে এখনো বার্তা পাঠানো হয়নি</span>
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => handleToggleMessageSent(messageModalApt.id, 'manual', !messageModalApt.messageSent)}
+                className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 cursor-pointer transition-colors whitespace-nowrap"
+              >
+                {messageModalApt.messageSent ? 'আন-মার্ক করুন' : '✓ পাঠানো হয়েছে চিহ্নিত করুন'}
+              </button>
+            </div>
+
             {/* Template Chips */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-1">
@@ -5151,6 +5301,7 @@ export default function AdminDashboardPage() {
                 {/* 2. WhatsApp */}
                 <a
                   href={getWhatsAppUrl(messageModalApt.phone, customMessage)}
+                  onClick={() => handleToggleMessageSent(messageModalApt.id, 'whatsapp', true)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-[#25D366]/25 transition-all cursor-pointer whitespace-nowrap"

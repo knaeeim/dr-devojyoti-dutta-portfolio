@@ -8,6 +8,14 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 const DATA_FILE = path.join(process.cwd(), 'data', 'appointments.json');
 const TMP_DATA_FILE = path.join(os.tmpdir(), 'dr_dutta_appointments.json');
 const TMP_DELETED_FILE = path.join(os.tmpdir(), 'dr_dutta_deleted_ids.json');
+const SENT_MESSAGES_FILE = path.join(process.cwd(), 'data', 'sent-messages.json');
+const TMP_SENT_MESSAGES_FILE = path.join(os.tmpdir(), 'dr_dutta_sent_messages.json');
+
+export interface SentMessageInfo {
+  sent: boolean;
+  sentAt: string;
+  channel?: 'sms' | 'whatsapp' | 'manual';
+}
 
 // Global in-memory sets to survive hot-reloads and ephemeral executions
 declare global {
@@ -15,6 +23,8 @@ declare global {
   var __drDuttaAppointments: Appointment[] | undefined;
   // eslint-disable-next-line no-var
   var __drDuttaDeletedIds: Set<string> | undefined;
+  // eslint-disable-next-line no-var
+  var __drDuttaSentMessages: Record<string, SentMessageInfo> | undefined;
 }
 
 if (!globalThis.__drDuttaDeletedIds) {
@@ -57,6 +67,89 @@ export function registerDeletedIds(ids: string[]) {
       );
     }
   }
+}
+
+export function readSentMessages(): Record<string, SentMessageInfo> {
+  if (globalThis.__drDuttaSentMessages) return globalThis.__drDuttaSentMessages;
+  try {
+    if (fs.existsSync(TMP_SENT_MESSAGES_FILE)) {
+      const content = fs.readFileSync(TMP_SENT_MESSAGES_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (typeof parsed === 'object' && parsed !== null) {
+        globalThis.__drDuttaSentMessages = parsed;
+        return parsed;
+      }
+    }
+  } catch {}
+  try {
+    if (fs.existsSync(SENT_MESSAGES_FILE)) {
+      const content = fs.readFileSync(SENT_MESSAGES_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (typeof parsed === 'object' && parsed !== null) {
+        globalThis.__drDuttaSentMessages = parsed;
+        return parsed;
+      }
+    }
+  } catch {}
+  globalThis.__drDuttaSentMessages = {};
+  return {};
+}
+
+export function writeSentMessages(map: Record<string, SentMessageInfo>) {
+  globalThis.__drDuttaSentMessages = map;
+  try {
+    fs.writeFileSync(TMP_SENT_MESSAGES_FILE, JSON.stringify(map, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[Storage] Could not write sent messages to tmp', err);
+  }
+  try {
+    fs.mkdirSync(path.dirname(SENT_MESSAGES_FILE), { recursive: true });
+    fs.writeFileSync(SENT_MESSAGES_FILE, JSON.stringify(map, null, 2), 'utf-8');
+  } catch {
+    // Ignored on read-only serverless filesystems
+  }
+}
+
+export async function markAppointmentMessageSent(
+  id: string,
+  channel: 'sms' | 'whatsapp' | 'manual' = 'sms',
+  sent = true
+): Promise<boolean> {
+  const map = readSentMessages();
+  if (sent) {
+    map[id] = {
+      sent: true,
+      sentAt: new Date().toISOString(),
+      channel
+    };
+  } else {
+    delete map[id];
+  }
+  writeSentMessages(map);
+
+  // Update in-memory appointments if loaded
+  if (globalThis.__drDuttaAppointments) {
+    const idx = globalThis.__drDuttaAppointments.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      globalThis.__drDuttaAppointments[idx].messageSent = sent;
+      globalThis.__drDuttaAppointments[idx].messageSentAt = sent ? map[id]?.sentAt : undefined;
+      globalThis.__drDuttaAppointments[idx].messageChannel = sent ? channel : undefined;
+    }
+  }
+
+  // Update local file store if present
+  try {
+    const stored = readStoredAppointments();
+    const idx = stored.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      stored[idx].messageSent = sent;
+      stored[idx].messageSentAt = sent ? map[id]?.sentAt : undefined;
+      stored[idx].messageChannel = sent ? channel : undefined;
+      writeStoredAppointments(stored);
+    }
+  } catch {}
+
+  return true;
 }
 
 // Initial seed data (empty - real appointments are stored in Supabase and data/appointments.json)
@@ -137,11 +230,20 @@ function writeStoredAppointments(list: Appointment[]) {
 
 export async function getAllAppointments(): Promise<Appointment[]> {
   const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  const sentMap = readSentMessages();
   const apptMap = new Map<string, Appointment>();
 
   // 1. Seed from local store
   const stored = readStoredAppointments();
-  stored.filter((a) => !deleted.has(a.id)).forEach((a) => apptMap.set(a.id, a));
+  stored.filter((a) => !deleted.has(a.id)).forEach((a) => {
+    const sentInfo = sentMap[a.id];
+    apptMap.set(a.id, {
+      ...a,
+      messageSent: sentInfo?.sent ?? a.messageSent,
+      messageSentAt: sentInfo?.sentAt ?? a.messageSentAt,
+      messageChannel: sentInfo?.channel ?? a.messageChannel
+    });
+  });
 
   // 2. Merge from Supabase
   const supabase = await createServerSupabaseClient();
@@ -157,6 +259,7 @@ export async function getAllAppointments(): Promise<Appointment[]> {
         data
           .filter((row) => !deleted.has(row.id))
           .forEach((row) => {
+            const sentInfo = sentMap[row.id];
             apptMap.set(row.id, {
               id: row.id,
               serialNo: row.serial_no,
@@ -172,6 +275,9 @@ export async function getAllAppointments(): Promise<Appointment[]> {
               slotTimeEn: row.slot_time_en,
               complaints: row.complaints,
               status: row.status as AppointmentStatus,
+              messageSent: sentInfo?.sent ?? undefined,
+              messageSentAt: sentInfo?.sentAt ?? undefined,
+              messageChannel: sentInfo?.channel ?? undefined,
               rescheduledReason: row.rescheduled_reason || undefined,
               rescheduledAt: row.rescheduled_at || undefined,
               cancellationReason: row.cancellation_reason || undefined,
@@ -198,40 +304,16 @@ export async function getAllAppointments(): Promise<Appointment[]> {
 
 /**
  * Returns booked slots for a given date and chamber mode.
- * CRITICAL: Combines local store and Supabase, so a booked slot is NEVER missed!
- * Cancelled appointments NEVER count as booked.
+ * Evaluates active non-cancelled appointments.
+ * Rescheduled appointments free their previous date and slot immediately!
  */
 export async function getBookedSlotsForDate(dateStr: string, mode: ChamberMode): Promise<string[]> {
+  const all = await getAllAppointments();
   const bookedSet = new Set<string>();
 
-  // 1. Check local file store
-  try {
-    const local = readStoredAppointments();
-    local
-      .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled')
-      .forEach((a) => bookedSet.add(a.slotId));
-  } catch (err) {
-    console.warn('Local read in getBookedSlotsForDate error:', err);
-  }
-
-  // 2. Check Supabase and merge
-  const supabase = await createServerSupabaseClient();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('slot_id, status')
-        .eq('appointment_date', dateStr)
-        .eq('chamber_mode', mode)
-        .neq('status', 'cancelled');
-
-      if (!error && Array.isArray(data)) {
-        data.forEach((d) => bookedSet.add(d.slot_id));
-      }
-    } catch (e) {
-      console.warn('Supabase slot query failed, using local store', e);
-    }
-  }
+  all
+    .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled')
+    .forEach((a) => bookedSet.add(a.slotId));
 
   return Array.from(bookedSet);
 }
@@ -530,6 +612,9 @@ export async function rescheduleAppointment(params: {
     slotId: params.newSlotId,
     slotTimeBn: params.newSlotTimeBn,
     slotTimeEn: params.newSlotTimeEn,
+    previousDate: existingApt.appointmentDate,
+    previousSlotId: existingApt.slotId,
+    previousSlotTimeBn: existingApt.slotTimeBn,
     status: 'rescheduled',
     rescheduledReason: params.reason,
     rescheduledAt: nowIso

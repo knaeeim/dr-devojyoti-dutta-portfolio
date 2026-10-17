@@ -145,7 +145,7 @@ export default function AdminLoginPage() {
         <div className="text-center text-[11px] text-emerald-600/70 dark:text-emerald-400/60 pt-2 border-t border-emerald-900/10 dark:border-emerald-800/40 space-y-1">
           <div>দেবজ্যোতি দত্ত • সিকিউর অ্যাডমিন গেটওয়ে</div>
           <div className="text-[10px] text-emerald-700/60 dark:text-emerald-400/50">
-            Powered & Developed by <span className="font-bold text-emerald-800 dark:text-emerald-300">Zynovate</span>
+            Powered & Developed by <span className="font-bold text-emerald-800 dark:text-emerald-300">WebZen Bangladesh</span>
           </div>
         </div>
       </div>
