@@ -28,6 +28,39 @@ export function parseTimeToMinutes(timeStr: string): number {
   return h * 60 + m;
 }
 
+/**
+ * Robustly parses a slot time string (range or single time, 12h or 24h, En or Bn)
+ * and returns the start time in minutes from midnight (0 - 1439).
+ * E.g. "09:30 AM - 09:45 AM" -> 570
+ *      "11:45 AM - 12:00 PM" -> 705
+ *      "04:30 PM - 04:45 PM" -> 990
+ *      "০৯:৩০ সকাল - ০৯:৪৫ সকাল" -> 570
+ */
+export function parseSlotTimeToMinutes(slotTime?: string): number {
+  if (!slotTime) return 99999;
+  // We only care about the START time of the slot range (before any hyphen)
+  const startPart = slotTime.split('-')[0].trim();
+
+  // Convert any Bengali digits to English digits
+  const normalized = startPart.replace(/[০-৯]/g, (d) => String('০১২৩৪৫৬৭৮৯'.indexOf(d)));
+
+  const isPm = /PM|বিকাল|সন্ধ্যা|রাত|দুপুর/i.test(normalized);
+  const isAm = /AM|সকাল|ভোর/i.test(normalized);
+
+  const match = normalized.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return 99999;
+
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+
+  if (isPm || isAm) {
+    if (isPm && hours < 12) hours += 12;
+    if (isAm && hours === 12) hours = 0;
+  }
+  return hours * 60 + minutes;
+}
+
+
 export function minutesToTime24(totalMinutes: number): string {
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;

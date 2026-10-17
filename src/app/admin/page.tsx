@@ -72,7 +72,8 @@ import {
   generateSlotsFromTiming,
   getEffectiveTimingForDate,
   isSlotPastTime,
-  getDhakaCurrentTime
+  getDhakaCurrentTime,
+  parseSlotTimeToMinutes
 } from '@/lib/booking/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
@@ -88,6 +89,8 @@ import {
 export type SortOption =
   | 'created_desc'
   | 'created_asc'
+  | 'slot_asc'
+  | 'slot_desc'
   | 'date_asc'
   | 'date_desc'
   | 'serial_asc'
@@ -97,6 +100,10 @@ export type SortOption =
 
 export const getSortOptionLabel = (sort: SortOption): string => {
   switch (sort) {
+    case 'slot_asc':
+      return 'স্লটের সময়: আগে থেকে পরে (সময়ক্রম)';
+    case 'slot_desc':
+      return 'স্লটের সময়: পরে থেকে আগে';
     case 'created_desc':
       return 'সর্বশেষ বুকিং আগে';
     case 'created_asc':
@@ -121,15 +128,45 @@ export const getSortOptionLabel = (sort: SortOption): string => {
 export const sortAppointmentList = (list: Appointment[], sortCriteria: SortOption): Appointment[] => {
   return [...list].sort((a, b) => {
     switch (sortCriteria) {
+      case 'slot_asc': {
+        const d = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
+        if (d !== 0) return d;
+        const minA = parseSlotTimeToMinutes(a.slotTimeEn || a.slotTimeBn);
+        const minB = parseSlotTimeToMinutes(b.slotTimeEn || b.slotTimeBn);
+        if (minA !== minB) return minA - minB;
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        return numA - numB;
+      }
+      case 'slot_desc': {
+        const d = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
+        if (d !== 0) return d;
+        const minA = parseSlotTimeToMinutes(a.slotTimeEn || a.slotTimeBn);
+        const minB = parseSlotTimeToMinutes(b.slotTimeEn || b.slotTimeBn);
+        if (minA !== minB) return minB - minA;
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        return numB - numA;
+      }
       case 'date_asc': {
         const d = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
         if (d !== 0) return d;
-        return (a.slotTimeEn || '').localeCompare(b.slotTimeEn || '');
+        const minA = parseSlotTimeToMinutes(a.slotTimeEn || a.slotTimeBn);
+        const minB = parseSlotTimeToMinutes(b.slotTimeEn || b.slotTimeBn);
+        if (minA !== minB) return minA - minB;
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        return numA - numB;
       }
       case 'date_desc': {
         const d = (b.appointmentDate || '').localeCompare(a.appointmentDate || '');
         if (d !== 0) return d;
-        return (b.slotTimeEn || '').localeCompare(a.slotTimeEn || '');
+        const minA = parseSlotTimeToMinutes(a.slotTimeEn || a.slotTimeBn);
+        const minB = parseSlotTimeToMinutes(b.slotTimeEn || b.slotTimeBn);
+        if (minA !== minB) return minB - minA;
+        const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt((b.serialNo || '').replace(/\D/g, ''), 10) || 0;
+        return numB - numA;
       }
       case 'serial_asc': {
         const numA = parseInt((a.serialNo || '').replace(/\D/g, ''), 10) || 0;
@@ -1874,13 +1911,20 @@ export default function AdminDashboardPage() {
           {/* Card 3 - Today's Appointments */}
           <button
             type="button"
-            onClick={() => setFilterDate(filterDate === todayStr ? '' : todayStr)}
+            onClick={() => {
+              if (filterDate !== todayStr) {
+                setFilterDate(todayStr);
+                setSortBy('slot_asc');
+              } else {
+                setFilterDate('');
+              }
+            }}
             className={`p-4 sm:p-5 rounded-2xl border shadow-sm space-y-1 text-left transition-all cursor-pointer ${
               filterDate === todayStr
                 ? 'bg-emerald-100 dark:bg-emerald-900/60 border-emerald-500 ring-2 ring-emerald-500/40'
                 : 'bg-white dark:bg-[#13201a] border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400'
             }`}
-            title="ক্লিক করে আজকের সিরিয়ালগুলো ফিল্টার করুন"
+            title="ক্লিক করে আজকের সিরিয়ালগুলো স্লটের সময় অনুযায়ী ফিল্টার করুন"
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block">
@@ -1955,6 +1999,8 @@ export default function AdminDashboardPage() {
               >
                 <option value="created_desc">সর্বশেষ বুকিং আগে</option>
                 <option value="created_asc">পুরনো বুকিং আগে</option>
+                <option value="slot_asc">স্লটের সময়: আগে থেকে পরে (সময়ক্রম)</option>
+                <option value="slot_desc">স্লটের সময়: পরে থেকে আগে</option>
                 <option value="date_asc">তারিখ: নিকটবর্তী আগে</option>
                 <option value="date_desc">তারিখ: দূরবর্তী আগে</option>
                 <option value="serial_asc">সিরিয়াল নং: ছোট থেকে বড়</option>
@@ -2000,7 +2046,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Date Filter */}
-            <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
+            <div className="col-span-2 sm:col-span-1 flex flex-wrap items-center justify-between sm:justify-start gap-1.5 sm:gap-2">
               <span className="text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 shrink-0 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>তারিখ:</span>
@@ -2012,13 +2058,29 @@ export default function AdminDashboardPage() {
                 className="flex-1 sm:flex-initial py-1.5 px-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#13201a] text-xs font-medium text-emerald-950 dark:text-emerald-100 dark:[color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               />
               {filterDate && (
-                <button
-                  type="button"
-                  onClick={() => setFilterDate('')}
-                  className="text-xs text-red-500 hover:underline shrink-0 font-medium"
-                >
-                  রিসেট
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSortBy(sortBy === 'slot_asc' ? 'created_desc' : 'slot_asc')}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                      sortBy === 'slot_asc'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                        : 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-200'
+                    }`}
+                    title="ঐদিনের স্লটের সময়ক্রম অনুযায়ী রোগীদের সাজান (সকাল থেকে রাত)"
+                  >
+                    <Clock className="w-3 h-3" />
+                    <span>স্লট সময়ক্রম</span>
+                    {sortBy === 'slot_asc' && <Check className="w-3 h-3 ml-0.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFilterDate('')}
+                    className="text-xs text-red-500 hover:underline shrink-0 font-medium px-1"
+                  >
+                    রিসেট
+                  </button>
+                </div>
               )}
             </div>
 
@@ -2222,15 +2284,15 @@ export default function AdminDashboardPage() {
                       </th>
                       <th className="py-3 px-3.5 w-[115px] min-w-[105px] whitespace-nowrap">চেম্বার</th>
                       <th
-                        onClick={() => setSortBy(sortBy === 'date_asc' ? 'date_desc' : 'date_asc')}
+                        onClick={() => setSortBy(sortBy === 'slot_asc' ? 'slot_desc' : 'slot_asc')}
                         className="py-3 px-3.5 w-[165px] min-w-[150px] cursor-pointer hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 select-none transition-colors"
-                        title="তারিখ অনুযায়ী সর্ট করুন"
+                        title="স্লটের সময় অনুযায়ী সর্ট করুন (আগে থেকে পরে)"
                       >
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <span>তারিখ ও সময় স্লট</span>
-                          {sortBy === 'date_asc' ? (
+                          {sortBy === 'slot_asc' || sortBy === 'date_asc' ? (
                             <ArrowUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                          ) : sortBy === 'date_desc' ? (
+                          ) : sortBy === 'slot_desc' || sortBy === 'date_desc' ? (
                             <ArrowDown className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                           ) : (
                             <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400/70 opacity-60" />
@@ -5373,15 +5435,15 @@ export default function AdminDashboardPage() {
                         </div>
                       </th>
                       <th
-                        onClick={() => setSortBy(sortBy === 'date_asc' ? 'date_desc' : 'date_asc')}
+                        onClick={() => setSortBy(sortBy === 'slot_asc' ? 'slot_desc' : 'slot_asc')}
                         className="py-2.5 px-3 border-r border-zinc-200 cursor-pointer hover:bg-emerald-100/70 select-none transition-colors"
-                        title="তারিখ অনুযায়ী সর্ট করুন"
+                        title="স্লটের সময় অনুযায়ী সর্ট করুন"
                       >
                         <div className="flex items-center gap-1">
                           <span>তারিখ ও সময় স্লট</span>
-                          {sortBy === 'date_asc' ? (
+                          {sortBy === 'slot_asc' || sortBy === 'date_asc' ? (
                             <ArrowUp className="w-3 h-3 text-emerald-700" />
-                          ) : sortBy === 'date_desc' ? (
+                          ) : sortBy === 'slot_desc' || sortBy === 'date_desc' ? (
                             <ArrowDown className="w-3 h-3 text-emerald-700" />
                           ) : (
                             <ArrowUpDown className="w-2.5 h-2.5 text-zinc-400" />
