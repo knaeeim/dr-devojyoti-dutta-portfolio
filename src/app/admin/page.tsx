@@ -78,6 +78,7 @@ import {
 } from '@/lib/booking/utils';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import TimePicker12h from '@/components/admin/TimePicker12h';
+import SessionTitleInput from '@/components/admin/SessionTitleInput';
 import { printSinglePageSerialSlip, printReceptionSheet } from '@/lib/booking/print-slip';
 import {
   DEFAULT_SMS_TEMPLATES,
@@ -3384,8 +3385,8 @@ export default function AdminDashboardPage() {
 
       {/* COMPREHENSIVE SCHEDULE & DAY-SPECIFIC / DATE-SPECIFIC SETTINGS MODAL */}
       {showScheduleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto overscroll-contain">
+          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto overscroll-contain">
             <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
               <div>
                 <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
@@ -3834,14 +3835,13 @@ export default function AdminDashboardPage() {
                                           <span className="w-5 h-5 rounded-full bg-emerald-800 text-amber-300 flex items-center justify-center text-[10px] font-bold shrink-0">
                                             {toBengaliNumber(sIdx + 1)}
                                           </span>
-                                          <input
-                                            type="text"
+                                          <SessionTitleInput
                                             value={sess.titleBn || ''}
                                             placeholder="সেশনের নাম (যেমন: সকাল সেশন)"
-                                            onChange={(e) =>
-                                              handleUpdateDaySession(dayIdx, sIdx, 'titleBn', e.target.value)
+                                            onChange={(val) =>
+                                              handleUpdateDaySession(dayIdx, sIdx, 'titleBn', val)
                                             }
-                                            className="py-1 px-2.5 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-[#13201a] text-xs font-bold text-emerald-950 dark:text-emerald-100 w-36 sm:w-44 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                            className="py-1 px-2.5 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-[#13201a] text-[16px] sm:text-xs font-bold text-emerald-950 dark:text-emerald-100 w-44 sm:w-48 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                           />
                                         </div>
 
@@ -4316,14 +4316,13 @@ export default function AdminDashboardPage() {
                                     <span className="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[10px] font-bold">
                                       {toBengaliNumber(sIdx + 1)}
                                     </span>
-                                    <input
-                                      type="text"
-                                      value={session.titleBn}
+                                    <SessionTitleInput
+                                      value={session.titleBn || ''}
                                       placeholder="যেমন: সকাল সেশন / বিকাল সেশন"
-                                      onChange={(e) =>
-                                        handleUpdateOverrideSession(sIdx, 'titleBn', e.target.value)
+                                      onChange={(val) =>
+                                        handleUpdateOverrideSession(sIdx, 'titleBn', val)
                                       }
-                                      className="font-bold text-xs bg-white dark:bg-[#13201a] px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100 max-w-[200px]"
+                                      className="font-bold text-[16px] sm:text-xs bg-white dark:bg-[#13201a] px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-100 w-44 sm:w-48 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                     />
                                   </div>
                                   <div className="flex items-center gap-2">
