@@ -110,12 +110,64 @@ export function writeSentMessages(map: Record<string, SentMessageInfo>) {
   }
 }
 
+export async function getSentMessagesFromDb(): Promise<Record<string, SentMessageInfo>> {
+  // 1. Check in-memory cache
+  if (globalThis.__drDuttaSentMessages && Object.keys(globalThis.__drDuttaSentMessages).length > 0) {
+    return globalThis.__drDuttaSentMessages;
+  }
+
+  // 2. Query Supabase database
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('chamber_schedules')
+        .select('*')
+        .eq('chamber_id', 'sent_messages')
+        .maybeSingle();
+
+      if (!error && data?.config && typeof data.config === 'object') {
+        const dbMap = data.config as Record<string, SentMessageInfo>;
+        const local = readSentMessages();
+        const merged = { ...local, ...dbMap };
+        globalThis.__drDuttaSentMessages = merged;
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase sent_messages query failed, using local fallback', err);
+  }
+
+  // 3. Fallback to local files
+  return readSentMessages();
+}
+
+export async function saveSentMessagesToDb(map: Record<string, SentMessageInfo>) {
+  writeSentMessages(map);
+
+  // Sync to Supabase database so it permanently survives reloads across all devices
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      await supabase.from('chamber_schedules').upsert([
+        {
+          chamber_id: 'sent_messages',
+          config: map,
+          updated_at: new Date().toISOString()
+        }
+      ]);
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase sent_messages upsert failed', err);
+  }
+}
+
 export async function markAppointmentMessageSent(
   id: string,
   channel: 'sms' | 'whatsapp' | 'manual' = 'sms',
   sent = true
 ): Promise<boolean> {
-  const map = readSentMessages();
+  const map = await getSentMessagesFromDb();
   if (sent) {
     map[id] = {
       sent: true,
@@ -125,7 +177,7 @@ export async function markAppointmentMessageSent(
   } else {
     delete map[id];
   }
-  writeSentMessages(map);
+  await saveSentMessagesToDb(map);
 
   // Update in-memory appointments if loaded
   if (globalThis.__drDuttaAppointments) {
@@ -230,7 +282,7 @@ function writeStoredAppointments(list: Appointment[]) {
 
 export async function getAllAppointments(): Promise<Appointment[]> {
   const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
-  const sentMap = readSentMessages();
+  const sentMap = await getSentMessagesFromDb();
   const apptMap = new Map<string, Appointment>();
 
   // 1. Seed from local store

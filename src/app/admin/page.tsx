@@ -464,6 +464,19 @@ export default function AdminDashboardPage() {
     sent = true
   ) => {
     const nowIso = new Date().toISOString();
+
+    // 1. Immediately persist in localStorage for instant offline/reload retention
+    try {
+      const localSent = JSON.parse(localStorage.getItem('dr_dutta_sent_messages') || '{}');
+      if (sent) {
+        localSent[aptId] = { sent: true, sentAt: nowIso, channel };
+      } else {
+        delete localSent[aptId];
+      }
+      localStorage.setItem('dr_dutta_sent_messages', JSON.stringify(localSent));
+    } catch {}
+
+    // 2. Optimistic UI update
     setAppointments((prev) =>
       prev.map((a) =>
         a.id === aptId
@@ -488,6 +501,8 @@ export default function AdminDashboardPage() {
           : null
       );
     }
+
+    // 3. Persist to server (and Supabase PostgreSQL)
     try {
       await fetch('/api/admin/appointments/message-status', {
         method: 'POST',
@@ -495,7 +510,7 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ appointmentId: aptId, channel, sent })
       });
     } catch (err) {
-      console.warn('Failed to persist message status update', err);
+      console.warn('Failed to persist message status update to server', err);
     }
   };
 
@@ -860,6 +875,12 @@ export default function AdminDashboardPage() {
         deletedIds = JSON.parse(localStorage.getItem('dr_dutta_deleted_ids') || '[]');
       } catch {}
 
+      // Read sent messages from localStorage
+      let localSentMap: Record<string, { sent: boolean; sentAt?: string; channel?: 'sms' | 'whatsapp' | 'manual' }> = {};
+      try {
+        localSentMap = JSON.parse(localStorage.getItem('dr_dutta_sent_messages') || '{}');
+      } catch {}
+
       // 1. Fetch appointments (fetch all so top KPI stats remain 100% accurate)
       const queryParams = new URLSearchParams();
       if (deletedIds.length > 0) {
@@ -873,9 +894,30 @@ export default function AdminDashboardPage() {
       }
       const aptData = await aptRes.json();
       if (aptData.success && Array.isArray(aptData.appointments)) {
-        const filtered = aptData.appointments.filter(
-          (a: Appointment) => !deletedIds.includes(a.id)
-        );
+        const filtered = aptData.appointments
+          .filter((a: Appointment) => !deletedIds.includes(a.id))
+          .map((a: Appointment) => {
+            const clientSent = localSentMap[a.id];
+            // If server has it or client localStorage has it, preserve messageSent
+            const isSent = Boolean(a.messageSent || clientSent?.sent);
+            const sentAt = a.messageSentAt || clientSent?.sentAt;
+            const channel = a.messageChannel || clientSent?.channel || 'manual';
+            if (isSent) {
+              localSentMap[a.id] = { sent: true, sentAt, channel };
+            }
+            return {
+              ...a,
+              messageSent: isSent,
+              messageSentAt: isSent ? sentAt : undefined,
+              messageChannel: isSent ? channel : undefined
+            };
+          });
+
+        // Update localStorage with merged list
+        try {
+          localStorage.setItem('dr_dutta_sent_messages', JSON.stringify(localSentMap));
+        } catch {}
+
         setAppointments(filtered);
       }
 
