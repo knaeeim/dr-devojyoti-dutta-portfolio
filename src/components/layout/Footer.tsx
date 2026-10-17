@@ -45,7 +45,7 @@ export default function Footer() {
                 <strong className="text-white block font-medium">🌐 অনলাইন ভিডিও কনসালটেশন:</strong>
                 <span>রবি থেকে বৃহস্পতিবার</span>
                 <p className="text-xs text-amber-300 font-semibold">
-                  পরামর্শ ফি: ৮০০ টাকা • ফলোআপ: ৬০০ টাকা (৩ মাসের মধ্যে)
+                  পরামর্শ ফি: ৮০০ টাকা • ফলোআপ: ৪০০ টাকা (৩ মাসের মধ্যে)
                 </p>
                 <p className="text-xs text-emerald-400">জুম বা হোয়াটসঅ্যাপ ভিডিও কল</p>
               </li>

@@ -226,7 +226,7 @@ export const defaultSchedules: Record<ChamberMode, ChamberSchedule> = {
     },
     addressBn: 'জুম (Zoom) অথবা হোয়াটসঅ্যাপ ভিডিও কল',
     feeBn: '৮০০ টাকা',
-    followUpFeeBn: '৬০০ টাকা (৩ মাসের মধ্যে)'
+    followUpFeeBn: '৪০০ টাকা (৩ মাসের মধ্যে)'
   }
 };
 

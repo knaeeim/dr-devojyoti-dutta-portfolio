@@ -534,7 +534,7 @@ export default function BookingHub() {
               </span>
               <span className="text-emerald-400">|</span>
               <span className="text-amber-700 dark:text-amber-300 font-medium">
-                <strong>ফলোআপ ভিজিট:</strong> <span className="font-bold">৬০০ টাকা</span> (৩ মাসের মধ্যে)
+                <strong>ফলোআপ ভিজিট:</strong> <span className="font-bold">{chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'}</span> (৩ মাসের মধ্যে)
               </span>
             </span>
             <span className="text-emerald-300 dark:text-emerald-700 hidden sm:inline">•</span>
@@ -773,7 +773,7 @@ export default function BookingHub() {
                       💳 পরামর্শ ফি: <span>{chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}</span>
                     </div>
                     <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
-                      🔄 ফলোআপ ভিজিট: ৬০০ টাকা (৩ মাসের মধ্যে)
+                      🔄 ফলোআপ ভিজিট: {chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)
                     </div>
                   </div>
                 </div>
@@ -1168,7 +1168,7 @@ export default function BookingHub() {
                 <div className="col-span-2 sm:col-span-1">
                   <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">ফলোআপ ভিজিট:</span>
                   <span className="font-bold text-amber-700 dark:text-amber-400 text-xs">
-                    ৬০০ টাকা (৩ মাসের মধ্যে)
+                    {confirmedAppointment.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)
                   </span>
                 </div>
                 {confirmedAppointment.email && (

@@ -79,7 +79,7 @@ export function printSinglePageSerialSlip(apt: Appointment) {
           </tr>
           <tr>
             <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">ফলোআপ ভিজিট:</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #047857; font-weight: bold;">৬০০ টাকা (৩ মাসের মধ্যে)</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #047857; font-weight: bold;">${apt.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)</td>
           </tr>
           ${
             apt.chamberMode === 'offline'

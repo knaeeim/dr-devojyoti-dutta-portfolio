@@ -109,7 +109,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
         </tr>
         <tr>
           <td class="label">ফলোআপ ভিজিট:</td>
-          <td class="value" style="color: #047857; font-weight: bold;">৬০০ টাকা (৩ মাসের মধ্যে)</td>
+          <td class="value" style="color: #047857; font-weight: bold;">${appointment.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)</td>
         </tr>
       </table>
 
