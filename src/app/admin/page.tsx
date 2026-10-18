@@ -1087,6 +1087,11 @@ export default function AdminDashboardPage() {
 
   // Status changer (sends confirmation email if confirmed)
   const handleUpdateStatus = async (id: string, newStatus: AppointmentStatus): Promise<boolean> => {
+    if (newStatus === 'pending') {
+      showAlert('অপেক্ষমাণ (Pending) স্ট্যাটাস শুধুমাত্র নতুন রোগীর প্রথম আবেদনের জন্য। প্যানেল থেকে পুনরায় অপেক্ষমাণ করা যাবে না।', 'সতর্কতা', 'warning');
+      return false;
+    }
+
     try {
       const res = await fetch('/api/admin/appointments', {
         method: 'PATCH',
@@ -2591,8 +2596,12 @@ export default function AdminDashboardPage() {
                               }
                               className="w-full py-1 px-1.5 rounded-lg text-[11px] font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-2xs"
                             >
-                              <option value="pending">অপেক্ষমাণ (Pending)</option>
-                              <option value="confirmed">নিশ্চিত করুন (Confirm & Mail)</option>
+                              {apt.status === 'pending' && (
+                                <option value="pending" disabled>
+                                  অপেক্ষমাণ (নতুন অনুরোধ)
+                                </option>
+                              )}
+                              <option value="confirmed">নিশ্চিত করুন</option>
                               <option value="completed">সম্পন্ন (Completed)</option>
                               <option value="cancelled">বাতিল (Cancelled)</option>
                             </select>
@@ -2953,7 +2962,11 @@ export default function AdminDashboardPage() {
                           onChange={(e) => handleUpdateStatus(apt.id, e.target.value as AppointmentStatus)}
                           className="py-1 px-2.5 rounded-lg text-xs font-semibold border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 focus:outline-none"
                         >
-                          <option value="pending">অপেক্ষমাণ (Pending)</option>
+                          {apt.status === 'pending' && (
+                            <option value="pending" disabled>
+                              অপেক্ষমাণ (নতুন অনুরোধ)
+                            </option>
+                          )}
                           <option value="confirmed">নিশ্চিত করুন</option>
                           <option value="completed">সম্পন্ন (Completed)</option>
                           <option value="cancelled">বাতিল (Cancelled)</option>

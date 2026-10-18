@@ -171,8 +171,17 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { id, status, reason } = body;
 
+    if (status === 'pending') {
+      return NextResponse.json(
+        {
+          error:
+            'অপেক্ষমাণ (Pending) স্ট্যাটাস শুধুমাত্র নতুন রোগীর প্রথম আবেদনের জন্য প্রযোজ্য। প্যানেল থেকে কোনো সিরিয়াল পুনরায় অপেক্ষমাণ করা যাবে না।'
+        },
+        { status: 400 }
+      );
+    }
+
     const allowedStatuses: AppointmentStatus[] = [
-      'pending',
       'confirmed',
       'rescheduled',
       'completed',
