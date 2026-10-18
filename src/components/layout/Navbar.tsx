@@ -149,17 +149,17 @@ export default function Navbar() {
   return (
     <>
       {/* Top Notice Bar (Laser-aligned with hairline divider & centered dots) */}
-      <div className="bg-emerald-50/95 dark:bg-[#162e22]/95 text-emerald-900/90 dark:text-emerald-200 text-xs h-9 px-4 border-b border-emerald-200/70 dark:border-emerald-600/25 hidden md:flex items-center backdrop-blur-md transition-colors select-none">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between text-[11px] leading-none">
+      <div className="bg-[#dceee2]/95 dark:bg-[#132a1f]/95 text-emerald-950/90 dark:text-emerald-200 text-xs h-9 border-b border-emerald-600/20 dark:border-emerald-600/25 hidden md:flex items-center backdrop-blur-md transition-colors select-none">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] leading-none">
           <div className="flex items-center gap-2.5 leading-none">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/90 dark:bg-emerald-800/40 border border-emerald-300/70 dark:border-emerald-600/50 text-emerald-900 dark:text-emerald-200 font-semibold tracking-wide shadow-2xs leading-none shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-200/70 dark:bg-emerald-800/40 border border-emerald-400/60 dark:border-emerald-600/50 text-emerald-950 dark:text-emerald-200 font-semibold tracking-wide shadow-2xs leading-none shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse shrink-0" />
               <span>স্মার্ট সিরিয়াল বুকিং চালু</span>
             </span>
-            <span className="w-1 h-1 rounded-full bg-emerald-400/80 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
-            <div className="inline-flex items-center gap-2 text-emerald-900/90 dark:text-emerald-200/90 font-medium leading-none whitespace-nowrap">
+            <span className="w-1 h-1 rounded-full bg-emerald-500/70 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
+            <div className="inline-flex items-center gap-2 text-emerald-950/90 dark:text-emerald-200/90 font-medium leading-none whitespace-nowrap">
               <span>ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA), জয়পুর</span>
-              <span className="w-1 h-1 rounded-full bg-emerald-400/80 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
+              <span className="w-1 h-1 rounded-full bg-emerald-500/70 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
               <span>খুলনা বিশ্ববিদ্যালয়</span>
             </div>
           </div>
@@ -169,18 +169,18 @@ export default function Navbar() {
               href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-emerald-800 dark:text-[#3ce07b] hover:text-emerald-950 dark:hover:text-[#63fca0] font-semibold transition-colors leading-none shrink-0 group"
+              className="inline-flex items-center gap-1.5 text-emerald-900 dark:text-[#3ce07b] hover:text-emerald-950 dark:hover:text-[#63fca0] font-semibold transition-colors leading-none shrink-0 group"
               title="হোয়াটসঅ্যাপে সরাসরি চ্যাট করুন"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-[#25D366] shrink-0 transition-transform group-hover:scale-110" />
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-700 dark:text-[#25D366] shrink-0 transition-transform group-hover:scale-110" />
               <span className="leading-none">হোয়াটসঅ্যাপ: +৮৮০ ১৭১২-৮৫৪৯৪১</span>
             </a>
-            <span className="w-px h-3.5 bg-emerald-300/70 dark:bg-emerald-700/70 shrink-0" aria-hidden="true" />
+            <span className="w-px h-3.5 bg-emerald-400/50 dark:bg-emerald-700/70 shrink-0" aria-hidden="true" />
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 text-amber-800 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-200 font-semibold transition-colors leading-none hover:underline shrink-0 group"
+              className="inline-flex items-center gap-1.5 text-amber-900 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-200 font-semibold transition-colors leading-none hover:underline shrink-0 group"
             >
-              <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 transition-transform group-hover:scale-110" />
+              <Shield className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0 transition-transform group-hover:scale-110" />
               <span className="leading-none">অ্যাডমিন পোর্টাল</span>
             </Link>
           </div>
@@ -191,8 +191,8 @@ export default function Navbar() {
       <header
         className={`sticky top-0 z-50 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           scrolled
-            ? 'bg-[#faf8f5]/85 dark:bg-[#162d22]/85 backdrop-blur-2xl shadow-xs border-b border-emerald-900/10 dark:border-emerald-500/20 py-2'
-            : 'bg-[#faf8f5]/75 dark:bg-[#183327]/80 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/15'
+            ? 'bg-[#eaf3ed]/92 dark:bg-[#162d22]/85 backdrop-blur-2xl shadow-xs border-b border-emerald-800/15 dark:border-emerald-500/20 py-2'
+            : 'bg-[#edf6f1]/85 dark:bg-[#183327]/80 backdrop-blur-xl py-2.5 border-b border-emerald-800/10 dark:border-emerald-500/15'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -283,7 +283,7 @@ export default function Navbar() {
                       : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                   }`}
                 >
-                  <div className="rounded-2xl bg-[#faf8f5]/98 dark:bg-[#183327]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1">
+                  <div className="rounded-2xl bg-[#f2f8f4]/98 dark:bg-[#183327]/98 backdrop-blur-xl border border-emerald-800/15 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1">
                     <div className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase border-b border-emerald-900/5 dark:border-emerald-800/40">
                       অন্যান্য শাখা ও সেবা
                     </div>
@@ -371,7 +371,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {isOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-[#faf8f5]/95 dark:bg-[#162d22]/95 backdrop-blur-2xl border-b border-emerald-900/10 dark:border-emerald-500/20 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
+          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-[#f2f8f4]/98 dark:bg-[#162d22]/95 backdrop-blur-2xl border-b border-emerald-800/15 dark:border-emerald-500/20 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
             <div className="p-5 space-y-4">
               {/* Mobile notice banner */}
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-between text-xs">
