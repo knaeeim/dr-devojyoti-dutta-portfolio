@@ -887,7 +887,14 @@ export default function AdminDashboardPage() {
         queryParams.set('deleted_ids', JSON.stringify(deletedIds));
       }
 
-      const aptRes = await fetch(`/api/admin/appointments?${queryParams.toString()}`);
+      queryParams.set('_t', Date.now().toString());
+      const aptRes = await fetch(`/api/admin/appointments?${queryParams.toString()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       if (aptRes.status === 401) {
         router.push('/admin/login');
         return;

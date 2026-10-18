@@ -731,21 +731,5 @@
     "complaints": "",
     "status": "confirmed",
     "createdAt": "2026-10-17T16:57:34.924201+00:00"
-  },
-  {
-    "id": "APT-1792256433625-479",
-    "serialNo": "DD-ON-261018-07",
-    "patientName": "আফসানা পারভীন",
-    "phone": "01746198005",
-    "chamberMode": "online",
-    "chamberTitleBn": "অনলাইন ভিডিও কনসালটেশন",
-    "appointmentDate": "2026-10-18",
-    "dateFormattedBn": "১৮ অক্টোবর, ২০২৬ (রবিবার)",
-    "slotId": "slot_960_975",
-    "slotTimeBn": "০৪:০০ বিকাল - ০৪:১৫ বিকাল",
-    "slotTimeEn": "04:00 PM - 04:15 PM",
-    "complaints": "এলার্জি, অতিরিক্ত ওজন",
-    "status": "pending",
-    "createdAt": "2026-10-17T17:00:33.756699+00:00"
   }
 ]

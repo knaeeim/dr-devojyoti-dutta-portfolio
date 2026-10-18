@@ -147,7 +147,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, appointments: list });
+    return NextResponse.json(
+      { success: true, appointments: list },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store'
+        }
+      }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { error: 'অ্যাপয়েন্টমেন্ট লোড করতে ব্যর্থ হয়েছে।' },

@@ -48,6 +48,67 @@ function persistDeletedIds() {
   }
 }
 
+export async function getDeletedIdsFromDb(): Promise<Set<string>> {
+  if (!globalThis.__drDuttaDeletedIds) {
+    globalThis.__drDuttaDeletedIds = new Set<string>();
+  }
+
+  // 1. Check local tmp file
+  try {
+    if (fs.existsSync(TMP_DELETED_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TMP_DELETED_FILE, 'utf-8'));
+      if (Array.isArray(data)) {
+        data.forEach((id: string) => globalThis.__drDuttaDeletedIds!.add(id));
+      }
+    }
+  } catch {}
+
+  // 2. Check Supabase chamber_schedules for persistent deleted_ids
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('chamber_schedules')
+        .select('*')
+        .eq('chamber_id', 'deleted_ids')
+        .maybeSingle();
+
+      if (!error && data?.config && Array.isArray(data.config)) {
+        data.config.forEach((id: string) => globalThis.__drDuttaDeletedIds!.add(id));
+      }
+    }
+  } catch {}
+
+  return globalThis.__drDuttaDeletedIds;
+}
+
+export async function saveDeletedIdsToDb(ids: string[]) {
+  if (!globalThis.__drDuttaDeletedIds) {
+    globalThis.__drDuttaDeletedIds = new Set<string>();
+  }
+  ids.forEach((id) => {
+    if (id) globalThis.__drDuttaDeletedIds!.add(id);
+  });
+  persistDeletedIds();
+
+  // Sync to Supabase so it permanently survives across all devices and serverless cold starts
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const list = Array.from(globalThis.__drDuttaDeletedIds);
+      await supabase.from('chamber_schedules').upsert([
+        {
+          chamber_id: 'deleted_ids',
+          config: list,
+          updated_at: new Date().toISOString()
+        }
+      ]);
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase deleted_ids upsert failed', err);
+  }
+}
+
 export function registerDeletedIds(ids: string[]) {
   if (!globalThis.__drDuttaDeletedIds) {
     globalThis.__drDuttaDeletedIds = new Set<string>();
@@ -61,6 +122,7 @@ export function registerDeletedIds(ids: string[]) {
   }
   if (changed) {
     persistDeletedIds();
+    saveDeletedIdsToDb(ids).catch(() => {});
     if (globalThis.__drDuttaAppointments) {
       globalThis.__drDuttaAppointments = globalThis.__drDuttaAppointments.filter(
         (a) => !globalThis.__drDuttaDeletedIds!.has(a.id)
@@ -281,24 +343,13 @@ function writeStoredAppointments(list: Appointment[]) {
 }
 
 export async function getAllAppointments(): Promise<Appointment[]> {
-  const deleted = globalThis.__drDuttaDeletedIds || new Set<string>();
+  const deleted = await getDeletedIdsFromDb();
   const sentMap = await getSentMessagesFromDb();
   const apptMap = new Map<string, Appointment>();
 
-  // 1. Seed from local store
-  const stored = readStoredAppointments();
-  stored.filter((a) => !deleted.has(a.id)).forEach((a) => {
-    const sentInfo = sentMap[a.id];
-    apptMap.set(a.id, {
-      ...a,
-      messageSent: sentInfo?.sent ?? a.messageSent,
-      messageSentAt: sentInfo?.sentAt ?? a.messageSentAt,
-      messageChannel: sentInfo?.channel ?? a.messageChannel
-    });
-  });
-
-  // 2. Merge from Supabase
+  // 1. Primary Source of Truth: Supabase PostgreSQL database
   const supabase = await createServerSupabaseClient();
+  let supabaseSuccess = false;
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -308,6 +359,7 @@ export async function getAllAppointments(): Promise<Appointment[]> {
         .order('created_at', { ascending: false });
 
       if (!error && Array.isArray(data)) {
+        supabaseSuccess = true;
         data
           .filter((row) => !deleted.has(row.id))
           .forEach((row) => {
@@ -339,8 +391,22 @@ export async function getAllAppointments(): Promise<Appointment[]> {
           });
       }
     } catch (e) {
-      console.warn('Supabase query failed, using local file store', e);
+      console.warn('Supabase query failed, using local file store fallback', e);
     }
+  }
+
+  // 2. Fallback: ONLY if Supabase is not active or query returned an error, use local file store
+  if (!supabaseSuccess) {
+    const stored = readStoredAppointments();
+    stored.filter((a) => !deleted.has(a.id)).forEach((a) => {
+      const sentInfo = sentMap[a.id];
+      apptMap.set(a.id, {
+        ...a,
+        messageSent: sentInfo?.sent ?? a.messageSent,
+        messageSentAt: sentInfo?.sentAt ?? a.messageSentAt,
+        messageChannel: sentInfo?.channel ?? a.messageChannel
+      });
+    });
   }
 
   const result = Array.from(apptMap.values()).sort((a, b) => {
@@ -357,14 +423,40 @@ export async function getAllAppointments(): Promise<Appointment[]> {
 /**
  * Returns booked slots for a given date and chamber mode.
  * Evaluates active non-cancelled appointments.
- * Rescheduled appointments free their previous date and slot immediately!
+ * Highly optimized targeted query using index on (appointment_date, chamber_mode).
  */
 export async function getBookedSlotsForDate(dateStr: string, mode: ChamberMode): Promise<string[]> {
-  const all = await getAllAppointments();
   const bookedSet = new Set<string>();
+  const deleted = await getDeletedIdsFromDb();
 
-  all
-    .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled')
+  // 1. Direct high-performance query on Supabase (uses index, zero heavy memory allocation)
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('id, slot_id')
+        .eq('appointment_date', dateStr)
+        .eq('chamber_mode', mode)
+        .neq('status', 'cancelled');
+
+      if (!error && Array.isArray(data)) {
+        data
+          .filter((row) => !deleted.has(row.id))
+          .forEach((row) => {
+            if (row.slot_id) bookedSet.add(row.slot_id);
+          });
+        return Array.from(bookedSet);
+      }
+    } catch (e) {
+      console.warn('Supabase getBookedSlotsForDate query failed, using fallback', e);
+    }
+  }
+
+  // 2. Fallback to local stored appointments only if Supabase is unavailable
+  const stored = readStoredAppointments();
+  stored
+    .filter((a) => a.appointmentDate === dateStr && a.chamberMode === mode && a.status !== 'cancelled' && !deleted.has(a.id))
     .forEach((a) => bookedSet.add(a.slotId));
 
   return Array.from(bookedSet);
@@ -598,12 +690,8 @@ export async function updateAppointmentStatus(
 }
 
 export async function deleteAppointment(id: string): Promise<boolean> {
-  // 1. Mark ID in deleted set & persist
-  if (!globalThis.__drDuttaDeletedIds) {
-    globalThis.__drDuttaDeletedIds = new Set<string>();
-  }
-  globalThis.__drDuttaDeletedIds.add(id);
-  persistDeletedIds();
+  // 1. Mark ID in deleted set & persist across DB, memory & disk
+  await saveDeletedIdsToDb([id]);
 
   // 2. Remove from active memory list & write to file stores
   const stored = readStoredAppointments();
