@@ -148,49 +148,49 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Notice Bar */}
-      <div className="bg-gradient-to-r from-emerald-950 via-[#0b281b] to-emerald-950 text-emerald-200 text-xs py-1.5 px-4 border-b border-emerald-800/40 hidden md:block">
+      {/* Top Notice Bar (Lightened with gentle herbal sage styling) */}
+      <div className="bg-emerald-50/90 dark:bg-[#0e1a14]/90 text-emerald-900/90 dark:text-emerald-300 text-xs py-1.5 px-4 border-b border-emerald-200/60 dark:border-emerald-800/40 hidden md:block backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[11px]">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-900/80 border border-emerald-700/60 text-emerald-300 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300/70 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 font-semibold shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
               স্মার্ট সিরিয়াল বুকিং চালু
             </span>
-            <span className="text-emerald-700">•</span>
-            <span className="text-emerald-200 font-medium">
+            <span className="text-emerald-300 dark:text-emerald-700">•</span>
+            <span className="text-emerald-800 dark:text-emerald-200 font-medium">
               ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA), জয়পুর • খুলনা বিশ্ববিদ্যালয়
             </span>
           </div>
 
           <div className="flex items-center gap-3.5">
             <a
-              href={`https://wa.me/${whatsappNumber}?text=%E0%A6%A8%E0%A6%AE%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A6%BE%E0%A6%B0%20%E0%A6%A1%E0%A6%BE.%20%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%9C%E0%A7%8D%E0%A6%AF%E0%A7%8B%E0%A6%A4%E0%A6%BF%20%E0%A6%A6%E0%A6%A4%E0%A7%8D%E0%A6%A4%E0%A7%87%E0%A6%B0%20%E0%A6%9A%E0%A7%87%E0%A6%AE%E0%A7%8D%E0%A6%AC%E0%A6%BE%E0%A6%B0%E0%A7%87%E0%A6%B0%20%E0%A6%B8%E0%A6%BF%E0%A6%B0%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B2%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87।`}
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[#25D366] hover:text-[#3ce07b] font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-[#25D366] hover:text-emerald-900 dark:hover:text-[#3ce07b] font-semibold transition-colors"
               title="হোয়াটসঅ্যাপে সরাসরি চ্যাট করুন"
             >
-              <MessageCircle className="w-3.5 h-3.5 fill-[#25D366]/20" />
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-[#25D366]" />
               <span>হোয়াটসঅ্যাপ: +৮৮০ ১৭১২-৮৫৪৯৪১</span>
             </a>
-            <span className="text-emerald-700">|</span>
+            <span className="text-emerald-300 dark:text-emerald-700">|</span>
             <Link
               href="/admin"
-              className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-semibold transition-colors hover:underline"
+              className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 flex items-center gap-1 font-semibold transition-colors hover:underline"
             >
-              <Shield className="w-3 h-3 text-amber-400" />
-              <span>ডাক্তার ড্যাশবোর্ড</span>
+              <Shield className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+              <span>অ্যাডমিন পোর্টাল</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Sticky Navbar (Single Clean Line Guaranteed) */}
+      {/* Main Sticky Navbar (Lightened, airy, and translucent) */}
       <header
         className={`sticky top-0 z-50 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           scrolled
-            ? 'bg-white/80 dark:bg-[#0c1511]/80 backdrop-blur-2xl shadow-lg shadow-emerald-950/5 dark:shadow-black/50 border-b border-white/80 dark:border-emerald-500/15 py-2'
-            : 'bg-white/70 dark:bg-[#0c1511]/70 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
+            ? 'bg-white/75 dark:bg-[#0c1511]/75 backdrop-blur-2xl shadow-xs border-b border-emerald-100/70 dark:border-emerald-500/15 py-2'
+            : 'bg-white/60 dark:bg-[#0c1511]/60 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -202,7 +202,7 @@ export default function Navbar() {
               className="flex items-center gap-2.5 shrink-0 group"
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 flex items-center justify-center text-amber-300 font-bold text-base shadow-sm group-hover:scale-105 transition-all duration-200 border border-amber-400/30">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 flex items-center justify-center text-amber-200 font-bold text-base shadow-sm group-hover:scale-105 transition-all duration-200 border border-amber-300/40">
                   <span>DD</span>
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c1511]" />
@@ -329,7 +329,7 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-2 shrink-0">
               {/* WhatsApp Quick Direct Button */}
               <a
-                href={`https://wa.me/${whatsappNumber}?text=%E0%A6%A8%E0%A6%AE%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A6%BE%E0%A6%B0%20%E0%A6%A1%E0%A6%BE.%20%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%9C%E0%A7%8B%E0%A6%A4%E0%A6%BF%20%E0%A6%A6%E0%A6%A4%E0%A7%8D%E0%A6%A4%E0%A7%87%E0%A6%B0%20%E0%A6%9A%E0%A7%87%E0%A6%AE%E0%A7%8D%E0%A6%AC%E0%A6%BE%E0%A6%B0%E0%A7%87%E0%A6%B0%20%E0%A6%B8%E0%A6%BF%E0%A6%B0%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B2%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87।`}
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[#25D366] hover:bg-[#25D366]/10 transition-colors cursor-pointer"
@@ -419,7 +419,7 @@ export default function Navbar() {
                 </a>
 
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=%E0%A6%A8%E0%A6%AE%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A6%BE%E0%A6%B0%20%E0%A6%A1%E0%A6%BE.%20%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%9C%E0%A7%8B%E0%A6%A4%E0%A6%BF%20%E0%A6%A6%E0%A6%A4%E0%A7%8D%E0%A6%A4%E0%A7%87%E0%A6%B0%20%E0%A6%9A%E0%A7%87%E0%A6%AE%E0%A7%8D%E0%A6%AC%E0%A6%BE%E0%A6%B0%E0%A7%87%E0%A6%B0%20%E0%A6%B8%E0%A6%BF%E0%A6%B0%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%E0%A6%B2%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87।`}
+                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}
