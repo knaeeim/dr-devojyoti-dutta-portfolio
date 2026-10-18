@@ -31,12 +31,19 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/assets/dr-devojyoti-dutta.jpg',
-        width: 800,
-        height: 1000,
-        alt: 'দেবজ্যোতি দত্ত (B.A.M.S., NIA Jaipur & B.Sc in BGE)'
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত (B.A.M.S., NIA Jaipur & B.Sc in BGE) — স্মার্ট সিরিয়াল ও আয়ুর্বেদ পোর্টাল'
       }
     ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'দেবজ্যোতি দত্ত — আধুনিক আয়ুর্বেদিক পোর্টাল ও স্মার্ট স্লট বুকিং',
+    description:
+      'শাস্ত্রীয় আয়ুর্বেদ বিজ্ঞান (NIA Jaipur) ও আধুনিক এপিজেনেটিক্স (B.Sc in BGE)। স্মার্ট স্লট বুকিং ও ডিজিটাল সিরিয়াল সিস্টেম।',
+    images: ['/og-image.png']
   },
   icons: {
     icon: [
