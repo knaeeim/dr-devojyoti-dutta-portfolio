@@ -2769,82 +2769,87 @@ export default function AdminDashboardPage() {
                       key={apt.id}
                       className={`rounded-2xl border ${statusAccent} ${cardBg} p-3.5 sm:p-4 transition-all relative overflow-hidden`}
                     >
-                      {/* Card Top: Serial Badge, Chamber & Status Badge */}
-                      <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-emerald-900/10 dark:border-emerald-700/30">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-mono font-black text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 bg-emerald-100/90 dark:bg-emerald-900/70 px-2.5 py-0.5 rounded-lg border border-emerald-300/40">
+                      {/* Card Top: Structured 2-tier header for perfect mobile alignment & aesthetics */}
+                      <div className="mb-2.5 pb-2.5 border-b border-emerald-900/10 dark:border-emerald-700/30 space-y-2">
+                        {/* Row 1: Serial Badge + Status & Quick Delete */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono font-black text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 bg-emerald-100/90 dark:bg-emerald-900/70 px-2.5 py-0.5 rounded-lg border border-emerald-300/40 shadow-2xs">
                             {apt.serialNo}
                           </span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            apt.chamberMode === 'offline'
-                              ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
-                              : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300'
-                          }`}
-                        >
-                          {apt.chamberTitleBn}
-                        </span>
-                        {apt.status === 'cancelled' && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-                            বাতিলকৃত
-                          </span>
-                        )}
-                      </div>
 
-                      {/* Status Badges, Message Sent Tracking & Quick Delete */}
-                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                        {apt.messageSent && (
-                          <button
-                            type="button"
-                            onClick={() => handleToggleMessageSent(apt.id, apt.messageChannel || 'manual', false)}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950 dark:hover:bg-teal-900 dark:text-teal-300 border border-teal-300 dark:border-teal-700/60 cursor-pointer transition-colors"
-                            title={apt.messageSentAt ? `মেসেজ পাঠানো হয়েছে (${formatRelativeTimeBn(apt.messageSentAt)}) — ক্লিক করে রিমুভ করুন` : 'ক্লিক করে রিমুভ করুন'}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {apt.status === 'pending' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
+                                <AlertTriangle className="w-2.5 h-2.5" />
+                                অপেক্ষমাণ
+                              </span>
+                            )}
+                            {apt.status === 'confirmed' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60">
+                                <CheckCircle2 className="w-2.5 h-2.5" />
+                                নিশ্চিত
+                              </span>
+                            )}
+                            {apt.status === 'rescheduled' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700/60">
+                                <Clock className="w-2.5 h-2.5" />
+                                রিশিডিউল
+                              </span>
+                            )}
+                            {apt.status === 'completed' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60">
+                                সম্পন্ন
+                              </span>
+                            )}
+                            {apt.status === 'cancelled' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-700/60">
+                                <Ban className="w-2.5 h-2.5" />
+                                বাতিল
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTargetApt(apt)}
+                              className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+                              title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
+                              aria-label="Delete appointment"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Row 2: Consultation Chamber Pill + Message Sent Badge */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold whitespace-nowrap shadow-2xs ${
+                              apt.chamberMode === 'offline'
+                                ? 'bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60'
+                                : 'bg-sky-100/90 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200 border border-sky-200 dark:border-sky-800/60'
+                            }`}
                           >
-                            <Check className="w-2.5 h-2.5 text-teal-600 dark:text-teal-400 stroke-[3]" />
-                            <span>মেসেজ প্রেরিত</span>
-                          </button>
-                        )}
-                        {apt.status === 'pending' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60">
-                            <AlertTriangle className="w-2.5 h-2.5" />
-                            অপেক্ষমাণ
+                            {apt.chamberMode === 'offline' ? (
+                              <MapPin className="w-3 h-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                            ) : (
+                              <Video className="w-3 h-3 shrink-0 text-sky-600 dark:text-sky-400" />
+                            )}
+                            <span>{apt.chamberTitleBn}</span>
                           </span>
-                        )}
-                        {apt.status === 'confirmed' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
-                            নিশ্চিত
-                          </span>
-                        )}
-                        {apt.status === 'rescheduled' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700/60">
-                            <Clock className="w-2.5 h-2.5" />
-                            রিশিডিউল
-                          </span>
-                        )}
-                        {apt.status === 'completed' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60">
-                            সম্পন্ন
-                          </span>
-                        )}
-                        {apt.status === 'cancelled' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-700/60">
-                            <Ban className="w-2.5 h-2.5" />
-                            বাতিল
-                          </span>
-                        )}
 
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTargetApt(apt)}
-                          className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
-                          title="ডাটাবেজ থেকে চিরতরে মুছে ফেলুন"
-                          aria-label="Delete appointment"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          {apt.messageSent && (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleMessageSent(apt.id, apt.messageChannel || 'manual', false)}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950/80 dark:hover:bg-teal-900 dark:text-teal-300 border border-teal-300 dark:border-teal-700/60 cursor-pointer transition-colors shrink-0 shadow-2xs"
+                              title={apt.messageSentAt ? `মেসেজ পাঠানো হয়েছে (${formatRelativeTimeBn(apt.messageSentAt)}) — ক্লিক করে রিমুভ করুন` : 'ক্লিক করে রিমুভ করুন'}
+                            >
+                              <Check className="w-2.5 h-2.5 text-teal-600 dark:text-teal-400 stroke-[3]" />
+                              <span>মেসেজ প্রেরিত</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
                     {/* Patient Name & Quick Dial/WhatsApp Direct Touch Buttons */}
                     <div className="flex items-start justify-between gap-2 mb-2">
