@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS public.appointments (
   slot_time_en TEXT NOT NULL,
   complaints TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rescheduled', 'completed', 'cancelled')),
+  message_sent BOOLEAN DEFAULT FALSE,
+  message_sent_at TIMESTAMPTZ,
+  message_channel TEXT,
   cancellation_reason TEXT,
   cancelled_at TIMESTAMPTZ,
   rescheduled_reason TEXT,
@@ -51,10 +54,22 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'rescheduled_at') THEN
     ALTER TABLE public.appointments ADD COLUMN rescheduled_at TIMESTAMPTZ;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'message_sent') THEN
+    ALTER TABLE public.appointments ADD COLUMN message_sent BOOLEAN DEFAULT FALSE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'message_sent_at') THEN
+    ALTER TABLE public.appointments ADD COLUMN message_sent_at TIMESTAMPTZ;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'message_channel') THEN
+    ALTER TABLE public.appointments ADD COLUMN message_channel TEXT;
+  END IF;
 END $$;
 
--- Indexes for lightning fast searching and slot availability checks
+-- Indexes for lightning fast searching, slot availability checks, and high-volume sorting
 CREATE INDEX IF NOT EXISTS idx_appointments_date_mode ON public.appointments (appointment_date, chamber_mode);
+CREATE INDEX IF NOT EXISTS idx_appointments_date_mode_status ON public.appointments (appointment_date, chamber_mode, status);
+CREATE INDEX IF NOT EXISTS idx_appointments_date_created ON public.appointments (appointment_date DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON public.appointments (status);
 CREATE INDEX IF NOT EXISTS idx_appointments_serial ON public.appointments (serial_no);
 CREATE INDEX IF NOT EXISTS idx_appointments_phone ON public.appointments (phone);
 CREATE INDEX IF NOT EXISTS idx_appointments_created ON public.appointments (created_at DESC);

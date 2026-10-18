@@ -48,7 +48,18 @@ function persistDeletedIds() {
   }
 }
 
+let lastDeletedIdsFetchTime = 0;
+const DELETED_IDS_CACHE_TTL = 30 * 1000; // 30 seconds
+
 export async function getDeletedIdsFromDb(): Promise<Set<string>> {
+  if (
+    globalThis.__drDuttaDeletedIds &&
+    globalThis.__drDuttaDeletedIds.size > 0 &&
+    Date.now() - lastDeletedIdsFetchTime < DELETED_IDS_CACHE_TTL
+  ) {
+    return globalThis.__drDuttaDeletedIds;
+  }
+
   if (!globalThis.__drDuttaDeletedIds) {
     globalThis.__drDuttaDeletedIds = new Set<string>();
   }
@@ -79,6 +90,7 @@ export async function getDeletedIdsFromDb(): Promise<Set<string>> {
     }
   } catch {}
 
+  lastDeletedIdsFetchTime = Date.now();
   return globalThis.__drDuttaDeletedIds;
 }
 
@@ -89,6 +101,7 @@ export async function saveDeletedIdsToDb(ids: string[]) {
   ids.forEach((id) => {
     if (id) globalThis.__drDuttaDeletedIds!.add(id);
   });
+  lastDeletedIdsFetchTime = Date.now();
   persistDeletedIds();
 
   // Sync to Supabase so it permanently survives across all devices and serverless cold starts
@@ -230,10 +243,11 @@ export async function markAppointmentMessageSent(
   sent = true
 ): Promise<boolean> {
   const map = await getSentMessagesFromDb();
+  const nowIso = new Date().toISOString();
   if (sent) {
     map[id] = {
       sent: true,
-      sentAt: new Date().toISOString(),
+      sentAt: nowIso,
       channel
     };
   } else {
@@ -241,12 +255,30 @@ export async function markAppointmentMessageSent(
   }
   await saveSentMessagesToDb(map);
 
+  // Directly update row in Supabase appointments table (O(1) indexed update)
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      await supabase
+        .from('appointments')
+        .update({
+          message_sent: sent,
+          message_sent_at: sent ? nowIso : null,
+          message_channel: sent ? channel : null,
+          updated_at: nowIso
+        })
+        .eq('id', id);
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase direct row message_sent update failed', err);
+  }
+
   // Update in-memory appointments if loaded
   if (globalThis.__drDuttaAppointments) {
     const idx = globalThis.__drDuttaAppointments.findIndex((a) => a.id === id);
     if (idx !== -1) {
       globalThis.__drDuttaAppointments[idx].messageSent = sent;
-      globalThis.__drDuttaAppointments[idx].messageSentAt = sent ? map[id]?.sentAt : undefined;
+      globalThis.__drDuttaAppointments[idx].messageSentAt = sent ? nowIso : undefined;
       globalThis.__drDuttaAppointments[idx].messageChannel = sent ? channel : undefined;
     }
   }
@@ -342,7 +374,14 @@ function writeStoredAppointments(list: Appointment[]) {
   }
 }
 
-export async function getAllAppointments(): Promise<Appointment[]> {
+export interface AppointmentFilterOptions {
+  mode?: string | null;
+  date?: string | null;
+  status?: string | null;
+  limit?: number;
+}
+
+export async function getAllAppointments(filters?: AppointmentFilterOptions): Promise<Appointment[]> {
   const deleted = await getDeletedIdsFromDb();
   const sentMap = await getSentMessagesFromDb();
   const apptMap = new Map<string, Appointment>();
@@ -352,9 +391,47 @@ export async function getAllAppointments(): Promise<Appointment[]> {
   let supabaseSuccess = false;
   if (supabase) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
-        .select('*')
+        .select(`
+          id,
+          serial_no,
+          patient_name,
+          phone,
+          email,
+          chamber_mode,
+          chamber_title_bn,
+          appointment_date,
+          date_formatted_bn,
+          slot_id,
+          slot_time_bn,
+          slot_time_en,
+          complaints,
+          status,
+          message_sent,
+          message_sent_at,
+          message_channel,
+          rescheduled_reason,
+          rescheduled_at,
+          cancellation_reason,
+          cancelled_at,
+          created_at
+        `);
+
+      if (filters?.date) {
+        query = query.eq('appointment_date', filters.date);
+      }
+      if (filters?.mode && filters.mode !== 'all') {
+        query = query.eq('chamber_mode', filters.mode);
+      }
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+      if (filters?.limit && filters.limit > 0) {
+        query = query.limit(filters.limit);
+      }
+
+      const { data, error } = await query
         .order('appointment_date', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -364,6 +441,10 @@ export async function getAllAppointments(): Promise<Appointment[]> {
           .filter((row) => !deleted.has(row.id))
           .forEach((row) => {
             const sentInfo = sentMap[row.id];
+            const isSent = Boolean(row.message_sent || sentInfo?.sent);
+            const sentAt = row.message_sent_at || sentInfo?.sentAt;
+            const channel = row.message_channel || sentInfo?.channel;
+
             apptMap.set(row.id, {
               id: row.id,
               serialNo: row.serial_no,
@@ -379,9 +460,9 @@ export async function getAllAppointments(): Promise<Appointment[]> {
               slotTimeEn: row.slot_time_en,
               complaints: row.complaints,
               status: row.status as AppointmentStatus,
-              messageSent: sentInfo?.sent ?? undefined,
-              messageSentAt: sentInfo?.sentAt ?? undefined,
-              messageChannel: sentInfo?.channel ?? undefined,
+              messageSent: isSent || undefined,
+              messageSentAt: isSent ? sentAt : undefined,
+              messageChannel: isSent ? channel : undefined,
               rescheduledReason: row.rescheduled_reason || undefined,
               rescheduledAt: row.rescheduled_at || undefined,
               cancellationReason: row.cancellation_reason || undefined,
@@ -397,16 +478,28 @@ export async function getAllAppointments(): Promise<Appointment[]> {
 
   // 2. Fallback: ONLY if Supabase is not active or query returned an error, use local file store
   if (!supabaseSuccess) {
-    const stored = readStoredAppointments();
-    stored.filter((a) => !deleted.has(a.id)).forEach((a) => {
-      const sentInfo = sentMap[a.id];
-      apptMap.set(a.id, {
-        ...a,
-        messageSent: sentInfo?.sent ?? a.messageSent,
-        messageSentAt: sentInfo?.sentAt ?? a.messageSentAt,
-        messageChannel: sentInfo?.channel ?? a.messageChannel
+    let stored = readStoredAppointments();
+    if (filters?.date) {
+      stored = stored.filter((a) => a.appointmentDate === filters.date);
+    }
+    if (filters?.mode && filters.mode !== 'all') {
+      stored = stored.filter((a) => a.chamberMode === filters.mode);
+    }
+    if (filters?.status && filters.status !== 'all') {
+      stored = stored.filter((a) => a.status === filters.status);
+    }
+    stored
+      .filter((a) => !deleted.has(a.id))
+      .forEach((a) => {
+        const sentInfo = sentMap[a.id];
+        const isSent = Boolean(a.messageSent || sentInfo?.sent);
+        apptMap.set(a.id, {
+          ...a,
+          messageSent: isSent || undefined,
+          messageSentAt: isSent ? (a.messageSentAt || sentInfo?.sentAt) : undefined,
+          messageChannel: isSent ? (a.messageChannel || sentInfo?.channel) : undefined
+        });
       });
-    });
   }
 
   const result = Array.from(apptMap.values()).sort((a, b) => {
@@ -475,8 +568,6 @@ export async function createAppointment(params: {
   status?: AppointmentStatus;
   bypassPastCheck?: boolean;
 }): Promise<Appointment> {
-  const allAppointments = await getAllAppointments();
-
   // Check if slot time has passed (Time Over check)
   const slotParts = params.slotId.replace('slot_', '').split('_').map(Number);
   const startMin = slotParts[0] || 0;
@@ -484,23 +575,28 @@ export async function createAppointment(params: {
     throw new Error('এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত সময় বেছে নিন।');
   }
 
-  // Check if slot already booked by an active (non-cancelled) appointment
-  const alreadyBooked = allAppointments.some(
-    (a) =>
-      a.appointmentDate === params.appointmentDate &&
-      a.chamberMode === params.chamberMode &&
-      a.slotId === params.slotId &&
-      a.status !== 'cancelled'
-  );
-
-  if (alreadyBooked) {
+  // Highly optimized slot availability check using targeted date-mode index (No full table scan!)
+  const bookedSlots = await getBookedSlotsForDate(params.appointmentDate, params.chamberMode);
+  if (bookedSlots.includes(params.slotId)) {
     throw new Error('দুঃখিত, এই সময় স্লটটি ইতোমধ্যে অন্য রোগী বুক করে ফেলেছেন। অনুগ্রহ করে অন্য সময় বেছে নিন।');
   }
 
-  // Count active bookings on same day for serial number calculation
-  const countSameDay = allAppointments.filter(
-    (a) => a.appointmentDate === params.appointmentDate && a.chamberMode === params.chamberMode && a.status !== 'cancelled'
-  ).length;
+  // Count active bookings on same day for serial number calculation (ultra fast count)
+  let countSameDay = bookedSlots.length;
+  const supabase = await createServerSupabaseClient();
+  if (supabase) {
+    try {
+      const { count, error: countErr } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('appointment_date', params.appointmentDate)
+        .eq('chamber_mode', params.chamberMode);
+
+      if (!countErr && typeof count === 'number') {
+        countSameDay = count;
+      }
+    } catch {}
+  }
 
   const serialNo = generateSerialNo(params.chamberMode, params.appointmentDate, countSameDay);
   const chamberTitleBn = defaultSchedules[params.chamberMode].titleBn;
@@ -524,7 +620,6 @@ export async function createAppointment(params: {
     createdAt: new Date().toISOString()
   };
 
-  const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
       const { data, error } = await supabase

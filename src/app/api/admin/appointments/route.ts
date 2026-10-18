@@ -123,19 +123,11 @@ export async function GET(request: NextRequest) {
       } catch {}
     }
 
-    let list = await getAllAppointments();
-
-    if (mode && mode !== 'all') {
-      list = list.filter((a) => a.chamberMode === mode);
-    }
-
-    if (date) {
-      list = list.filter((a) => a.appointmentDate === date);
-    }
-
-    if (status && status !== 'all') {
-      list = list.filter((a) => a.status === status);
-    }
+    let list = await getAllAppointments({
+      mode: mode && mode !== 'all' ? mode : undefined,
+      date: date || undefined,
+      status: status && status !== 'all' ? status : undefined
+    });
 
     if (query) {
       list = list.filter(

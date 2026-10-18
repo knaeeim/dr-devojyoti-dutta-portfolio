@@ -40,14 +40,27 @@ function loadLocalSchedules(): Record<ChamberMode, ChamberSchedule> {
   return globalThis.__drDuttaChamberSchedules;
 }
 
+let lastScheduleFetchTime = 0;
+const SCHEDULE_CACHE_TTL = 30 * 1000; // 30 seconds cache for schedules
+
 export async function getChamberSchedules(): Promise<Record<ChamberMode, ChamberSchedule>> {
+  // If recently fetched in memory, return immediately without network roundtrip
+  if (
+    globalThis.__drDuttaChamberSchedules &&
+    Date.now() - lastScheduleFetchTime < SCHEDULE_CACHE_TTL
+  ) {
+    return globalThis.__drDuttaChamberSchedules;
+  }
+
   const local = loadLocalSchedules();
   const supabase = await createServerSupabaseClient();
   if (supabase) {
     try {
+      // Only select dhaka_chamber and online_chamber configs, never fetch giant blobs like sent_messages
       const { data, error } = await supabase
         .from('chamber_schedules')
-        .select('*');
+        .select('chamber_id, config')
+        .in('chamber_id', ['dhaka_chamber', 'online_chamber']);
 
       if (!error && data && data.length > 0) {
         const result = { ...local };
@@ -59,6 +72,7 @@ export async function getChamberSchedules(): Promise<Record<ChamberMode, Chamber
           }
         }
         globalThis.__drDuttaChamberSchedules = result;
+        lastScheduleFetchTime = Date.now();
         return result;
       }
     } catch (e) {
