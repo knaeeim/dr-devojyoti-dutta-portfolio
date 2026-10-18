@@ -455,21 +455,34 @@ export default function BookingHub() {
 
   const handleDateSelect = (dateStr: string) => {
     setSelectedDate(dateStr);
-    // Stay stably in place so the patient can clearly see the selected date and the slots directly below without screen jumping or crawling
+    // Smoothly scroll down to Step 2 (Slots) with fixed coordinate calculation to eliminate any drift
+    setTimeout(() => {
+      const step2 = document.getElementById('step-2-slots');
+      if (step2) {
+        const navbarHeight = 85;
+        const targetY = Math.round(step2.getBoundingClientRect().top + window.scrollY - navbarHeight);
+        window.scrollTo({
+          top: targetY,
+          behavior: 'smooth'
+        });
+      }
+    }, 60);
   };
 
   const handleSlotSelect = (slot: Slot) => {
     setSelectedSlot(slot);
-    // Gently scroll to Step 3 form only if it falls below the visible screen viewport
+    // Smoothly glide down to Step 3 (Patient Info Form)
     setTimeout(() => {
       const step3 = document.getElementById('step-3-form');
       if (step3) {
-        const rect = step3.getBoundingClientRect();
-        if (rect.bottom > window.innerHeight) {
-          step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        const navbarHeight = 85;
+        const targetY = Math.round(step3.getBoundingClientRect().top + window.scrollY - navbarHeight);
+        window.scrollTo({
+          top: targetY,
+          behavior: 'smooth'
+        });
       }
-    }, 100);
+    }, 60);
   };
 
   return (
@@ -613,7 +626,7 @@ export default function BookingHub() {
 
           {/* STEP 2: Choose 15-Min Slot */}
           {selectedDate && (
-            <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-slide-up">
+            <div id="step-2-slots" className="space-y-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-fade-in">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
@@ -717,7 +730,7 @@ export default function BookingHub() {
 
           {/* STEP 3: Patient Information Form */}
           {selectedSlot && (
-            <form id="step-3-form" onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-slide-up">
+            <form id="step-3-form" onSubmit={handleBookingSubmit} className="space-y-5 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-fade-in">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-800 text-amber-300 text-xs flex items-center justify-center font-bold">
