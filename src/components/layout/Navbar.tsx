@@ -54,6 +54,43 @@ export default function Navbar() {
     };
   }, []);
 
+  // Ensure the page always starts at top on initial load/reload and prevent #booking jump on reload
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      // If there's an anchor hash like #booking on reload, reset URL and ensure page starts at the top
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+
+    // Intercept in-page section links so they smooth scroll without leaving #hash in the address bar
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a');
+      if (!target) return;
+      const href = target.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        e.preventDefault();
+        const id = href.slice(1);
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          setActiveSection(href);
+          // Keep the address bar clean without leaving #booking to cause reload jumps
+          if (typeof window !== 'undefined') {
+            history.replaceState(null, '', window.location.pathname);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleAnchorClick);
+    return () => document.removeEventListener('click', handleAnchorClick);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;

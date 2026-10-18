@@ -455,24 +455,21 @@ export default function BookingHub() {
 
   const handleDateSelect = (dateStr: string) => {
     setSelectedDate(dateStr);
-    // Smooth scroll animation to Step 2 (Slots)
-    setTimeout(() => {
-      const step2 = document.getElementById('step-2-slots');
-      if (step2) {
-        step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 120);
+    // Stay stably in place so the patient can clearly see the selected date and the slots directly below without screen jumping or crawling
   };
 
   const handleSlotSelect = (slot: Slot) => {
     setSelectedSlot(slot);
-    // Smooth scroll animation to Step 3 (Patient Info Form)
+    // Gently scroll to Step 3 form only if it falls below the visible screen viewport
     setTimeout(() => {
       const step3 = document.getElementById('step-3-form');
       if (step3) {
-        step3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const rect = step3.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight) {
+          step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       }
-    }, 120);
+    }, 100);
   };
 
   return (
