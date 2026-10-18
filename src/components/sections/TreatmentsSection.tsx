@@ -42,18 +42,19 @@ export default function TreatmentsSection() {
   ];
 
   return (
-    <section id="treatments" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="treatments" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative overflow-hidden">
+      <div className="ambient-glow-1 opacity-70" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-              <Stethoscope className="w-3.5 h-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold glass-pill text-emerald-800 dark:text-emerald-300 shadow-2xs hover-glow-emerald">
+              <Stethoscope className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
               চিকিৎসা সেবা ও নিরাময় ক্ষেত্রসমূহ
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50 tracking-tight">
               দীর্ঘস্থায়ী ও জটিল রোগের স্থায়ী সমাধান
             </h2>
-            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80">
+            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed">
               শুধু লক্ষণ দমানো নয়, রোগের অন্তর্নিহিত উৎস চিহ্নিত করে কোষীয় স্তর থেকে সুস্থতা অর্জন।
             </p>
           </div>
@@ -61,13 +62,13 @@ export default function TreatmentsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {treatments.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 110} direction="up" className="h-full">
-              <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 flex flex-col justify-between space-y-5 group h-full">
+            <ScrollReveal key={idx} delay={idx * 90} direction="up" className="h-full">
+              <div className="glass-card hover-glow-emerald p-8 rounded-3xl flex flex-col justify-between space-y-5 group h-full">
                 <div className="space-y-3">
                   <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
                     {item.category}
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-250 leading-snug">
                     {item.title}
                   </h3>
                   <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-300/70 leading-relaxed">

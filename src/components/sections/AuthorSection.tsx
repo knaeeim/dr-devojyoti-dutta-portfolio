@@ -11,12 +11,16 @@ export default function AuthorSection() {
 
   return (
     <section id="research" className="py-20 bg-white dark:bg-[#0c1511] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Background ambient orbs */}
+      <div className="ambient-glow-1 pointer-events-none" />
+      <div className="ambient-glow-2 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Book Details (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <ScrollReveal direction="up">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+              <span className="glass-pill inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-800 dark:text-amber-300">
                 <BookOpen className="w-3.5 h-3.5 text-amber-500" />
                 গ্রন্থাকার ও গবেষক
               </span>
@@ -35,7 +39,7 @@ export default function AuthorSection() {
               {chapters.map((ch, idx) => (
                 <ScrollReveal key={idx} delay={idx * 100} direction="up">
                   <div
-                    className="card-butter p-4 rounded-2xl bg-emerald-50/50 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-800/40 space-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md"
+                    className="glass-card hover-glow-emerald p-4 sm:p-5 rounded-2xl space-y-1"
                   >
                     <h4 className="font-serif font-bold text-sm text-emerald-950 dark:text-emerald-100">
                       {ch.title}
@@ -52,7 +56,7 @@ export default function AuthorSection() {
               <div className="flex flex-wrap items-center gap-4 pt-4">
                 <a
                   href="#booking"
-                  className="btn-butter inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md hover:shadow-lg cursor-pointer"
+                  className="btn-butter hover-glow-emerald inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold text-sm shadow-lg cursor-pointer"
                 >
                   <span>অ্যাপয়েন্টমেন্ট বুক করুন</span>
                 </a>
@@ -61,7 +65,7 @@ export default function AuthorSection() {
                   href="https://www.facebook.com/devojyoti.dutta"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-butter inline-flex items-center gap-2 px-5 py-3.5 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 text-sm font-medium hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer"
+                  className="btn-butter glass-pill inline-flex items-center gap-2 px-5 py-3.5 rounded-xl text-emerald-900 dark:text-emerald-200 text-sm font-medium hover:border-emerald-400 cursor-pointer"
                 >
                   <span>বইটি সম্পর্কে আরও জানতে ফেসবুক পেজে যুক্ত হন</span>
                   <ExternalLink className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -73,8 +77,8 @@ export default function AuthorSection() {
           {/* Right Column: Book Visual Card (5 cols) */}
           <div className="lg:col-span-5 flex justify-center">
             <ScrollReveal direction="left" delay={200}>
-              <div className="card-butter relative w-full max-w-sm rounded-3xl p-8 bg-gradient-to-br from-amber-100/80 via-emerald-50 to-emerald-100/60 dark:from-[#172922] dark:via-[#13201a] dark:to-emerald-950/80 border border-amber-300/50 dark:border-emerald-700/50 shadow-2xl hover:shadow-emerald-950/20 space-y-6 text-center group">
-                <div className="w-24 h-32 mx-auto rounded-xl bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white p-3 shadow-xl flex flex-col justify-between transform -rotate-3 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+              <div className="glass-card hover-glow-amber relative w-full max-w-sm rounded-3xl p-8 space-y-6 text-center group">
+                <div className="w-24 h-32 mx-auto rounded-xl bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 text-white p-3 shadow-2xl flex flex-col justify-between transform -rotate-3 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
                   <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">Health Book</span>
                   <span className="font-serif font-black text-sm leading-tight">স্বাস্থ্য দর্পণ</span>
                   <span className="text-[8px] opacity-90">দেবজ্যোতি দত্ত</span>
@@ -94,12 +98,12 @@ export default function AuthorSection() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-white/80 dark:bg-emerald-950/60 border border-emerald-900/10 dark:border-emerald-800/40 text-xs text-emerald-900 dark:text-emerald-200 space-y-2 text-left">
-                  <div className="flex justify-between border-b border-emerald-200 dark:border-emerald-800/40 pb-1.5">
+                <div className="p-4 rounded-xl glass-pill text-xs text-emerald-900 dark:text-emerald-200 space-y-2 text-left">
+                  <div className="flex justify-between border-b border-emerald-200/60 dark:border-emerald-800/40 pb-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">লেখক:</span>
                     <span className="font-bold">দেবজ্যোতি দত্ত</span>
                   </div>
-                  <div className="flex justify-between border-b border-emerald-200 dark:border-emerald-800/40 pb-1.5">
+                  <div className="flex justify-between border-b border-emerald-200/60 dark:border-emerald-800/40 pb-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">বিষয়বস্তু:</span>
                     <span className="font-bold">আয়ুর্বেদ ও আধুনিক এপিজেনেটিক্স</span>
                   </div>

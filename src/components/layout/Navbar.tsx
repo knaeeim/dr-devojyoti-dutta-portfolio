@@ -187,10 +187,10 @@ export default function Navbar() {
 
       {/* Main Sticky Navbar (Single Clean Line Guaranteed) */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           scrolled
-            ? 'bg-white/95 dark:bg-[#0c1511]/95 backdrop-blur-xl shadow-lg shadow-emerald-950/5 dark:shadow-black/40 border-b border-emerald-900/10 dark:border-emerald-500/15 py-2'
-            : 'bg-white/90 dark:bg-[#0c1511]/85 backdrop-blur-md py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
+            ? 'bg-white/80 dark:bg-[#0c1511]/80 backdrop-blur-2xl shadow-lg shadow-emerald-950/5 dark:shadow-black/50 border-b border-white/80 dark:border-emerald-500/15 py-2'
+            : 'bg-white/70 dark:bg-[#0c1511]/70 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

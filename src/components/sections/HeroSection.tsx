@@ -12,20 +12,21 @@ export default function HeroSection() {
   ];
 
   return (
-    <section className="relative overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-16 lg:pt-14 lg:pb-20">
-      {/* Background ambient orbs */}
+    <section className="relative overflow-hidden pt-6 pb-12 sm:pt-8 sm:pb-16 lg:pt-14 lg:pb-20 ambient-mesh-hero">
+      {/* Background ambient glowing orbs */}
       <div className="ambient-glow-1" />
       <div className="ambient-glow-2" />
+      <div className="ambient-glow-3" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           {/* Left Column: Focused Copy & Prominent Booking CTA (7 cols) */}
           <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-            {/* Trust Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100/90 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 border border-emerald-300/50 dark:border-emerald-700/50 shadow-xs">
-              <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            {/* Trust Pill Badge with Glassmorphism */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold glass-pill text-emerald-950 dark:text-emerald-100 shadow-sm hover-glow-emerald">
+              <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
               <span>ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA) জয়পুর প্রাক্তনী</span>
-              <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
               <span className="text-amber-700 dark:text-amber-300 font-bold">BAMS • B.Sc in BGE</span>
             </div>
 
@@ -61,7 +62,7 @@ export default function HeroSection() {
                 {/* Big Eye-catching Booking Button */}
                 <a
                   href="#booking"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-900/25 hover:shadow-2xl hover:shadow-emerald-900/40 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:-translate-y-1 active:scale-95 ring-2 ring-emerald-500/30 group text-center cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-750 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-emerald-950/20 hover:shadow-2xl hover:shadow-emerald-700/35 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] transform hover:-translate-y-1 active:scale-[0.97] ring-1 ring-white/30 group text-center cursor-pointer will-change-transform"
                 >
                   <Calendar className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform duration-300 shrink-0" />
                   <span>সিরিয়াল বুক করুন</span>
@@ -71,7 +72,7 @@ export default function HeroSection() {
                 {/* Secondary Prakriti Quiz CTA */}
                 <a
                   href="#prakriti"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-[#13201a] hover:bg-emerald-50 dark:hover:bg-[#192a23] text-emerald-900 dark:text-emerald-100 border border-emerald-300/80 dark:border-emerald-700/60 font-semibold text-sm sm:text-base shadow-sm hover:shadow-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-95 text-center cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 sm:py-4 rounded-2xl glass-card text-emerald-950 dark:text-emerald-100 font-semibold text-sm sm:text-base shadow-sm hover:shadow-md transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.97] text-center cursor-pointer will-change-transform hover-glow-amber"
                 >
                   <Sparkles className="w-4 h-4 text-amber-500 group-hover:rotate-12 transition-transform duration-300 shrink-0" />
                   <span>আপনার প্রকৃতি (দোষ) জানুন</span>
@@ -88,7 +89,7 @@ export default function HeroSection() {
             {/* Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
               {stats.map((s, idx) => (
-                <div key={idx} className="space-y-0.5 hover:-translate-y-0.5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                <div key={idx} className="space-y-0.5 p-2 rounded-xl transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 hover:-translate-y-0.5">
                   <div className="font-serif font-black text-2xl sm:text-3xl text-emerald-800 dark:text-emerald-300">
                     {s.number}
                   </div>
@@ -103,8 +104,8 @@ export default function HeroSection() {
           {/* Right Column: Doctor Portrait Card (5 cols) */}
           <div className="lg:col-span-5 relative flex justify-center">
             <div className="relative w-full max-w-md">
-              {/* Doctor Frame */}
-              <div className="relative rounded-3xl p-3 bg-gradient-to-b from-emerald-100 via-white to-amber-50 dark:from-emerald-900/50 dark:via-[#13201a] dark:to-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 shadow-2xl overflow-hidden group">
+              {/* Doctor Frame with Ambient Depth */}
+              <div className="relative rounded-3xl p-3.5 glass-card bg-gradient-to-b from-white/90 via-emerald-50/30 to-amber-50/30 dark:from-emerald-950/70 dark:via-[#13201a]/80 dark:to-emerald-950/50 border border-white/80 dark:border-emerald-600/30 shadow-2xl overflow-hidden group hover-glow-emerald">
                 <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-emerald-950">
                   <Image
                     src="/assets/dr-devojyoti-dutta.png"
@@ -114,11 +115,11 @@ export default function HeroSection() {
                     priority
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
                   {/* Card bottom details */}
                   <div className="absolute bottom-0 inset-x-0 p-5 text-white space-y-1">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-600/90 text-white backdrop-blur-sm mb-1">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-600/90 text-white backdrop-blur-md mb-1 shadow-sm border border-emerald-400/30">
                       শীর্ষ আয়ুর্বেদ চিকিৎসক ও গবেষক
                     </span>
                     <h2 className="font-serif text-2xl font-bold text-white leading-tight">
@@ -135,9 +136,9 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              {/* Floating Badge Top Left */}
-              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-emerald-200 dark:border-emerald-800 shadow-xl flex items-center gap-3 animate-float z-10 will-change-transform">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-800 dark:text-emerald-300 font-bold text-lg">
+              {/* Floating Badge Top Left with Glassmorphism */}
+              <div className="absolute -top-4 -left-4 sm:-left-6 p-3 rounded-2xl glass-card border border-white/80 dark:border-emerald-600/40 shadow-2xl flex items-center gap-3 animate-float z-10 will-change-transform hover-glow-emerald">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-800 dark:text-emerald-300 font-bold text-lg shadow-inner">
                   🏛️
                 </div>
                 <div>
@@ -150,9 +151,9 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              {/* Floating Badge Bottom Right */}
-              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border border-amber-200 dark:border-amber-900/60 shadow-xl flex items-center gap-3 animate-float-reverse z-10 will-change-transform">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold text-lg">
+              {/* Floating Badge Bottom Right with Glassmorphism */}
+              <div className="absolute -bottom-4 -right-4 sm:-right-6 p-3 rounded-2xl glass-card border border-amber-300/60 dark:border-amber-600/40 shadow-2xl flex items-center gap-3 animate-float-reverse z-10 will-change-transform hover-glow-amber">
+                <div className="w-10 h-10 rounded-xl bg-amber-100/80 dark:bg-amber-950/60 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold text-lg shadow-inner">
                   🧬
                 </div>
                 <div>

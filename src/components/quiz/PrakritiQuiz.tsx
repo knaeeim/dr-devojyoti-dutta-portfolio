@@ -50,13 +50,14 @@ export default function PrakritiQuiz() {
   return (
     <section id="prakriti" className="py-20 bg-white dark:bg-[#0c1511] relative overflow-hidden">
       {/* Background ambient orbs */}
-      <div className="ambient-glow-2" />
+      <div className="ambient-glow-2 pointer-events-none" />
+      <div className="ambient-glow-1 pointer-events-none" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <ScrollReveal direction="up">
           <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+            <span className="glass-pill inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-amber-800 dark:text-amber-300">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               আয়ুর্বেদিক সেলফ-অ্যাসেসমেন্ট
             </span>
@@ -70,7 +71,7 @@ export default function PrakritiQuiz() {
         </ScrollReveal>
 
         {/* Quiz Container Card */}
-        <div className="card-butter rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 p-6 sm:p-10 shadow-xl relative backdrop-blur-sm">
+        <div className="glass-card rounded-3xl p-6 sm:p-10 relative z-10">
           {!result ? (
             /* ACTIVE QUESTION VIEW */
             <div className="space-y-8">
@@ -82,7 +83,7 @@ export default function PrakritiQuiz() {
                   </span>
                   <span>{toBengaliNumber(progressPercent)}% সম্পন্ন</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-emerald-200/60 dark:bg-emerald-950 overflow-hidden">
+                <div className="w-full h-2.5 rounded-full bg-emerald-200/60 dark:bg-emerald-950 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-600 to-amber-500 rounded-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
                     style={{ width: `${progressPercent}%` }}
@@ -111,10 +112,10 @@ export default function PrakritiQuiz() {
                         key={idx}
                         type="button"
                         onClick={() => handleSelectOption(opt.dosha)}
-                        className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-start gap-4 cursor-pointer hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
+                        className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-start gap-4 cursor-pointer active:scale-[0.99] ${
                           isSelected
-                            ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50 scale-[1.01]'
-                            : 'border-emerald-200 dark:border-emerald-800/60 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 hover:bg-emerald-50/80 dark:hover:bg-emerald-900/30'
+                            ? 'btn-butter border-emerald-500 bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-xl ring-2 ring-emerald-400/50 scale-[1.01]'
+                            : 'glass-pill hover-glow-emerald btn-butter border-emerald-200/80 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400'
                         }`}
                       >
                         <div
@@ -151,7 +152,7 @@ export default function PrakritiQuiz() {
                   type="button"
                   disabled={currentStep === 0}
                   onClick={handlePrev}
-                  className="btn-butter inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-sm font-medium hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  className="btn-butter glass-pill inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-emerald-800 dark:text-emerald-200 text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>পূর্ববর্তী</span>
@@ -161,7 +162,7 @@ export default function PrakritiQuiz() {
                   type="button"
                   disabled={!currentAnswer}
                   onClick={handleNext}
-                  className="btn-butter inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="btn-butter hover-glow-emerald inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white text-sm font-bold shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <span>{currentStep === totalQuestions - 1 ? 'ফলাফল দেখুন' : 'পরবর্তী'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -173,7 +174,7 @@ export default function PrakritiQuiz() {
             <div className="space-y-8 animate-fade-in">
               {/* Results Banner */}
               <div className="text-center space-y-2 border-b border-emerald-900/10 dark:border-emerald-800/40 pb-6">
-                <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300">
+                <span className="glass-pill inline-block px-3 py-1 rounded-full text-xs font-bold text-amber-900 dark:text-amber-300">
                   আপনার ক্লাসিক্যাল দোষ রিপোর্ট
                 </span>
                 <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-emerald-950 dark:text-emerald-50">
@@ -187,7 +188,7 @@ export default function PrakritiQuiz() {
               {/* Dosha Progress Bars */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Vata */}
-                <div className="p-4 rounded-2xl bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-center">
+                <div className="glass-card hover-glow-emerald p-4 rounded-2xl space-y-2 text-center">
                   <span className="text-xs font-bold text-sky-700 dark:text-sky-400 block">
                     💨 বাত (Vata)
                   </span>
@@ -203,7 +204,7 @@ export default function PrakritiQuiz() {
                 </div>
 
                 {/* Pitta */}
-                <div className="p-4 rounded-2xl bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-center">
+                <div className="glass-card hover-glow-amber p-4 rounded-2xl space-y-2 text-center">
                   <span className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
                     🔥 পিত্ত (Pitta)
                   </span>
@@ -219,7 +220,7 @@ export default function PrakritiQuiz() {
                 </div>
 
                 {/* Kapha */}
-                <div className="p-4 rounded-2xl bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-center">
+                <div className="glass-card hover-glow-emerald p-4 rounded-2xl space-y-2 text-center">
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block">
                     🌿 কফ (Kapha)
                   </span>
@@ -238,7 +239,7 @@ export default function PrakritiQuiz() {
               {/* Characteristics and Advice Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Characteristics */}
-                <div className="p-5 rounded-2xl bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+                <div className="glass-card p-5 sm:p-6 rounded-2xl space-y-3">
                   <h4 className="font-serif font-bold text-base text-emerald-950 dark:text-emerald-100">
                     🌿 শারীরিক ও মানসিক বৈশিষ্ট্য
                   </h4>
@@ -253,7 +254,7 @@ export default function PrakritiQuiz() {
                 </div>
 
                 {/* Dietary Guidance */}
-                <div className="p-5 rounded-2xl bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
+                <div className="glass-card p-5 sm:p-6 rounded-2xl space-y-3">
                   <h4 className="font-serif font-bold text-base text-emerald-950 dark:text-emerald-100">
                     🥗 সুপারিশকৃত খাদ্যতালিকা
                   </h4>
@@ -273,7 +274,7 @@ export default function PrakritiQuiz() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 text-sm font-medium hover:bg-emerald-100/50"
+                  className="btn-butter glass-pill inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-emerald-800 dark:text-emerald-200 text-sm font-medium cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>পুনরায় টেস্ট দিন</span>
@@ -281,7 +282,7 @@ export default function PrakritiQuiz() {
 
                 <a
                   href="#booking"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-bold shadow-md transition-all"
+                  className="btn-butter hover-glow-emerald w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white text-sm font-bold shadow-lg transition-all cursor-pointer"
                 >
                   <Calendar className="w-4 h-4 text-amber-300" />
                   <span>শাস্ত্রীয় রোগনিদান ও পূর্ণাঙ্গ চিকিৎসার জন্য সিরিয়াল নিন</span>

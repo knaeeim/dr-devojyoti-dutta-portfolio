@@ -36,18 +36,19 @@ export default function ExpertiseSection() {
   ];
 
   return (
-    <section id="skills" className="py-20 bg-white dark:bg-[#0c1511] relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="skills" className="py-20 bg-white/50 dark:bg-[#0c1511]/50 relative overflow-hidden">
+      <div className="ambient-glow-2" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-              <Activity className="w-3.5 h-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold glass-pill text-emerald-800 dark:text-emerald-300 shadow-2xs hover-glow-emerald">
+              <Activity className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
               ক্লিনিক্যাল দক্ষতা
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-emerald-950 dark:text-emerald-50 tracking-tight">
               বিশেষজ্ঞ ডায়াগনস্টিক ও নিরাময় পদ্ধতি
             </h2>
-            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80">
+            <p className="text-sm sm:text-base text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed">
               আন্তর্জাতিক মানের শীর্ষ আয়ুর্বেদ শিক্ষাপ্রতিষ্ঠানের শাস্ত্রীয় জ্ঞান এবং আধুনিক ল্যাব টেস্টের বিজ্ঞানসম্মত মূল্যায়ন।
             </p>
           </div>
@@ -55,12 +56,12 @@ export default function ExpertiseSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {skills.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 100} direction="up" className="h-full">
-              <div className="card-butter p-6 rounded-3xl bg-emerald-50/40 dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-xl space-y-3 group h-full">
-                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-emerald-950/80 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <ScrollReveal key={idx} delay={idx * 80} direction="up" className="h-full">
+              <div className="glass-card hover-glow-emerald p-6 rounded-3xl space-y-3 group h-full cursor-default">
+                <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-emerald-950/80 border border-white/60 dark:border-emerald-700/40 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-350 ease-[cubic-bezier(0.16,1,0.3,1)]">
                   {item.icon}
                 </div>
-                <h3 className="font-serif text-lg font-bold text-emerald-950 dark:text-emerald-50">
+                <h3 className="font-serif text-lg font-bold text-emerald-950 dark:text-emerald-50 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-250">
                   {item.title}
                 </h3>
                 <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-300/70 leading-relaxed">

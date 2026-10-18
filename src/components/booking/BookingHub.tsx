@@ -476,11 +476,15 @@ export default function BookingHub() {
   };
 
   return (
-    <section id="booking" className="py-20 bg-emerald-950/[0.03] dark:bg-emerald-950/20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="booking" className="py-20 bg-emerald-950/[0.03] dark:bg-emerald-950/20 relative overflow-hidden">
+      {/* Background ambient orbs */}
+      <div className="ambient-glow-1 pointer-events-none" />
+      <div className="ambient-glow-2 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+          <span className="glass-pill inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-800 dark:text-emerald-300">
             <Clock className="w-3.5 h-3.5 text-amber-500" />
             স্মার্ট স্লট শিডিউলিং ইঞ্জিন
           </span>
@@ -494,13 +498,13 @@ export default function BookingHub() {
 
         {/* Chamber Mode Switcher Tabs */}
         <div className="max-w-xl mx-auto mb-10">
-          <div className="p-1.5 rounded-2xl bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 grid grid-cols-2 gap-2 shadow-inner">
+          <div className="glass-morphism p-1.5 rounded-2xl grid grid-cols-2 gap-2 shadow-inner">
             <button
               type="button"
               onClick={() => setChamberMode('offline')}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
                 chamberMode === 'offline'
-                  ? 'bg-emerald-800 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-lg ring-1 ring-emerald-500/50'
                   : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
               }`}
             >
@@ -511,9 +515,9 @@ export default function BookingHub() {
             <button
               type="button"
               onClick={() => setChamberMode('online')}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
                 chamberMode === 'online'
-                  ? 'bg-emerald-800 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-lg ring-1 ring-emerald-500/50'
                   : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
               }`}
             >
@@ -523,12 +527,12 @@ export default function BookingHub() {
           </div>
 
           {/* Chamber Summary Meta Card */}
-          <div className="mt-3 p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-emerald-900/10 dark:border-emerald-800/40 text-xs text-emerald-900 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-center gap-y-2 gap-x-4">
+          <div className="glass-card mt-3 p-3.5 rounded-2xl text-xs text-emerald-900 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-center gap-y-2 gap-x-4">
             <span className="flex items-center gap-1">
               <strong>স্থান/মাধ্যম:</strong> {activeSchedule.addressBn}
             </span>
             <span className="text-emerald-300 dark:text-emerald-700 hidden sm:inline">•</span>
-            <span className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1 rounded-xl border border-emerald-200/70 dark:border-emerald-700/50 flex-wrap justify-center">
+            <span className="glass-pill inline-flex items-center gap-2 px-3 py-1 rounded-xl flex-wrap justify-center">
               <span>
                 <strong>পরামর্শ ফি:</strong> <span className="font-bold text-emerald-800 dark:text-emerald-200">{chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}</span>
               </span>
@@ -545,7 +549,7 @@ export default function BookingHub() {
         </div>
 
         {/* Step-by-Step Interactive Booking Card */}
-        <div className="max-w-4xl mx-auto rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-xl overflow-hidden p-6 sm:p-8 space-y-8">
+        <div className="glass-card max-w-4xl mx-auto rounded-3xl overflow-hidden p-6 sm:p-8 space-y-8 relative z-10">
           {/* STEP 1: Choose Date */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -577,10 +581,10 @@ export default function BookingHub() {
                       onClick={() => handleDateSelect(item.dateStr)}
                       className={`relative min-h-[112px] h-full p-3.5 rounded-2xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-1 ${
                         isSelected
-                          ? 'border-emerald-600 bg-emerald-800 text-white shadow-lg ring-2 ring-emerald-500/50 scale-[1.02] cursor-pointer'
+                          ? 'btn-butter border-emerald-600 bg-gradient-to-b from-emerald-700 to-emerald-900 text-white shadow-xl ring-2 ring-emerald-400/60 scale-[1.03] cursor-pointer'
                           : item.isBookingOpen
-                          ? 'border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 hover:border-emerald-400 hover:bg-emerald-100/50 hover:-translate-y-1 hover:shadow-md active:scale-95 cursor-pointer'
-                          : 'border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-60'
+                          ? 'glass-pill hover-glow-emerald btn-butter border-emerald-200/80 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 hover:-translate-y-1 hover:shadow-lg active:scale-95 cursor-pointer'
+                          : 'border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-100/50 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50'
                       }`}
                     >
                       <span className="text-xs font-semibold uppercase tracking-wider">
@@ -593,11 +597,11 @@ export default function BookingHub() {
 
                       {/* Status indicator pill */}
                       <span
-                        className={`mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                           item.isBookingOpen
                             ? isSelected
-                              ? 'bg-amber-400 text-emerald-950'
-                              : 'bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                              ? 'bg-amber-400 text-emerald-950 shadow-xs'
+                              : 'bg-emerald-200/80 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200'
                             : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'
                         }`}
                       >
@@ -680,12 +684,12 @@ export default function BookingHub() {
                               }}
                               className={`min-h-[76px] h-full p-2.5 sm:p-3 rounded-xl border text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
-                                  ? 'border-emerald-600 bg-emerald-800 text-white shadow-md ring-2 ring-emerald-500 cursor-pointer active:scale-95 scale-[1.02]'
+                                  ? 'btn-butter border-emerald-500 bg-gradient-to-br from-emerald-700 to-emerald-900 text-white shadow-lg ring-2 ring-emerald-400 cursor-pointer active:scale-95 scale-[1.02]'
                                   : isBooked
-                                  ? 'border-red-200 dark:border-red-950/60 bg-red-50/50 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-60'
+                                  ? 'border-red-200/60 dark:border-red-950/60 bg-red-50/40 dark:bg-red-950/20 text-red-400 dark:text-red-500 line-through cursor-not-allowed opacity-50'
                                   : isPast
-                                  ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-900/40 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-60'
-                                  : 'border-emerald-200 dark:border-emerald-800/80 bg-white dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 cursor-pointer hover:-translate-y-0.5 hover:shadow-sm active:scale-95'
+                                  ? 'border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-100/50 dark:bg-zinc-900/30 text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50'
+                                  : 'glass-pill hover-glow-emerald btn-butter border-emerald-200/80 dark:border-emerald-800/80 text-emerald-950 dark:text-emerald-100 hover:border-emerald-500 hover:-translate-y-0.5 hover:shadow-md cursor-pointer active:scale-95'
                               }`}
                             >
                               <span className={`text-xs font-semibold leading-tight ${isPast && !isBooked ? 'line-through decoration-zinc-400' : ''}`}>
@@ -730,19 +734,19 @@ export default function BookingHub() {
               </div>
 
               {/* Selected Booking Summary Card (যা যা সিলেক্ট করেছে সেগুলো প্রদর্শন) */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-emerald-100/30 to-amber-50/50 dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-emerald-950/60 border border-emerald-300/80 dark:border-emerald-700/60 shadow-sm space-y-3">
+              <div className="glass-card p-4 rounded-2xl border border-emerald-300/80 dark:border-emerald-700/60 shadow-md space-y-3">
                 <div className="flex items-center justify-between border-b border-emerald-200/80 dark:border-emerald-800/60 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
                     <span>📋</span> আপনার নির্বাচিত বুকিং তথ্য:
                   </span>
-                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-0.5 rounded-full">
+                  <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 glass-pill px-2.5 py-0.5 rounded-full">
                     ধাপ ১ ও ২ সম্পন্ন
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                   {/* Chamber */}
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
+                  <div className="glass-pill p-2.5 rounded-xl flex flex-col gap-0.5 shadow-2xs">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">চেম্বার / মোড</span>
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
                       {chamberMode === 'offline' ? '📍 ঢাকা চেম্বার (সরাসরি)' : '📹 অনলাইন ভিডিও কনসালটেশন'}
@@ -750,7 +754,7 @@ export default function BookingHub() {
                   </div>
 
                   {/* Date */}
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-0.5 shadow-xs">
+                  <div className="glass-pill p-2.5 rounded-xl flex flex-col gap-0.5 shadow-2xs">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">নির্বাচিত তারিখ</span>
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
                       📅 {activeDateObj?.fullBn || selectedDate}
@@ -758,7 +762,7 @@ export default function BookingHub() {
                   </div>
 
                   {/* Slot Time */}
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-amber-300/70 dark:border-amber-700/60 flex flex-col gap-0.5 shadow-xs">
+                  <div className="glass-pill p-2.5 rounded-xl border-amber-300/70 dark:border-amber-700/60 flex flex-col gap-0.5 shadow-2xs">
                     <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">বরাদ্দকৃত সময় স্লট</span>
                     <span className="font-bold text-amber-900 dark:text-amber-300 text-xs flex items-center gap-1">
                       ⏰ {selectedSlot.timeBn}
@@ -767,7 +771,7 @@ export default function BookingHub() {
                   </div>
 
                   {/* Fee */}
-                  <div className="p-2.5 rounded-xl bg-white/90 dark:bg-[#152720] border border-emerald-200/60 dark:border-emerald-800/50 flex flex-col gap-1 shadow-xs">
+                  <div className="glass-pill p-2.5 rounded-xl flex flex-col gap-1 shadow-2xs">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">পরামর্শ ও ফলোআপ ফি</span>
                     <div className="font-bold text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-1">
                       💳 পরামর্শ ফি: <span>{chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা'}</span>
@@ -800,7 +804,7 @@ export default function BookingHub() {
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
                       placeholder="আপনার নাম লিখুন এখানে"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                     />
                   </div>
                 </div>
@@ -818,7 +822,7 @@ export default function BookingHub() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="যেমন: 017XXXXXXXX"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                     />
                   </div>
                   <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
@@ -839,7 +843,7 @@ export default function BookingHub() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="যেমন: example@gmail.com (যদি থাকে)"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                   />
                 </div>
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
@@ -859,7 +863,7 @@ export default function BookingHub() {
                     value={complaints}
                     onChange={(e) => setComplaints(e.target.value)}
                     placeholder="যেমন: দীর্ঘদিনের আইবিএস, গ্যাস, ফ্যাটি লিভার বা অনিদ্রা..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/30 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                   />
                 </div>
               </div>
@@ -869,7 +873,7 @@ export default function BookingHub() {
                 <button
                   type="submit"
                   disabled={otpPending || isPending}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-base shadow-xl shadow-emerald-950/20 transition-all flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer"
+                  className="btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-base shadow-xl shadow-emerald-950/25 flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer"
                 >
                   {otpPending || isPending ? (
                     <>
@@ -894,8 +898,8 @@ export default function BookingHub() {
 
       {/* OTP VERIFICATION MODAL */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xl animate-fade-in overflow-y-auto">
+          <div className="glass-card relative w-full max-w-md rounded-2xl sm:rounded-3xl border border-emerald-500/40 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 animate-scale-up max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button (Hidden while finalizing booking) */}
             {!isFinalizingBooking && (
               <button
@@ -1087,8 +1091,8 @@ export default function BookingHub() {
 
       {/* CONFIRMATION MODAL: Instant Digital Serial Slip */}
       {confirmedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xl animate-fade-in overflow-y-auto">
+          <div className="glass-card relative w-full max-w-lg rounded-2xl sm:rounded-3xl border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-5 max-h-[94vh] overflow-y-auto my-auto">
             {/* Close Button */}
             <button
               onClick={handleCloseModal}

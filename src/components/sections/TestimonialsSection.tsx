@@ -33,11 +33,14 @@ export default function TestimonialsSection() {
   ];
 
   return (
-    <section id="testimonials" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="testimonials" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative overflow-hidden">
+      {/* Background ambient orbs */}
+      <div className="ambient-glow-1 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <ScrollReveal direction="up">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+            <span className="glass-pill inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-800 dark:text-emerald-300">
               <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
               রোগী অভিমত ও কেস হিস্ট্রি
             </span>
@@ -53,8 +56,8 @@ export default function TestimonialsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {reviews.map((item, idx) => (
             <ScrollReveal key={idx} delay={idx * 120} direction="up" className="h-full">
-              <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-md hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 flex flex-col justify-between space-y-6 relative h-full">
-                <Quote className="w-10 h-10 text-emerald-200 dark:text-emerald-900 absolute top-6 right-6 -z-0 opacity-60" />
+              <div className="glass-card hover-glow-emerald p-8 rounded-3xl flex flex-col justify-between space-y-6 relative h-full group">
+                <Quote className="w-10 h-10 text-emerald-300/40 dark:text-emerald-700/40 absolute top-6 right-6 -z-0 opacity-40 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
 
                 <div className="space-y-4 relative z-10">
                   <div className="flex items-center gap-1 text-amber-400">
@@ -63,7 +66,7 @@ export default function TestimonialsSection() {
                     ))}
                   </div>
 
-                  <div className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                  <div className="inline-block px-3 py-1 rounded-full text-[11px] font-bold glass-pill text-emerald-800 dark:text-emerald-300">
                     {item.condition}
                   </div>
 
@@ -75,9 +78,9 @@ export default function TestimonialsSection() {
                 <div className="pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 flex justify-between items-center text-xs">
                   <div>
                     <h4 className="font-bold text-emerald-950 dark:text-emerald-50">{item.name}</h4>
-                    <span className="text-emerald-600 dark:text-emerald-400">{item.location}</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 text-[11px]">{item.location}</span>
                   </div>
-                  <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                  <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 glass-pill px-2.5 py-0.5 rounded-full">
                     {item.chamber}
                   </span>
                 </div>

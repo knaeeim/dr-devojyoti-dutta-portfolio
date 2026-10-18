@@ -24,12 +24,16 @@ export default function AboutSection() {
   ];
 
   return (
-    <section id="about" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="py-20 bg-emerald-950/[0.02] dark:bg-emerald-950/20 relative overflow-hidden">
+      {/* Background ambient orbs */}
+      <div className="ambient-glow-3 pointer-events-none" />
+      <div className="ambient-glow-4 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <ScrollReveal direction="up">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+            <span className="glass-pill inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-800 dark:text-emerald-300">
               <HeartPulse className="w-3.5 h-3.5 text-amber-500" />
               চিকিৎসা দর্শন ও মূল নীতি
             </span>
@@ -46,23 +50,25 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {pillars.map((pillar, idx) => (
             <ScrollReveal key={idx} delay={idx * 140} direction="up" className="h-full">
-              <div className="card-butter p-8 rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-900/10 dark:border-emerald-700/30 shadow-lg hover:shadow-2xl hover:border-emerald-400/50 dark:hover:border-emerald-600/50 space-y-4 group h-full">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
-                  {pillar.icon}
-                </div>
+              <div className="glass-card hover-glow-emerald p-8 rounded-3xl space-y-5 group h-full flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="w-14 h-14 rounded-2xl glass-pill flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                    {pillar.icon}
+                  </div>
 
-                <div className="space-y-1">
-                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 leading-snug">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
-                    {pillar.sub}
+                  <div className="space-y-1">
+                    <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50 leading-snug">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold tracking-wide">
+                      {pillar.sub}
+                    </p>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-emerald-900/75 dark:text-emerald-200/75 leading-relaxed">
+                    {pillar.desc}
                   </p>
                 </div>
-
-                <p className="text-xs sm:text-sm text-emerald-900/70 dark:text-emerald-200/70 leading-relaxed">
-                  {pillar.desc}
-                </p>
               </div>
             </ScrollReveal>
           ))}
