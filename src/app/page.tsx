@@ -12,7 +12,7 @@ import FaqSection from '@/components/sections/FaqSection';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafbf9] dark:bg-[#0c1511] text-emerald-950 dark:text-emerald-50 selection:bg-emerald-200 selection:text-emerald-950">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-emerald-950 dark:text-emerald-50 selection:bg-emerald-200 selection:text-emerald-950">
       <Navbar />
       <main className="flex-1">
         <HeroSection />

@@ -36,7 +36,7 @@ export default function ExpertiseSection() {
   ];
 
   return (
-    <section id="skills" className="py-20 bg-white/50 dark:bg-[#0c1511]/50 relative overflow-hidden">
+    <section id="skills" className="py-20 bg-white/40 dark:bg-[#15291f]/40 relative overflow-hidden">
       <div className="ambient-glow-2" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up">

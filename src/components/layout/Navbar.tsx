@@ -148,49 +148,51 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Notice Bar (Lightened with gentle herbal sage styling) */}
-      <div className="bg-emerald-50/90 dark:bg-[#0e1a14]/90 text-emerald-900/90 dark:text-emerald-300 text-xs py-1.5 px-4 border-b border-emerald-200/60 dark:border-emerald-800/40 hidden md:block backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-[11px]">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300/70 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-200 font-semibold shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
-              স্মার্ট সিরিয়াল বুকিং চালু
+      {/* Top Notice Bar (Laser-aligned with hairline divider & centered dots) */}
+      <div className="bg-emerald-50/95 dark:bg-[#162e22]/95 text-emerald-900/90 dark:text-emerald-200 text-xs h-9 px-4 border-b border-emerald-200/70 dark:border-emerald-600/25 hidden md:flex items-center backdrop-blur-md transition-colors select-none">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between text-[11px] leading-none">
+          <div className="flex items-center gap-2.5 leading-none">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/90 dark:bg-emerald-800/40 border border-emerald-300/70 dark:border-emerald-600/50 text-emerald-900 dark:text-emerald-200 font-semibold tracking-wide shadow-2xs leading-none shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse shrink-0" />
+              <span>স্মার্ট সিরিয়াল বুকিং চালু</span>
             </span>
-            <span className="text-emerald-300 dark:text-emerald-700">•</span>
-            <span className="text-emerald-800 dark:text-emerald-200 font-medium">
-              ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA), জয়পুর • খুলনা বিশ্ববিদ্যালয়
-            </span>
+            <span className="w-1 h-1 rounded-full bg-emerald-400/80 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
+            <div className="inline-flex items-center gap-2 text-emerald-900/90 dark:text-emerald-200/90 font-medium leading-none whitespace-nowrap">
+              <span>ন্যাশনাল ইনস্টিটিউট অব আয়ুর্বেদ (NIA), জয়পুর</span>
+              <span className="w-1 h-1 rounded-full bg-emerald-400/80 dark:bg-emerald-500/60 shrink-0" aria-hidden="true" />
+              <span>খুলনা বিশ্ববিদ্যালয়</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-3.5 leading-none">
             <a
               href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-[#25D366] hover:text-emerald-900 dark:hover:text-[#3ce07b] font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 text-emerald-800 dark:text-[#3ce07b] hover:text-emerald-950 dark:hover:text-[#63fca0] font-semibold transition-colors leading-none shrink-0 group"
               title="হোয়াটসঅ্যাপে সরাসরি চ্যাট করুন"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-[#25D366]" />
-              <span>হোয়াটসঅ্যাপ: +৮৮০ ১৭১২-৮৫৪৯৪১</span>
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-[#25D366] shrink-0 transition-transform group-hover:scale-110" />
+              <span className="leading-none">হোয়াটসঅ্যাপ: +৮৮০ ১৭১২-৮৫৪৯৪১</span>
             </a>
-            <span className="text-emerald-300 dark:text-emerald-700">|</span>
+            <span className="w-px h-3.5 bg-emerald-300/70 dark:bg-emerald-700/70 shrink-0" aria-hidden="true" />
             <Link
               href="/admin"
-              className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 flex items-center gap-1 font-semibold transition-colors hover:underline"
+              className="inline-flex items-center gap-1.5 text-amber-800 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-200 font-semibold transition-colors leading-none hover:underline shrink-0 group"
             >
-              <Shield className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-              <span>অ্যাডমিন পোর্টাল</span>
+              <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 transition-transform group-hover:scale-110" />
+              <span className="leading-none">অ্যাডমিন পোর্টাল</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Sticky Navbar (Lightened, airy, and translucent) */}
+      {/* Main Sticky Navbar (Airy, Frosted Herbal Sage Glass) */}
       <header
         className={`sticky top-0 z-50 transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           scrolled
-            ? 'bg-white/75 dark:bg-[#0c1511]/75 backdrop-blur-2xl shadow-xs border-b border-emerald-100/70 dark:border-emerald-500/15 py-2'
-            : 'bg-white/60 dark:bg-[#0c1511]/60 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/10'
+            ? 'bg-[#faf8f5]/85 dark:bg-[#162d22]/85 backdrop-blur-2xl shadow-xs border-b border-emerald-900/10 dark:border-emerald-500/20 py-2'
+            : 'bg-[#faf8f5]/75 dark:bg-[#183327]/80 backdrop-blur-xl py-2.5 border-b border-emerald-900/5 dark:border-emerald-500/15'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -205,7 +207,7 @@ export default function Navbar() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 flex items-center justify-center text-amber-200 font-bold text-base shadow-sm group-hover:scale-105 transition-all duration-200 border border-amber-300/40">
                   <span>DD</span>
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c1511]" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#183327]" />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
@@ -281,7 +283,7 @@ export default function Navbar() {
                       : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                   }`}
                 >
-                  <div className="rounded-2xl bg-white/98 dark:bg-[#13201a]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1">
+                  <div className="rounded-2xl bg-[#faf8f5]/98 dark:bg-[#183327]/98 backdrop-blur-xl border border-emerald-900/10 dark:border-emerald-700/40 shadow-2xl p-2 space-y-1">
                     <div className="px-3 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase border-b border-emerald-900/5 dark:border-emerald-800/40">
                       অন্যান্য শাখা ও সেবা
                     </div>
@@ -369,7 +371,7 @@ export default function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {isOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-white/95 dark:bg-[#0c1511]/95 backdrop-blur-2xl border-b border-emerald-900/10 dark:border-emerald-500/15 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
+          <div className="lg:hidden fixed inset-x-0 top-[57px] bg-[#faf8f5]/95 dark:bg-[#162d22]/95 backdrop-blur-2xl border-b border-emerald-900/10 dark:border-emerald-500/20 shadow-2xl transition-all duration-300 max-h-[calc(100vh-57px)] overflow-y-auto animate-fade-in">
             <div className="p-5 space-y-4">
               {/* Mobile notice banner */}
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-between text-xs">

@@ -35,7 +35,7 @@ export default function FaqSection() {
   ];
 
   return (
-    <section id="faq" className="py-20 bg-white dark:bg-[#0c1511] relative overflow-hidden">
+    <section id="faq" className="py-20 bg-white/70 dark:bg-[#101e17]/80 relative overflow-hidden">
       {/* Background ambient orbs */}
       <div className="ambient-glow-2 pointer-events-none" />
 

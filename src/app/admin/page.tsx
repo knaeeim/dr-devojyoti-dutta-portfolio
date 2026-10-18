@@ -1725,7 +1725,7 @@ export default function AdminDashboardPage() {
   const directSlots = generateSlotsFromTiming(directTiming);
 
   return (
-    <div className="min-h-screen bg-[#fafbf9] dark:bg-[#0c1511] text-emerald-950 dark:text-emerald-50">
+    <div className="min-h-screen bg-[var(--bg-page)] text-emerald-950 dark:text-emerald-50">
       {/* Top Header Bar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md border-b border-emerald-900/10 dark:border-emerald-800/40">
         <div className="max-w-[1600px] w-full mx-auto py-2 sm:py-2.5 px-3 sm:px-6 lg:px-8">
