@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local proprietary master prompts & developer docs
+MASTER_PROMPT.md
