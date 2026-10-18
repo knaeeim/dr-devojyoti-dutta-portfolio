@@ -42,9 +42,7 @@ export async function POST(request: NextRequest) {
       emailSent = emailResult.success;
     }
 
-    const successMsg = emailSent
-      ? `সময়সূচী পরিবর্তন সফল হয়েছে এবং রোগীর ইমেইলে (${updatedApt.email}) বিজ্ঞপ্তি পাঠানো হয়েছে।`
-      : 'সময়সূচী সফলভাবে পরিবর্তন করা হয়েছে।';
+    const successMsg = 'সিরিয়াল সফলভাবে রিশিডিউল করা হয়েছে।';
 
     return NextResponse.json({
       success: true,

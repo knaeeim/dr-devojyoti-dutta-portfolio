@@ -3240,7 +3240,7 @@ export default function AdminDashboardPage() {
                   অ্যাপয়েন্টমেন্ট রিশিডিউল করুন
                 </h3>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                  নতুন তারিখ ও সময় নির্বাচন করলে রোগীর ইমেইলে স্বয়ংক্রিয়ভাবে পরিবর্তিত সময়ের নোটিফিকেশন পৌঁছে যাবে
+                  নতুন তারিখ ও সময় নির্বাচন করে রিশিডিউল সম্পন্ন করুন। পরবর্তীতে মেসেজ বাটনে ক্লিক করে রোগীকে নোটিফিকেশন পাঠাতে পারবেন।
                 </p>
               </div>
               <button
@@ -3369,13 +3369,13 @@ export default function AdminDashboardPage() {
             {/* Step 3: Reschedule Reason */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">
-                ৩. সময় পরিবর্তনের কারণ (রোগীর ইমেইলে উল্লেখ থাকবে):
+                ৩. সময় পরিবর্তনের কারণ (ঐচ্ছিক):
               </label>
               <input
                 type="text"
                 value={rescheduleReason}
                 onChange={(e) => setRescheduleReason(e.target.value)}
-                placeholder="যেমন: সার্জারির কারণে সময় সমন্বয় অথবা ডাক্তারের পরামর্শ"
+                placeholder="যেমন: রোগীর অনুরোধে বা চেম্বারের সময় সমন্বয়"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-[#192a23] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
@@ -3416,12 +3416,12 @@ export default function AdminDashboardPage() {
                 {rescheduleLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>আপডেট ও ইমেইল পাঠানো হচ্ছে...</span>
+                    <span>রিশিডিউল করা হচ্ছে...</span>
                   </>
                 ) : (
                   <>
-                    <Mail className="w-4 h-4" />
-                    <span>রিশিডিউল নিশ্চিত ও ইমেইল পাঠান</span>
+                    <Clock className="w-4 h-4" />
+                    <span>রিশিডিউল করুন</span>
                   </>
                 )}
               </button>
