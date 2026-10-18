@@ -5978,33 +5978,47 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            {/* Template Type Tabs */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-emerald-900 dark:text-emerald-300 block">
-                টেমপ্লেটের ধরন নির্বাচন করুন:
-              </label>
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1 touch-pan-x">
-                {[
-                  { key: 'confirm', label: '📋 নিশ্চিতকরণ (Confirm)' },
-                  { key: 'reminder', label: '⏰ রিমাইন্ডার (Reminder)' },
-                  { key: 'reports', label: '🧪 রিপোর্ট আহ্বান (Reports)' },
-                  { key: 'reschedule', label: '🔄 রিশিডিউল (Reschedule)' },
-                  { key: 'cancel', label: '🚫 বাতিল (Cancel)' },
-                  { key: 'compact', label: '📱 সংক্ষিপ্ত (Compact)' }
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setSelectedTemplateKey(tab.key as TemplateType)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
-                      selectedTemplateKey === tab.key
-                        ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400'
-                        : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+            {/* Template Type Tabs (Polished PC & Mobile Responsive Grid) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>টেমপ্লেটের ধরন নির্বাচন করুন:</span>
+                </label>
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+                  (ক্লিক করে টেমপ্লেট নির্বাচন ও সম্পাদনা করুন)
+                </span>
+              </div>
+
+              {/* Grid Layout: 6 Equal Columns on PC, 3 on Tablet, 2 on Mobile */}
+              <div className="p-1.5 sm:p-2 rounded-2xl bg-emerald-50/70 dark:bg-[#0c1812]/90 border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
+                  {[
+                    { key: 'confirm', label: 'নিশ্চিতকরণ (Confirm)', icon: '📋' },
+                    { key: 'reminder', label: 'রিমাইন্ডার (Reminder)', icon: '⏰' },
+                    { key: 'reports', label: 'রিপোর্ট আহ্বান (Reports)', icon: '🧪' },
+                    { key: 'reschedule', label: 'রিশিডিউল (Reschedule)', icon: '🔄' },
+                    { key: 'cancel', label: 'বাতিল (Cancel)', icon: '🚫' },
+                    { key: 'compact', label: 'সংক্ষিপ্ত (Compact)', icon: '📱' }
+                  ].map((tab) => {
+                    const isSelected = selectedTemplateKey === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setSelectedTemplateKey(tab.key as TemplateType)}
+                        className={`flex items-center justify-center gap-1.5 px-2.5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-xs font-bold transition-all cursor-pointer text-center select-none ${
+                          isSelected
+                            ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-md shadow-emerald-950/30 border border-emerald-400/80 ring-2 ring-emerald-400/50 scale-[1.02]'
+                            : 'bg-white dark:bg-[#14241d] text-emerald-950 dark:text-emerald-200/90 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 border border-emerald-900/10 dark:border-emerald-700/40 hover:border-emerald-400/50 shadow-2xs'
+                        }`}
+                      >
+                        <span className="text-sm shrink-0">{tab.icon}</span>
+                        <span className="truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
