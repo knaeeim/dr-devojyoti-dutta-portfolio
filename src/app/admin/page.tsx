@@ -3439,9 +3439,10 @@ export default function AdminDashboardPage() {
 
       {/* COMPREHENSIVE SCHEDULE & DAY-SPECIFIC / DATE-SPECIFIC SETTINGS MODAL */}
       {showScheduleModal && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in overflow-y-auto overscroll-contain">
-          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl p-4 sm:p-7 space-y-4 sm:space-y-6 max-h-[94vh] overflow-y-auto overflow-x-hidden my-auto overscroll-contain">
-            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 pb-3 sm:pb-4 gap-2.5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-5xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#13201a] border border-emerald-500/30 shadow-2xl flex flex-col h-[92vh] h-[92dvh] max-h-[92vh] max-h-[92dvh] my-auto overflow-hidden">
+            {/* Modal Header (Docked at Top) */}
+            <div className="flex justify-between items-start border-b border-emerald-900/10 dark:border-emerald-800/40 p-4 sm:p-6 pb-3 sm:pb-4 gap-2.5 shrink-0 bg-white dark:bg-[#13201a] z-10">
               <div>
                 <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950 dark:text-emerald-50 flex items-center gap-2">
                   <CalendarDays className="w-5 h-5 text-amber-500 shrink-0" />
@@ -3459,6 +3460,9 @@ export default function AdminDashboardPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto overflow-x-hidden flex-1 overscroll-contain">
 
             {/* Chamber Tab Switch */}
             <div className="grid grid-cols-1 sm:grid-cols-2 rounded-2xl bg-emerald-100/70 dark:bg-emerald-950 p-1.5 gap-1.5 sm:gap-2">
@@ -4873,41 +4877,45 @@ export default function AdminDashboardPage() {
                 )}
             </div>
 
-            {scheduleSaveMsg && (
-              <div className="p-3.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 text-xs text-center font-bold animate-fade-in">
-                {scheduleSaveMsg}
-              </div>
-            )}
+            </div>
 
-            {/* Save Buttons */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 sm:pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40">
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                পরিবর্তনগুলো রোগীর বুকিং ইঞ্জিনে তাৎক্ষণিকভাবে কার্যকর হবে।
-              </span>
+            {/* Save Buttons (Docked Sticky Footer with Safe-Area Padding) */}
+            <div className="shrink-0 border-t border-emerald-900/10 dark:border-emerald-800/40 p-3.5 sm:p-5 bg-white/95 dark:bg-[#13201a]/95 backdrop-blur-md z-10 space-y-2.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-lg">
+              {scheduleSaveMsg && (
+                <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-100 text-xs text-center font-bold animate-fade-in shadow-2xs">
+                  {scheduleSaveMsg}
+                </div>
+              )}
 
-              <div className="flex gap-2.5 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setShowScheduleModal(false)}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-center cursor-pointer"
-                >
-                  বন্ধ করুন
-                </button>
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={handleSaveSchedule}
-                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isPending ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>সংরক্ষণ হচ্ছে...</span>
-                    </>
-                  ) : (
-                    <span>শিডিউল সংরক্ষণ করুন</span>
-                  )}
-                </button>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                  পরিবর্তনগুলো রোগীর বুকিং ইঞ্জিনে তাৎক্ষণিকভাবে কার্যকর হবে।
+                </span>
+
+                <div className="flex gap-2.5 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setShowScheduleModal(false)}
+                    className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-center cursor-pointer active:scale-95 transition-all"
+                  >
+                    বন্ধ করুন
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={handleSaveSchedule}
+                    className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    {isPending ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>সংরক্ষণ হচ্ছে...</span>
+                      </>
+                    ) : (
+                      <span>শিডিউল সংরক্ষণ করুন</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
