@@ -303,10 +303,9 @@ async function dispatchEmail(params: {
   const smtpPass = process.env.SMTP_PASS;
   const emailFrom =
     process.env.EMAIL_FROM ||
-    process.env.RESEND_FROM_EMAIL ||
-    (smtpUser ? `দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
+    (smtpUser ? `আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
 
-  if (smtpHost && smtpUser && smtpPass) {
+  if (smtpHost && smtpUser && smtpPass && smtpPass !== 'xxxx-xxxx-xxxx-xxxx') {
     try {
       const transporter = nodemailer.createTransport({
         host: smtpHost,
@@ -337,6 +336,12 @@ async function dispatchEmail(params: {
   const resendApiKey = process.env.RESEND_API_KEY;
 
   if (resendApiKey) {
+    // Resend requires a verified domain or onboarding@resend.dev (cannot use public @gmail.com)
+    const resendFrom =
+      process.env.RESEND_FROM_EMAIL && !process.env.RESEND_FROM_EMAIL.includes('@gmail.')
+        ? process.env.RESEND_FROM_EMAIL
+        : 'Devojyoti Dutta Chamber <onboarding@resend.dev>';
+
     try {
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -345,7 +350,7 @@ async function dispatchEmail(params: {
           Authorization: `Bearer ${resendApiKey}`
         },
         body: JSON.stringify({
-          from: emailFrom,
+          from: resendFrom,
           to: [params.to],
           subject: params.subject,
           html: params.html
@@ -457,11 +462,10 @@ export async function sendOtpEmail(params: {
   const smtpPass = process.env.SMTP_PASS;
   const emailFrom =
     process.env.EMAIL_FROM ||
-    process.env.RESEND_FROM_EMAIL ||
-    (smtpUser ? `দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
+    (smtpUser ? `আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
 
-  // 1. Try SMTP if configured
-  if (smtpHost && smtpUser && smtpPass) {
+  // 1. Try SMTP if configured with valid credentials
+  if (smtpHost && smtpUser && smtpPass && smtpPass !== 'xxxx-xxxx-xxxx-xxxx') {
     try {
       const transporter = nodemailer.createTransport({
         host: smtpHost,
@@ -494,6 +498,12 @@ export async function sendOtpEmail(params: {
   // 2. Try Resend API if configured
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey) {
+    // Resend requires a verified domain or onboarding@resend.dev (cannot use public @gmail.com)
+    const resendFrom =
+      process.env.RESEND_FROM_EMAIL && !process.env.RESEND_FROM_EMAIL.includes('@gmail.')
+        ? process.env.RESEND_FROM_EMAIL
+        : 'Devojyoti Dutta Chamber <onboarding@resend.dev>';
+
     try {
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -502,7 +512,7 @@ export async function sendOtpEmail(params: {
           Authorization: `Bearer ${resendApiKey}`
         },
         body: JSON.stringify({
-          from: emailFrom,
+          from: resendFrom,
           to: [params.to],
           subject,
           html: htmlContent
@@ -517,6 +527,8 @@ export async function sendOtpEmail(params: {
           messageId: resData.id,
           provider: 'resend'
         };
+      } else {
+        console.warn('[Email OTP] Resend API error response:', resData);
       }
     } catch (err: any) {
       console.error('[Email OTP] Resend API dispatch failed:', err?.message || err);
