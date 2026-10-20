@@ -69,7 +69,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
     </div>
 
     <div class="body-content">
-      <div class="greeting">নমস্কার ${appointment.patientName},</div>
+      <div class="greeting">প্রিয় ${appointment.patientName},</div>
       
       <div class="success-alert">
         🎉 <strong>অভিনন্দন!</strong> চেম্বার থেকে আপনার অ্যাপয়েন্টমেন্ট সফলভাবে যাচাই করে <strong>নিশ্চিত (Confirmed)</strong> করা হয়েছে।
@@ -213,7 +213,7 @@ export async function sendAppointmentRescheduleEmail(
     </div>
 
     <div class="body-content">
-      <div class="greeting">নমস্কার ${appointment.patientName},</div>
+      <div class="greeting">প্রিয় ${appointment.patientName},</div>
       
       <div class="alert-box">
         ⚠️ <strong>সময়সূচী পরিবর্তনের বিজ্ঞপ্তি:</strong> অনিবার্য প্রশাসনিক/চেম্বারের সময় সমন্বয়ের কারণে আপনার সিরিয়াল নম্বর <strong>${appointment.serialNo}</strong>-এর সময়সূচী পুনঃনির্ধারণ করা হয়েছে।
@@ -437,7 +437,7 @@ export async function sendOtpEmail(params: {
     </div>
     <div style="padding: 28px 24px; text-align: center;">
       <p style="font-size: 15px; margin-bottom: 16px; color: #064e3b; font-weight: 600;">
-        নমস্কার ${patientDisplayName},
+        প্রিয় ${patientDisplayName},
       </p>
       <p style="font-size: 13px; color: #374151; line-height: 1.6; margin-bottom: 24px;">
         আয়ুর্বেদাচার্য দেবজ্যোতি দত্তের চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের ডিজিটাল সিরিয়াল নিশ্চিত করতে নিচের ৬-সংখ্যার ওটিপি (OTP) কোডটি ব্যবহার করুন:
@@ -591,7 +591,7 @@ export async function sendCustomAdminEmail(params: {
     </div>
     <div style="padding: 28px 24px;">
       <p style="font-size: 15px; margin-bottom: 16px; color: #064e3b; font-weight: 600;">
-        নমস্কার ${patientDisplayName},
+        প্রিয় ${patientDisplayName},
       </p>
       <div style="font-size: 14px; color: #374151; background: #f9fafb; border-left: 4px solid #059669; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
         ${formattedMessage}

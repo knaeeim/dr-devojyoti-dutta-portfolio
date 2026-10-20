@@ -324,7 +324,7 @@ export default function BookingHub() {
       setOtpTimer(60);
       setOtpDebugCode(data.debugCode || null);
       setOtpGatewayNotice(data.gatewayError || null);
-      if (data.debugCode) {
+      if (process.env.NODE_ENV === 'development' && data.debugCode) {
         setOtpCode(data.debugCode);
       }
       setShowOtpModal(true);
@@ -413,7 +413,7 @@ export default function BookingHub() {
         setOtpTimer(60);
         setOtpDebugCode(data.debugCode || null);
         setOtpGatewayNotice(data.gatewayError || null);
-        if (data.debugCode) {
+        if (process.env.NODE_ENV === 'development' && data.debugCode) {
           setOtpCode(data.debugCode);
         }
       } else {
@@ -1303,8 +1303,8 @@ export default function BookingHub() {
                   )}
                 </div>
 
-                {/* Demo / Sandbox Helper Badge if real SMS gateway is not configured */}
-                {otpDebugCode && (
+                {/* Demo / Sandbox Helper Badge (Development Environment Only) */}
+                {process.env.NODE_ENV === 'development' && otpDebugCode && (
                   <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1.5">
                     <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block">
                       🧪 টেস্ট মোড ওটিপি (Sandbox Demo):
@@ -1383,7 +1383,7 @@ export default function BookingHub() {
 
                     <a
                       href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(
-                        `নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
+                        `হ্যালো দেবজ্যোতি দত্ত চেম্বার, আমি ${patientName} (${phone}) সিরিয়াল বুকিংয়ের জন্য ওটিপি পেতে সহায়তা চাইছি।`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

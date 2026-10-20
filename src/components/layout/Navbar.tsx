@@ -203,7 +203,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3.5 leading-none">
             <a
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('হ্যালো দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-emerald-900 dark:text-[#3ce07b] hover:text-emerald-950 dark:hover:text-[#63fca0] font-semibold transition-colors leading-none shrink-0 group"
@@ -368,7 +368,7 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-2 shrink-0">
               {/* WhatsApp Quick Direct Button */}
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('হ্যালো দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[#25D366] hover:bg-[#25D366]/10 transition-colors cursor-pointer"
@@ -458,7 +458,7 @@ export default function Navbar() {
                 </a>
 
                 <a
-                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('নমস্কার দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
+                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('হ্যালো দেবজ্যোতি দত্ত চেম্বার, আমি সিরিয়াল সম্পর্কে জানতে চাই।')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsOpen(false)}

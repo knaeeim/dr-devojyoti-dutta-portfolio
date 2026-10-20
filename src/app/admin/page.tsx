@@ -3013,7 +3013,7 @@ export default function AdminDashboardPage() {
                         <a
                           href={getWhatsAppUrl(
                             apt.phone,
-                            `নমস্কার ${apt.patientName}, দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
+                            `প্রিয় ${apt.patientName}, দেবজ্যোতি দত্তের চেম্বার থেকে আপনার সিরিয়াল (${apt.serialNo}) সংক্রান্ত বার্তা:`
                           )}
                           onClick={() => handleToggleMessageSent(apt.id, 'whatsapp', true)}
                           target="_blank"

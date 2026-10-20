@@ -135,13 +135,22 @@ export async function sendOtp(
 
     const challengeToken = createOtpChallenge(normalized, code, expiresAt);
 
+    if (!emailSent && process.env.NODE_ENV === 'production') {
+      return {
+        success: false,
+        message: emailResult.error || 'ইমেইলে ওটিপি পাঠানো যায়নি। অনুগ্রহ করে আপনার ইমেইল ঠিকানাটি সঠিকভাবে প্রদান করুন।',
+        expiresInSeconds: 0,
+        channel: 'email'
+      };
+    }
+
     return {
       success: true,
       message: `আপনার ইমেইল ${target}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`,
       expiresInSeconds: 300,
       challengeToken,
       channel: 'email',
-      debugCode: !emailSent ? code : undefined,
+      debugCode: process.env.NODE_ENV === 'development' && !emailSent ? code : undefined,
       emailSent,
       gatewayError: !emailSent ? emailResult.error : undefined
     };
@@ -149,7 +158,7 @@ export async function sendOtp(
 
   // Handle WhatsApp channel
   if (channel === 'whatsapp') {
-    const waText = `নমস্কার ${patientName ? patientName + ', ' : ''}আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের জন্য আপনার ওটিপি (OTP) কোড হলো: *${code}*। কোডটি আগামী ৫ মিনিটের জন্য কার্যকর থাকবে।`;
+    const waText = `প্রিয় ${patientName ? patientName + ', ' : ''}আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের জন্য আপনার ওটিপি (OTP) কোড হলো: *${code}*। কোডটি আগামী ৫ মিনিটের জন্য কার্যকর থাকবে।`;
     const waResult = await sendWhatsAppMessage(normalized, waText);
     const whatsappSent = waResult.success && waResult.provider !== 'sandbox';
 
@@ -161,7 +170,7 @@ export async function sendOtp(
       expiresInSeconds: 300,
       challengeToken,
       channel: 'whatsapp',
-      debugCode: !whatsappSent ? code : undefined,
+      debugCode: process.env.NODE_ENV === 'development' && !whatsappSent ? code : undefined,
       whatsappSent,
       gatewayError: !whatsappSent ? waResult.error : undefined
     };
@@ -217,16 +226,24 @@ export async function sendOtp(
 
   const challengeToken = createOtpChallenge(normalized, code, expiresAt);
 
+  if (!smsSent && process.env.NODE_ENV === 'production') {
+    return {
+      success: false,
+      message: gatewayError || 'মোবাইলে এসএমএস ওটিপি পাঠানো সম্ভব হয়নি। অনুগ্রহ করে চেম্বারের হটলাইনে যোগাযোগ করুন।',
+      expiresInSeconds: 0,
+      channel: 'sms',
+      gatewayError
+    };
+  }
+
   return {
     success: true,
-    message: smsSent
-      ? `আপনার মোবাইল নম্বর ${target}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`
-      : `আপনার মোবাইল নম্বর ${target}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`,
+    message: `আপনার মোবাইল নম্বর ${target}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`,
     expiresInSeconds: 300,
     challengeToken,
     channel: 'sms',
-    // Provide debugCode for instant demo/testing if real SMS provider isn't configured
-    debugCode: !smsSent ? code : undefined,
+    // Provide debugCode ONLY in development environment
+    debugCode: process.env.NODE_ENV === 'development' && !smsSent ? code : undefined,
     smsSent,
     gatewayError: !smsSent ? gatewayError : undefined
   };
