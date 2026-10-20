@@ -32,7 +32,10 @@ export async function getSavedTemplates(): Promise<ChamberTemplatesConfig> {
         .maybeSingle();
 
       if (!error && data?.config?.offline && data?.config?.online) {
-        const templates = data.config as ChamberTemplatesConfig;
+        const templates = {
+          ...data.config,
+          foreign: data.config.foreign || DEFAULT_SMS_TEMPLATES.foreign
+        } as ChamberTemplatesConfig;
         globalThis.__drDuttaSmsTemplates = templates;
         return templates;
       }
@@ -47,8 +50,12 @@ export async function getSavedTemplates(): Promise<ChamberTemplatesConfig> {
       const content = fs.readFileSync(TMP_TEMPLATES_FILE, 'utf-8');
       const parsed = JSON.parse(content);
       if (parsed?.offline && parsed?.online) {
-        globalThis.__drDuttaSmsTemplates = parsed;
-        return parsed;
+        const templates = {
+          ...parsed,
+          foreign: parsed.foreign || DEFAULT_SMS_TEMPLATES.foreign
+        } as ChamberTemplatesConfig;
+        globalThis.__drDuttaSmsTemplates = templates;
+        return templates;
       }
     }
   } catch {}
@@ -59,8 +66,12 @@ export async function getSavedTemplates(): Promise<ChamberTemplatesConfig> {
       const content = fs.readFileSync(TEMPLATES_FILE, 'utf-8');
       const parsed = JSON.parse(content);
       if (parsed?.offline && parsed?.online) {
-        globalThis.__drDuttaSmsTemplates = parsed;
-        return parsed;
+        const templates = {
+          ...parsed,
+          foreign: parsed.foreign || DEFAULT_SMS_TEMPLATES.foreign
+        } as ChamberTemplatesConfig;
+        globalThis.__drDuttaSmsTemplates = templates;
+        return templates;
       }
     }
   } catch {}

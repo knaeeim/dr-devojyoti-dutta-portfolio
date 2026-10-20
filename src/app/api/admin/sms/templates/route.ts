@@ -72,7 +72,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const saved = await saveTemplates(templates as ChamberTemplatesConfig);
+    const validatedTemplates: ChamberTemplatesConfig = {
+      offline: templates.offline,
+      online: templates.online,
+      foreign: templates.foreign || DEFAULT_SMS_TEMPLATES.foreign
+    };
+
+    const saved = await saveTemplates(validatedTemplates);
     if (!saved) {
       return NextResponse.json(
         { error: 'টেমপ্লেট ফাইল সংরক্ষণে সমস্যা হয়েছে।' },
@@ -83,7 +89,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'এসএমএস টেমপ্লেট সফলভাবে সংরক্ষিত হয়েছে!',
-      templates
+      templates: validatedTemplates
     });
   } catch (err: unknown) {
     console.error('[SMS Templates POST Error]:', err);

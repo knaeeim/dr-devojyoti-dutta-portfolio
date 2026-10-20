@@ -52,7 +52,8 @@ import {
   Coins,
   Layers,
   Split,
-  Coffee
+  Coffee,
+  Globe
 } from 'lucide-react';
 import {
   Appointment,
@@ -280,7 +281,7 @@ export default function AdminDashboardPage() {
   // SMS Template Configuration Modal State
   const [templatesConfig, setTemplatesConfig] = useState<ChamberTemplatesConfig>(DEFAULT_SMS_TEMPLATES);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [selectedTemplateMode, setSelectedTemplateMode] = useState<'offline' | 'online'>('offline');
+  const [selectedTemplateMode, setSelectedTemplateMode] = useState<'offline' | 'online' | 'foreign'>('offline');
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<TemplateType>('confirm');
   const [editingTemplates, setEditingTemplates] = useState<ChamberTemplatesConfig>(DEFAULT_SMS_TEMPLATES);
   const [isSavingTemplates, setIsSavingTemplates] = useState(false);
@@ -347,15 +348,51 @@ export default function AdminDashboardPage() {
     return dateStr;
   };
 
+  // Helper to reliably identify foreign / international patients
+  const isForeignPatient = (apt?: Appointment | null): boolean => {
+    if (!apt) return false;
+    if (
+      (apt.patientName && (apt.patientName.includes('বিদেশী রোগী') || apt.patientName.includes('প্রবাসী'))) ||
+      (apt.complaints &&
+        (apt.complaints.includes('বিদেশী') ||
+          apt.complaints.includes('প্রবাসী') ||
+          apt.complaints.includes('বর্তমান দেশ/অবস্থান') ||
+          apt.complaints.includes('বিদেশে অবস্থানরত')))
+    ) {
+      return true;
+    }
+    if (apt.chamberMode === 'online') {
+      const p = (apt.phone || '').trim().replace(/[\s\-()]/g, '');
+      if (
+        p &&
+        !p.startsWith('01') &&
+        !p.startsWith('+8801') &&
+        !p.startsWith('8801') &&
+        !p.startsWith('008801')
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // Helper to build default notification messages
   const buildDefaultMessage = (
     apt: Appointment,
     type: 'confirm' | 'reminder' | 'reports' | 'cancel' | 'reschedule' | 'custom' | 'compact'
   ) => {
     const isOnline = apt.chamberMode === 'online';
-    const modeKey: 'online' | 'offline' = isOnline ? 'online' : 'offline';
+    const isForeign = isForeignPatient(apt);
+    const modeKey: 'offline' | 'online' | 'foreign' = !isOnline
+      ? 'offline'
+      : isForeign
+      ? 'foreign'
+      : 'online';
     const dateFormatted = formatTemplateDate(apt.appointmentDate);
     const timeFormatted = apt.slotTimeEn || apt.slotTimeBn;
+
+    const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : isForeign ? '১০ ডলার' : '৮০০ টাকা';
+    const followUpFee = apt.chamberMode === 'offline' ? '৬০০ টাকা' : isForeign ? '৭ ডলার' : '৪০০ টাকা';
 
     if (type === 'custom') {
       return `*Mr./Mrs. ${apt.patientName},*
@@ -363,7 +400,8 @@ export default function AdminDashboardPage() {
 • সিরিয়াল নম্বর: ${apt.serialNo}
 • তারিখ: ${dateFormatted}
 • সময়: ${timeFormatted}
-• মোড: ${isOnline ? 'অনলাইন ভিডিও কনসালটেশন' : 'শ্যামলী চেম্বার, ঢাকা'}
+• মোড: ${isForeign ? 'অনলাইন ভিডিও কনসালটেশন (প্রবাসী ও বিদেশী রোগী)' : isOnline ? 'অনলাইন ভিডিও কনসালটেশন' : 'শ্যামলী চেম্বার, ঢাকা'}
+• ফি: ${fee}
 
 দেবজ্যোতি দত্তের চেম্বার থেকে বার্তা: `;
     }
@@ -379,6 +417,8 @@ export default function AdminDashboardPage() {
       date: dateFormatted,
       time: timeFormatted,
       chamberMode: modeKey,
+      fee,
+      followUpFee,
       chamberAddress: '২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।',
       mapsUrl: 'https://maps.app.goo.gl/NgPzAZamW3Ucy8799',
       formUrl: 'https://forms.gle/L6YfWn7Z12nV3aK66',
@@ -444,32 +484,6 @@ export default function AdminDashboardPage() {
   const isAppleDevice = () => {
     if (typeof navigator === 'undefined') return false;
     return /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
-  };
-
-  // Helper to reliably identify foreign / international patients
-  const isForeignPatient = (apt?: Appointment | null): boolean => {
-    if (!apt) return false;
-    if (
-      apt.complaints &&
-      (apt.complaints.includes('বিদেশী') ||
-        apt.complaints.includes('প্রবাসী') ||
-        apt.complaints.includes('বর্তমান দেশ/অবস্থান'))
-    ) {
-      return true;
-    }
-    if (apt.chamberMode === 'online') {
-      const p = (apt.phone || '').trim().replace(/[\s\-()]/g, '');
-      if (
-        p &&
-        !p.startsWith('01') &&
-        !p.startsWith('+8801') &&
-        !p.startsWith('8801') &&
-        !p.startsWith('008801')
-      ) {
-        return true;
-      }
-    }
-    return false;
   };
 
   const getSmsUrl = (phone: string, message: string) => {
@@ -639,7 +653,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleResetTemplateToDefault = (mode: 'offline' | 'online', key: TemplateType) => {
+  const handleResetTemplateToDefault = (mode: 'offline' | 'online' | 'foreign', key: TemplateType) => {
     setEditingTemplates(prev => ({
       ...prev,
       [mode]: {
@@ -5273,12 +5287,23 @@ export default function AdminDashboardPage() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-1">
                 <label className="block text-xs font-bold text-emerald-950 dark:text-emerald-200">
-                  এক ক্লিকে প্রিমেড টেমপ্লেট নির্বাচন করুন ({messageModalApt.chamberMode === 'online' ? '🌐 অনলাইন ভিডিও' : '🏢 শ্যামলী চেম্বার'}):
+                  এক ক্লিকে প্রিমেড টেমপ্লেট নির্বাচন করুন (
+                  {isForeignPatient(messageModalApt)
+                    ? '🌍 অনলাইন - প্রবাসী ও বিদেশী রোগী'
+                    : messageModalApt.chamberMode === 'online'
+                    ? '🌐 অনলাইন ভিডিও (দেশী)'
+                    : '🏢 শ্যামলী চেম্বার'}
+                  ):
                 </label>
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedTemplateMode(messageModalApt.chamberMode === 'online' ? 'online' : 'offline');
+                    const targetMode = !isForeignPatient(messageModalApt)
+                      ? messageModalApt.chamberMode === 'online'
+                        ? 'online'
+                        : 'offline'
+                      : 'foreign';
+                    setSelectedTemplateMode(targetMode);
                     setEditingTemplates(JSON.parse(JSON.stringify(templatesConfig)));
                     setTemplateSaveFeedback(null);
                     setShowTemplateModal(true);
@@ -6130,33 +6155,46 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            {/* Mode Switcher Tabs (Offline vs Online) */}
-            <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/70 flex gap-1.5 sm:gap-2">
+            {/* Mode Switcher Tabs (Offline vs Online vs Foreign) */}
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/70 grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedTemplateMode('offline')}
-                className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
+                className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                   selectedTemplateMode === 'offline'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
                 }`}
               >
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-                <span className="hidden sm:inline">🏢 শ্যামলী চেম্বার (সরাসরি ভিজিট / Offline)</span>
-                <span className="sm:hidden">🏢 শ্যামলী চেম্বার (Offline)</span>
+                <span className="hidden sm:inline">🏢 শ্যামলী চেম্বার (Offline)</span>
+                <span className="sm:hidden">🏢 শ্যামলী চেম্বার</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedTemplateMode('online')}
-                className={`flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
+                className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
                   selectedTemplateMode === 'online'
                     ? 'bg-emerald-800 text-white shadow-md'
                     : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
                 }`}
               >
                 <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300 shrink-0" />
-                <span className="hidden sm:inline">🌐 অনলাইন ভিডিও কনসালটেশন (Online)</span>
-                <span className="sm:hidden">🌐 অনলাইন ভিডিও কল</span>
+                <span className="hidden sm:inline">🇧🇩 অনলাইন (দেশী রোগী)</span>
+                <span className="sm:hidden">🇧🇩 অনলাইন দেশী</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTemplateMode('foreign')}
+                className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer ${
+                  selectedTemplateMode === 'foreign'
+                    ? 'bg-emerald-800 text-white shadow-md'
+                    : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-300 shrink-0" />
+                <span className="hidden sm:inline">🌍 অনলাইন (প্রবাসী ও বিদেশী রোগী)</span>
+                <span className="sm:hidden">🌍 বিদেশী রোগী (১০$)</span>
               </button>
             </div>
 
@@ -6221,6 +6259,8 @@ export default function AdminDashboardPage() {
                   { tag: '{serialNo}', desc: 'সিরিয়াল নম্বর' },
                   { tag: '{date}', desc: 'তারিখ' },
                   { tag: '{time}', desc: 'সময়' },
+                  { tag: '{fee}', desc: 'ডায়নামিক ফি (দেশী ৮০০৳ / বিদেশী ১০$)' },
+                  { tag: '{followUpFee}', desc: 'ফলোআপ ফি (দেশী ৪০০৳ / বিদেশী ৭$)' },
                   { tag: '{chamberAddress}', desc: 'চেম্বারের ঠিকানা' },
                   { tag: '{mapsUrl}', desc: 'গুগল ম্যাপ লিঙ্ক' },
                   { tag: '{formUrl}', desc: 'তথ্য ফর্ম লিঙ্ক' },
@@ -6289,12 +6329,18 @@ export default function AdminDashboardPage() {
               {/* RIGHT COLUMN: Live Evaluator & Preview */}
               {(() => {
                 const currentText = editingTemplates[selectedTemplateMode][selectedTemplateKey] || '';
+                const isForeign = selectedTemplateMode === 'foreign';
+                const feeSample = selectedTemplateMode === 'offline' ? '১,০০০ টাকা' : isForeign ? '১০ ডলার' : '৮০০ টাকা';
+                const followUpFeeSample = selectedTemplateMode === 'offline' ? '৬০০ টাকা' : isForeign ? '৭ ডলার' : '৪০০ টাকা';
+
                 const samplePreviewText = interpolateTemplate(currentText, {
-                  patientName: 'মোঃ রহিম সাহেব',
-                  serialNo: selectedTemplateMode === 'online' ? 'ON-105' : 'DD-102',
+                  patientName: isForeign ? 'জন স্মিথ / প্রবাসী রোগী' : 'মোঃ রহিম সাহেব',
+                  serialNo: selectedTemplateMode === 'offline' ? 'DD-102' : isForeign ? 'ON-INT-105' : 'ON-105',
                   date: '২০ অক্টোবর ২০২৬',
                   time: 'বিকাল ৫:৩০',
                   chamberMode: selectedTemplateMode,
+                  fee: feeSample,
+                  followUpFee: followUpFeeSample,
                   chamberAddress: '২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।',
                   mapsUrl: 'https://maps.app.goo.gl/NgPzAZamW3Ucy8799',
                   formUrl: 'https://forms.gle/L6YfWn7Z12nV3aK66',

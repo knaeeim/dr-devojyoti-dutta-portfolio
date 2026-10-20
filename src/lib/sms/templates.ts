@@ -1,5 +1,5 @@
 export type TemplateType = 'confirm' | 'reminder' | 'reports' | 'reschedule' | 'cancel' | 'compact';
-export type ChamberMode = 'offline' | 'online';
+export type ChamberMode = 'offline' | 'online' | 'foreign';
 
 export interface SmsTemplateSet {
   confirm: string;
@@ -13,6 +13,7 @@ export interface SmsTemplateSet {
 export interface ChamberTemplatesConfig {
   offline: SmsTemplateSet;
   online: SmsTemplateSet;
+  foreign: SmsTemplateSet;
 }
 
 export const DEFAULT_SMS_TEMPLATES: ChamberTemplatesConfig = {
@@ -21,9 +22,11 @@ export const DEFAULT_SMS_TEMPLATES: ChamberTemplatesConfig = {
 
 • তারিখ: {date}
 • সময়: {time}
-• দেবজ্যোতি দত্তের সাথে আপনার অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।
-
 • সিরিয়াল নম্বর: {serialNo}
+• চেম্বার: শ্যামলী চেম্বার, ঢাকা
+• পরামর্শ ফি: {fee}
+
+• দেবজ্যোতি দত্তের সাথে আপনার অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।
 
 >> অনুগ্রহ করে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)
 {formUrl}
@@ -106,10 +109,11 @@ export const DEFAULT_SMS_TEMPLATES: ChamberTemplatesConfig = {
 
 • তারিখ: {date}
 • সময়: {time}
-• দেবজ্যোতি দত্তের সাথে আপনার অনলাইন ভিডিও কনসালটেশন অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।
-
 • সিরিয়াল নম্বর: {serialNo}
 • কনসালটেশন মোড: অনলাইন ভিডিও কনসালটেশন (হোয়াটসঅ্যাপ ভিডিও কল)
+• পরামর্শ ফি: {fee}
+
+• দেবজ্যোতি দত্তের সাথে আপনার অনলাইন ভিডিও কনসালটেশন অ্যাপয়েন্টমেন্টটি সফলভাবে তৈরি হয়েছে।
 
 >> অনুগ্রহ করে পরামর্শের পূর্বে এই ফর্মটি পূরণ করুন: (অবশ্যই পূরণ করতে হবে)
 {formUrl}
@@ -179,7 +183,79 @@ export const DEFAULT_SMS_TEMPLATES: ChamberTemplatesConfig = {
 সাময়িক অসুবিধার জন্য আমরা আন্তরিকভাবে দুঃখিত।
 — দেবজ্যোতি দত্ত পোর্টাল।`,
 
-    compact: `দেবজ্যোতি দত্ত: অনলাইন সিরিয়াল {serialNo} নিশ্চিত। তারিখ: {date}, সময়: {time}। মোড: হোয়াটসঅ্যাপ ভিডিও কল। হেল্পলাইন: {helpline}`
+    compact: `দেবজ্যোতি দত্ত: অনলাইন সিরিয়াল {serialNo} নিশ্চিত। তারিখ: {date}, সময়: {time}। ফি: {fee}। হেল্পলাইন: {helpline}`
+  },
+
+  foreign: {
+    confirm: `*Mr./Mrs. {patientName},*
+
+• তারিখ: {date}
+• সময় (বাংলাদেশ সময়): {time}
+• সিরিয়াল নম্বর: {serialNo}
+• কনসালটেশন মোড: অনলাইন ভিডিও কল (হোয়াটসঅ্যাপ)
+• পরামর্শ ফি: {fee}
+
+• দেবজ্যোতি দত্তের সাথে আপনার অনলাইন ভিডিও কনসালটেশন অ্যাপয়েন্টমেন্টটি নিশ্চিত করা হয়েছে।
+
+>> কনসালটেশনের পূর্বে এই জরুরি ফর্মটি পূরণ করুন:
+{formUrl}
+(পূর্বে পূরণ করে থাকলে পুনরায় প্রয়োজন নেই)
+
+• নির্ধারিত সময়ে আপনার নম্বরে সরাসরি আন্তর্জাতিক হোয়াটসঅ্যাপ ভিডিও কল করা হবে।
+• হেল্পলাইন ও সমন্বয়: {helpline}`,
+
+    reminder: `*Mr./Mrs. {patientName},*
+
+দেবজ্যোতি দত্তের সাথে আপনার আন্তর্জাতিক অনলাইন ভিডিও কনসালটেশনটি স্মরণ করিয়ে দেওয়া হচ্ছে:
+
+• তারিখ: {date}
+• সময় (বাংলাদেশ সময়): {time}
+• সিরিয়াল নম্বর: {serialNo}
+• পরামর্শ ফি: {fee}
+
+>> অনুগ্রহ করে ফর্মটি পূরণ করে রাখুন:
+{formUrl}
+
+• নির্ধারিত সময়ের ৫ মিনিট পূর্বে হোয়াটসঅ্যাপে সক্রিয় থাকুন। পূর্বের প্রেসক্রিপশন বা টেস্ট রিপোর্ট থাকলে ছবি তুলে হোয়াটসঅ্যাপে পাঠিয়ে রাখুন।
+• হেল্পলাইন: {helpline}`,
+
+    reports: `*Mr./Mrs. {patientName},*
+
+দেবজ্যোতি দত্তের অনলাইন গ্লোবাল কনসালটেশন ডেস্ক থেকে যোগাযোগ করা হচ্ছে:
+
+• সিরিয়াল নম্বর: {serialNo}
+• তারিখ: {date}
+• সময় (বাংলাদেশ সময়): {time}
+
+>> অনলাইন কনসালটেশনের সুবিধার্থে অনুগ্রহ করে:
+১. এই ফর্মটি পূরণ করুন:
+{formUrl}
+
+২. আপনার পূর্ববর্তী প্রেসক্রিপশন বা টেস্ট রিপোর্টের স্পষ্ট ছবি এই হোয়াটসঅ্যাপ নম্বরে আগেই পাঠিয়ে রাখুন।
+
+• হেল্পলাইন: {helpline}`,
+
+    reschedule: `*Mr./Mrs. {patientName},*
+
+দেবজ্যোতি দত্তের সাথে আপনার অনলাইন ভিডিও কনসালটেশনের সময়সূচী সমন্বয় করা হয়েছে:
+
+• নতুন তারিখ: {date}
+• নতুন সময় (বাংলাদেশ সময়): {time}
+• সিরিয়াল নম্বর: {serialNo}
+• কনসালটেশন মোড: হোয়াটসঅ্যাপ ভিডিও কল
+
+• নতুন নির্ধারিত সময়ে আপনার এই নম্বরে হোয়াটসঅ্যাপে কল করা হবে।
+• হেল্পলাইন: {helpline}`,
+
+    cancel: `*Mr./Mrs. {patientName},*
+
+আপনার অনলাইন ভিডিও কনসালটেশন সিরিয়াল নম্বর {serialNo} বাতিল করা হয়েছে। প্রয়োজনে ওয়েবসাইট থেকে নতুন সিরিয়াল বুক করতে পারবেন:
+🌐 https://drdevojyotidutta.com
+
+সাময়িক অসুবিধার জন্য আন্তরিকভাবে দুঃখিত।
+— দেবজ্যোতি দত্ত চেম্বার।`,
+
+    compact: `দেবজ্যোতি দত্ত: অনলাইন সিরিয়াল {serialNo} নিশ্চিত। তারিখ: {date}, সময়: {time} (BD Time)। ফি: {fee}। হেল্পলাইন: {helpline}`
   }
 };
 
@@ -262,6 +338,8 @@ export function interpolateTemplate(
     mapsUrl?: string;
     formUrl?: string;
     helpline?: string;
+    fee?: string;
+    followUpFee?: string;
   }
 ): string {
   const defaults = {
@@ -272,7 +350,9 @@ export function interpolateTemplate(
     chamberAddress: vars.chamberAddress || '২/১, জাহেদা ভিলা, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭।',
     mapsUrl: vars.mapsUrl || 'https://maps.app.goo.gl/NgPzAZamW3Ucy8799',
     formUrl: vars.formUrl || 'https://forms.gle/L6YfWn7Z12nV3aK66',
-    helpline: vars.helpline || '01712854941'
+    helpline: vars.helpline || '01712854941',
+    fee: vars.fee || (vars.chamberMode === 'offline' ? '১,০০০ টাকা' : vars.chamberMode === 'foreign' ? '১০ ডলার' : '৮০০ টাকা'),
+    followUpFee: vars.followUpFee || (vars.chamberMode === 'offline' ? '৬০০ টাকা' : vars.chamberMode === 'foreign' ? '৭ ডলার' : '৪০০ টাকা')
   };
 
   return template
@@ -283,5 +363,7 @@ export function interpolateTemplate(
     .replace(/{chamberAddress}/g, defaults.chamberAddress)
     .replace(/{mapsUrl}/g, defaults.mapsUrl)
     .replace(/{formUrl}/g, defaults.formUrl)
-    .replace(/{helpline}/g, defaults.helpline);
+    .replace(/{helpline}/g, defaults.helpline)
+    .replace(/{fee}/g, defaults.fee)
+    .replace(/{followUpFee}/g, defaults.followUpFee);
 }
