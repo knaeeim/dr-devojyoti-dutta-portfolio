@@ -74,14 +74,6 @@ export async function POST(request: NextRequest) {
     });
 
     let emailSent = false;
-    if (newAppointment.email && newAppointment.status === 'confirmed') {
-      try {
-        const emailResult = await sendAppointmentConfirmationEmail(newAppointment);
-        emailSent = emailResult.success;
-      } catch (err) {
-        console.warn('Could not send confirmation email for admin-booked appointment', err);
-      }
-    }
 
     return NextResponse.json({
       success: true,
@@ -204,16 +196,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     let emailSent = false;
-    if (status === 'confirmed' && updatedApt.email) {
-      const emailResult = await sendAppointmentConfirmationEmail(updatedApt);
-      emailSent = emailResult.success;
-    }
-
     let successMsg = 'স্ট্যাটাস সফলভাবে পরিবর্তিত হয়েছে।';
     if (status === 'confirmed') {
-      successMsg = emailSent
-        ? `অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে এবং ${updatedApt.email} ঠিকানায় ইমেইল পাঠানো হয়েছে।`
-        : 'অ্যাপয়েন্টমেন্ট সফলভাবে নিশ্চিত করা হয়েছে।';
+      successMsg = 'অ্যাপয়েন্টমেন্ট সফলভাবে নিশ্চিত করা হয়েছে।';
     } else if (status === 'cancelled') {
       successMsg = `সিরিয়ালটি (${updatedApt.serialNo}) সফলভাবে বাতিল করা হয়েছে এবং এই সময় স্লটটি (${updatedApt.slotTimeBn}) নতুন রোগীর জন্য উন্মুক্ত করা হয়েছে।`;
     }

@@ -5455,8 +5455,8 @@ export default function AdminDashboardPage() {
 
             {/* Action Buttons */}
             <div className="pt-3.5 border-t border-emerald-900/10 dark:border-emerald-800/40 space-y-2.5">
-              {/* Direct 1-Click Email Section (Particularly for Foreign Patients) */}
-              {messageModalApt && (isForeignPatient(messageModalApt) || messageModalApt.email) && (
+              {/* Direct 1-Click Email Section (Available for all patients - domestic and foreign) */}
+              {messageModalApt && (
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent border border-emerald-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
