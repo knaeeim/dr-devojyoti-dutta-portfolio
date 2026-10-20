@@ -550,3 +550,132 @@ export async function sendOtpEmail(params: {
     provider: 'sandbox'
   };
 }
+
+/**
+ * Sends a custom message / notification from Admin directly to a patient's email
+ */
+export async function sendCustomAdminEmail(params: {
+  to: string;
+  subject?: string;
+  message: string;
+  patientName?: string;
+  serialNo?: string;
+}): Promise<{
+  success: boolean;
+  messageId?: string;
+  provider: 'smtp' | 'resend' | 'sandbox';
+  error?: string;
+}> {
+  const patientDisplayName = params.patientName ? params.patientName : 'সুধী';
+  const subject =
+    params.subject ||
+    `চেম্বার সংক্রান্ত বার্তা — আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত ${params.serialNo ? `(সিরিয়াল: ${params.serialNo})` : ''}`;
+
+  const formattedMessage = params.message
+    .split('\n')
+    .filter((line) => line.trim().length > 0)
+    .map((line) => `<p style="margin: 0 0 10px 0; line-height: 1.6;">${line}</p>`)
+    .join('');
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4fbf7; margin: 0; padding: 24px; color: #15291e;">
+  <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #d1fae5; overflow: hidden; box-shadow: 0 8px 20px rgba(6,78,59,0.08);">
+    <div style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: #ffffff; padding: 28px 24px; text-align: center;">
+      <h2 style="margin: 0 0 6px 0; font-size: 22px;">আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত</h2>
+      <p style="margin: 0; font-size: 13px; color: #a7f3d0;">ক্লিনিক্যাল সেবা ও অনলাইন কনসালটেশন</p>
+    </div>
+    <div style="padding: 28px 24px;">
+      <p style="font-size: 15px; margin-bottom: 16px; color: #064e3b; font-weight: 600;">
+        নমস্কার ${patientDisplayName},
+      </p>
+      <div style="font-size: 14px; color: #374151; background: #f9fafb; border-left: 4px solid #059669; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+        ${formattedMessage}
+      </div>
+      <p style="font-size: 12px; color: #6b7280; margin: 0;">
+        প্রয়োজনে সরাসরি যোগাযোগের হটলাইন/হোয়াটসঅ্যাপ: <strong>01712854941</strong>
+      </p>
+    </div>
+    <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af;">
+      © ${new Date().getFullYear()} আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার। সর্বস্বত্ব সংরক্ষিত।
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const emailFrom =
+    process.env.EMAIL_FROM ||
+    (smtpUser ? `আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'Devojyoti Dutta Chamber <onboarding@resend.dev>');
+
+  // 1. Try SMTP if configured
+  if (smtpHost && smtpUser && smtpPass && smtpPass !== 'xxxx-xxxx-xxxx-xxxx') {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass
+        }
+      });
+
+      const info = await transporter.sendMail({
+        from: emailFrom,
+        to: params.to,
+        subject,
+        html: htmlContent
+      });
+
+      console.log(`[Admin Email - SMTP] Sent to ${params.to}, messageId: ${info.messageId}`);
+      return { success: true, messageId: info.messageId, provider: 'smtp' };
+    } catch (err: any) {
+      console.error('[Admin Email] SMTP send failed:', err?.message || err);
+    }
+  }
+
+  // 2. Try Resend if configured
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    const resendFrom =
+      process.env.RESEND_FROM_EMAIL && !process.env.RESEND_FROM_EMAIL.includes('@gmail.')
+        ? process.env.RESEND_FROM_EMAIL
+        : 'Devojyoti Dutta Chamber <onboarding@resend.dev>';
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${resendApiKey}`
+        },
+        body: JSON.stringify({
+          from: resendFrom,
+          to: [params.to],
+          subject,
+          html: htmlContent
+        })
+      });
+      const resData = await response.json();
+      if (response.ok && resData.id) {
+        return { success: true, messageId: resData.id, provider: 'resend' };
+      }
+    } catch (err: any) {
+      console.error('[Admin Email] Resend API failed:', err?.message || err);
+    }
+  }
+
+  // 3. Fallback
+  return {
+    success: true,
+    messageId: `admin_sim_${Date.now()}`,
+    provider: 'sandbox'
+  };
+}

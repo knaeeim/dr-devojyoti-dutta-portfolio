@@ -431,8 +431,13 @@ export default function BookingHub() {
     startTransition(async () => {
       try {
         const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+        const isAbroadPatient = chamberMode === 'online' && patientOrigin === 'abroad';
         const fullComplaints = [
-          abroadCountry.trim() ? `[বর্তমান দেশ/অবস্থান: ${abroadCountry.trim()}]` : null,
+          isAbroadPatient
+            ? `[বিদেশী রোগী • দেশ/অবস্থান: ${abroadCountry.trim() || 'প্রবাসী'}]`
+            : abroadCountry.trim()
+            ? `[বর্তমান দেশ/অবস্থান: ${abroadCountry.trim()}]`
+            : null,
           complaints.trim() || null
         ]
           .filter(Boolean)
@@ -572,43 +577,29 @@ export default function BookingHub() {
           </p>
         </div>
 
-        {/* International Patients Guideline Notice Banner */}
-        <div className="max-w-xl mx-auto mb-5 p-3.5 sm:p-4 rounded-2xl glass-card border border-amber-400/50 dark:border-amber-600/40 bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent shadow-xs text-xs">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-2.5">
-              <span className="text-xl shrink-0 p-1.5 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300">
-                🌍
-              </span>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs sm:text-sm">
-                    প্রবাসী ও আন্তর্জাতিক রোগীদের জন্য:
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 text-[11px] font-extrabold border border-amber-400/50">
-                    বাইরে থেকে ফি: $১০ ডলার (যেকোনো দেশ)
-                  </span>
-                </div>
-                <p className="text-emerald-900/90 dark:text-emerald-200/80 text-[11px] sm:text-xs leading-relaxed">
-                  দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কল</strong>-এ অ্যাপয়েন্টমেন্ট নেওয়া যাবে। প্রবাসীদের সুবিধার্থে সরাসরি <strong>ইমেইলে (Email)</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে।
-                </p>
-              </div>
+        {/* International Patients Slim & Elegant Ribbon (Only shown if offline mode is selected) */}
+        {chamberMode === 'offline' && (
+          <div className="max-w-xl mx-auto mb-5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full glass-card border border-amber-500/30 bg-amber-500/10 flex items-center justify-between gap-2.5 text-xs shadow-xs animate-fade-in">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base shrink-0">🌍</span>
+              <p className="text-emerald-950 dark:text-emerald-100 text-xs truncate">
+                <strong className="text-amber-700 dark:text-amber-300">প্রবাসে অবস্থান করছেন?</strong> প্রবাসীদের জন্য সরাসরি ভিডিও কল ও ইমেইল ওটিপি সুবিধা রয়েছে।
+              </p>
             </div>
-            {chamberMode === 'offline' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setChamberMode('online');
-                  setPatientOrigin('abroad');
-                  setActiveOtpChannel('email');
-                }}
-                className="btn-butter w-full sm:w-auto shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer"
-              >
-                <Video className="w-3.5 h-3.5 text-amber-300" />
-                <span>অনলাইন মোডে যান</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setChamberMode('online');
+                setPatientOrigin('abroad');
+                setActiveOtpChannel('email');
+              }}
+              className="btn-butter shrink-0 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+            >
+              <span>অনলাইন মোড</span>
+              <span>→</span>
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Chamber Mode Switcher Tabs */}
         <div className="max-w-xl mx-auto mb-8">
@@ -620,7 +611,7 @@ export default function BookingHub() {
                 setPatientOrigin('bangladesh');
                 setActiveOtpChannel('sms');
               }}
-              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all cursor-pointer ${
                 chamberMode === 'offline'
                   ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-lg ring-1 ring-emerald-500/50'
                   : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
@@ -633,7 +624,7 @@ export default function BookingHub() {
             <button
               type="button"
               onClick={() => setChamberMode('online')}
-              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
+              className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all cursor-pointer ${
                 chamberMode === 'online'
                   ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-lg ring-1 ring-emerald-500/50'
                   : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
@@ -644,53 +635,51 @@ export default function BookingHub() {
             </button>
           </div>
 
-          {/* ONLINE MODE PATIENT ORIGIN SELECTOR (Bangladesh vs Abroad) */}
+          {/* ONLINE MODE PATIENT ORIGIN SELECTOR (Sleek Segmented 2-Button Control) */}
           {chamberMode === 'online' && (
-            <div className="glass-card mt-3 p-3.5 sm:p-4 rounded-2xl border-2 border-emerald-500/40 dark:border-emerald-600/40 bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent shadow-xs animate-fade-in space-y-2">
-              <label
-                htmlFor="patient-origin-select"
-                className="block text-xs font-bold text-emerald-950 dark:text-emerald-100 flex items-center justify-between flex-wrap gap-1"
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className="text-base">📍</span>
-                  <span>রোগীর অবস্থান নির্বাচন করুন:</span>
+            <div className="mt-3.5 space-y-1.5 animate-fade-in">
+              <div className="flex items-center justify-between px-1 text-xs">
+                <span className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
+                  <span className="text-sm">📍</span>
+                  <span>রোগীর বর্তমান অবস্থান:</span>
                 </span>
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
-                  {patientOrigin === 'abroad' ? 'ইমেইল ওটিপি • ফি: $১০' : 'এসএমএস ওটিপি • ফি: ৮০০ টাকা'}
+                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                  {patientOrigin === 'abroad' ? 'ইমেইল ওটিপি' : 'এসএমএস ওটিপি'}
                 </span>
-              </label>
-
-              <div className="relative">
-                <select
-                  id="patient-origin-select"
-                  value={patientOrigin}
-                  onChange={(e) => {
-                    const val = e.target.value as 'bangladesh' | 'abroad';
-                    setPatientOrigin(val);
-                    setActiveOtpChannel(val === 'abroad' ? 'email' : 'sms');
-                  }}
-                  className="w-full appearance-none py-2.5 pl-3.5 pr-10 rounded-xl font-semibold text-xs sm:text-sm border border-emerald-400/80 dark:border-emerald-700 bg-white/95 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-100 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                >
-                  <option value="bangladesh">🇧🇩 বাংলাদেশে অবস্থানরত রোগী (এসএমএস ওটিপি • ফি: ৮০০ টাকা)</option>
-                  <option value="abroad">🌍 বিদেশে অবস্থানরত রোগী (ইমেইল ওটিপি • ফি: $১০ ডলার)</option>
-                </select>
-                <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300 text-xs">
-                  ▼
-                </div>
               </div>
 
-              <div className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-center gap-1.5 pt-0.5">
-                {patientOrigin === 'abroad' ? (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                    <span>বিদেশে অবস্থানরতদের জন্য <strong>ইমেইলে (Email)</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে। আন্তর্জাতিক ফি: <strong>$১০ ডলার</strong>।</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                    <span>বাংলাদেশে অবস্থানরতদের জন্য দেশীয় মোবাইল নম্বরে <strong>এসএমএস ওটিপি</strong> পাঠানো হবে। পরামর্শ ফি: <strong>৮০০ টাকা</strong>।</span>
-                  </>
-                )}
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-emerald-950/10 dark:bg-emerald-950/40 border border-emerald-500/20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPatientOrigin('bangladesh');
+                    setActiveOtpChannel('sms');
+                  }}
+                  className={`btn-butter flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                    patientOrigin === 'bangladesh'
+                      ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-md ring-1 ring-emerald-500/50'
+                      : 'text-emerald-900 dark:text-emerald-300 hover:bg-emerald-500/10'
+                  }`}
+                >
+                  <span className="text-base">🇧🇩</span>
+                  <span>বাংলাদেশে অবস্থানরত</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPatientOrigin('abroad');
+                    setActiveOtpChannel('email');
+                  }}
+                  className={`btn-butter flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                    patientOrigin === 'abroad'
+                      ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-md ring-1 ring-emerald-500/50'
+                      : 'text-emerald-900 dark:text-emerald-300 hover:bg-emerald-500/10'
+                  }`}
+                >
+                  <span className="text-base">🌍</span>
+                  <span>বিদেশে অবস্থানরত</span>
+                </button>
               </div>
             </div>
           )}
@@ -706,21 +695,21 @@ export default function BookingHub() {
                 <strong>পরামর্শ ফি:</strong>{' '}
                 <span className="font-bold text-emerald-800 dark:text-emerald-200">
                   {chamberMode === 'offline'
-                    ? '১,০০০ টাকা (বাংলাদেশ)'
+                    ? '১,০০০ টাকা'
                     : patientOrigin === 'abroad'
-                    ? '$১০ ডলার (যেকোনো দেশ)'
-                    : '৮০০ টাকা (বাংলাদেশ)'}
+                    ? '$১০ ডলার'
+                    : '৮০০ টাকা'}
                 </span>
               </span>
               <span className="text-emerald-400">|</span>
               <span className="text-amber-700 dark:text-amber-300 font-medium">
-                <strong>ফলোআপ ভিজিট:</strong>{' '}
+                <strong>ফলোআপ:</strong>{' '}
                 <span className="font-bold">
                   {chamberMode === 'offline'
                     ? '৬০০ টাকা'
                     : patientOrigin === 'abroad'
-                    ? '$৭ ডলার (প্রবাসী)'
-                    : '৪০০ টাকা (বাংলাদেশ)'}
+                    ? '$৭ ডলার'
+                    : '৪০০ টাকা'}
                 </span>{' '}
                 (৩ মাসের মধ্যে)
               </span>
@@ -728,10 +717,10 @@ export default function BookingHub() {
             <span className="text-emerald-300 dark:text-emerald-700 hidden sm:inline">•</span>
             <span className="text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
               {chamberMode === 'offline'
-                ? '✓ সরাসরি ঢাকা চেম্বার ডিজিটাল সিরিয়াল'
+                ? '✓ সরাসরি চেম্বার সিরিয়াল'
                 : patientOrigin === 'abroad'
-                ? '✓ প্রবাসী অনলাইন ভিডিও কল (ইমেইল ওটিপি)'
-                : '✓ বাংলাদেশ অনলাইন ভিডিও কল (এসএমএস ওটিপি)'}
+                ? '✓ প্রবাসী অনলাইন ভিডিও কল'
+                : '✓ বাংলাদেশ অনলাইন ভিডিও কল'}
             </span>
           </div>
         </div>
@@ -968,25 +957,27 @@ export default function BookingHub() {
 
                   {/* Fee */}
                   <div className="glass-pill p-2.5 rounded-xl flex flex-col gap-1 shadow-2xs">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">পরামর্শ ও ফলোআপ ফি</span>
-                    <div className="font-bold text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-1">
-                      💳 পরামর্শ ফি:{' '}
-                      <span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">নির্ধারিত ফি</span>
+                    <div className="font-bold text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-1.5 flex-wrap">
+                      <span>💳 পরামর্শ:</span>
+                      <span className="font-extrabold text-emerald-700 dark:text-emerald-300">
                         {chamberMode === 'offline'
-                          ? '১,০০০ টাকা (বাংলাদেশ)'
+                          ? '১,০০০ টাকা'
                           : patientOrigin === 'abroad'
-                          ? '$১০ ডলার (যেকোনো দেশ)'
-                          : '৮০০ টাকা (বাংলাদেশ)'}
+                          ? '$১০ ডলার'
+                          : '৮০০ টাকা'}
                       </span>
                     </div>
-                    <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
-                      🔄 ফলোআপ:{' '}
-                      {chamberMode === 'offline'
-                        ? '৬০০ টাকা'
-                        : patientOrigin === 'abroad'
-                        ? '$৭ ডলার (প্রবাসী)'
-                        : '৪০০ টাকা (বাংলাদেশ)'}{' '}
-                      (৩ মাসের মধ্যে)
+                    <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold flex items-center gap-1 flex-wrap">
+                      <span>🔄 ফলোআপ:</span>
+                      <span>
+                        {chamberMode === 'offline'
+                          ? '৬০০ টাকা'
+                          : patientOrigin === 'abroad'
+                          ? '$৭ ডলার'
+                          : '৪০০ টাকা'}
+                      </span>
+                      <span className="text-[9px] text-zinc-500 font-normal">(৩ মাসের মধ্যে)</span>
                     </div>
                   </div>
                 </div>
@@ -1075,7 +1066,7 @@ export default function BookingHub() {
                             }}
                             className="btn-butter px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] shadow-xs cursor-pointer shrink-0"
                           >
-                            বিদেশে অবস্থানরত রোগী সিলেক্ট করুন ($১০)
+                            বিদেশে অবস্থানরত অপশন সিলেক্ট করুন
                           </button>
                         </div>
                       )}
@@ -1172,12 +1163,12 @@ export default function BookingHub() {
                     ) : chamberMode === 'online' && patientOrigin === 'abroad' ? (
                       <>
                         <Mail className="w-5 h-5 text-amber-300" />
-                        <span>ইমেইলে ওটিপি পাঠান ও সিরিয়াল নিন ($১০ ডলার ফি)</span>
+                        <span>ইমেইলে ওটিপি পাঠান ও সিরিয়াল নিন</span>
                       </>
                     ) : (
                       <>
                         <ShieldCheck className="w-5 h-5 text-amber-300" />
-                        <span>এসএমএস ওটিপি পাঠান ও ডিজিটাল সিরিয়াল নিন</span>
+                        <span>এসএমএসে ওটিপি পাঠান ও সিরিয়াল নিন</span>
                       </>
                     )}
                   </button>
@@ -1263,8 +1254,6 @@ export default function BookingHub() {
                       </div>
                       <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 text-xs font-bold border border-emerald-300 dark:border-emerald-800">
                         <span>🌍 প্রবাসী অনলাইন রোগী</span>
-                        <span>•</span>
-                        <span>ফি: $১০ ডলার</span>
                       </div>
                       <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
                         ইমেইল ওটিপি যাচাইকরণ (Email OTP)
@@ -1507,13 +1496,22 @@ export default function BookingHub() {
                 <div>
                   <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">পরামর্শ ফি:</span>
                   <span className="font-bold text-emerald-950 dark:text-emerald-100">
-                    {confirmedAppointment.chamberMode === 'offline' ? '১,০০০ টাকা (বাংলাদেশ)' : '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী)'}
+                    {confirmedAppointment.chamberMode === 'offline'
+                      ? '১,০০০ টাকা'
+                      : confirmedAppointment.complaints?.includes('বিদেশী') || confirmedAppointment.complaints?.includes('প্রবাসী')
+                      ? '$১০ ডলার'
+                      : '৮০০ টাকা'}
                   </span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <span className="text-emerald-700/80 dark:text-emerald-400 block font-medium">ফলোআপ ভিজিট:</span>
                   <span className="font-bold text-amber-700 dark:text-amber-400 text-xs">
-                    {confirmedAppointment.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা (বাংলাদেশ) / $৭ ডলার (প্রবাসী)'} (৩ মাসের মধ্যে)
+                    {confirmedAppointment.chamberMode === 'offline'
+                      ? '৬০০ টাকা'
+                      : confirmedAppointment.complaints?.includes('বিদেশী') || confirmedAppointment.complaints?.includes('প্রবাসী')
+                      ? '$৭ ডলার'
+                      : '৪০০ টাকা'}{' '}
+                    (৩ মাসের মধ্যে)
                   </span>
                 </div>
                 {confirmedAppointment.email && (

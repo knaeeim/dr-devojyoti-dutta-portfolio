@@ -273,6 +273,8 @@ export default function AdminDashboardPage() {
   const [copiedToast, setCopiedToast] = useState(false);
   const [smsBalance, setSmsBalance] = useState<number | null>(null);
   const [isSendingSms, setIsSendingSms] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailRecipientInput, setEmailRecipientInput] = useState('');
   const [smsStatusMsg, setSmsStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // SMS Template Configuration Modal State
@@ -396,6 +398,7 @@ export default function AdminDashboardPage() {
         ? 'reschedule'
         : type;
     setMessageModalApt(apt);
+    setEmailRecipientInput(apt.email || '');
     setMessageTemplateType(initialType);
     setCustomMessage(buildDefaultMessage(apt, initialType));
     setCopiedToast(false);
@@ -443,6 +446,32 @@ export default function AdminDashboardPage() {
     return /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
   };
 
+  // Helper to reliably identify foreign / international patients
+  const isForeignPatient = (apt?: Appointment | null): boolean => {
+    if (!apt) return false;
+    if (
+      apt.complaints &&
+      (apt.complaints.includes('বিদেশী') ||
+        apt.complaints.includes('প্রবাসী') ||
+        apt.complaints.includes('বর্তমান দেশ/অবস্থান'))
+    ) {
+      return true;
+    }
+    if (apt.chamberMode === 'online') {
+      const p = (apt.phone || '').trim().replace(/[\s\-()]/g, '');
+      if (
+        p &&
+        !p.startsWith('01') &&
+        !p.startsWith('+8801') &&
+        !p.startsWith('8801') &&
+        !p.startsWith('008801')
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const getSmsUrl = (phone: string, message: string) => {
     const cleanPhone = getCleanSmsNumber(phone);
     const separator = isAppleDevice() ? '&' : '?';
@@ -460,7 +489,7 @@ export default function AdminDashboardPage() {
   // Toggle or mark message sent status for an appointment
   const handleToggleMessageSent = async (
     aptId: string,
-    channel: 'sms' | 'whatsapp' | 'manual' = 'manual',
+    channel: 'sms' | 'whatsapp' | 'email' | 'manual' = 'manual',
     sent = true
   ) => {
     const nowIso = new Date().toISOString();
@@ -679,6 +708,65 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Send Direct Email via SMTP / Resend (1-Click send for abroad patients)
+  const handleSendDirectEmail = async () => {
+    if (!messageModalApt) return;
+    const targetEmail = (emailRecipientInput || messageModalApt.email || '').trim();
+    if (!targetEmail || !targetEmail.includes('@')) {
+      setSmsStatusMsg({
+        type: 'error',
+        text: 'রোগীর কোনো বৈধ ইমেইল ঠিকানা নেই। অনুগ্রহ করে সঠিক ইমেইল লিখুন।'
+      });
+      return;
+    }
+    if (!customMessage.trim()) {
+      setSmsStatusMsg({ type: 'error', text: 'বার্তা খালি রাখা যাবে না।' });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setSmsStatusMsg(null);
+
+    try {
+      const res = await fetch('/api/admin/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: targetEmail,
+          message: customMessage.trim(),
+          appointmentId: messageModalApt.id,
+          patientName: messageModalApt.patientName,
+          serialNo: messageModalApt.serialNo
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setSmsStatusMsg({
+          type: 'error',
+          text: data?.error || 'ইমেইল পাঠাতে ব্যর্থ হয়েছে।'
+        });
+      } else {
+        if (messageModalApt.status === 'pending') {
+          handleUpdateStatus(messageModalApt.id, 'confirmed');
+        }
+        handleToggleMessageSent(messageModalApt.id, 'email', true);
+        setSmsStatusMsg({
+          type: 'success',
+          text: data?.message || `সফলভাবে রোগীর ইমেইলে (${targetEmail}) বার্তা পাঠানো হয়েছে!`
+        });
+      }
+    } catch (err: unknown) {
+      setSmsStatusMsg({
+        type: 'error',
+        text: 'সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।'
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   // Cancellation Modal openers & handlers
   const handleOpenCancelModal = (apt: Appointment) => {
     setCancelApt(apt);
@@ -876,7 +964,7 @@ export default function AdminDashboardPage() {
       } catch {}
 
       // Read sent messages from localStorage
-      let localSentMap: Record<string, { sent: boolean; sentAt?: string; channel?: 'sms' | 'whatsapp' | 'manual' }> = {};
+      let localSentMap: Record<string, { sent: boolean; sentAt?: string; channel?: 'sms' | 'whatsapp' | 'email' | 'manual' }> = {};
       try {
         localSentMap = JSON.parse(localStorage.getItem('dr_dutta_sent_messages') || '{}');
       } catch {}
@@ -2432,6 +2520,14 @@ export default function AdminDashboardPage() {
 
                         {/* Patient */}
                         <td className="py-3 px-3.5 align-middle">
+                          {isForeignPatient(apt) && (
+                            <div className="mb-1">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs whitespace-nowrap">
+                                <span>🌍</span>
+                                <span>বিদেশী রোগী</span>
+                              </span>
+                            </div>
+                          )}
                           <div className="font-bold text-emerald-950 dark:text-emerald-100 text-xs sm:text-[13px] leading-snug">
                             {apt.patientName}
                           </div>
@@ -2870,6 +2966,14 @@ export default function AdminDashboardPage() {
                     {/* Patient Name & Quick Dial/WhatsApp Direct Touch Buttons */}
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="min-w-0">
+                        {isForeignPatient(apt) && (
+                          <div className="mb-1">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs whitespace-nowrap">
+                              <span>🌍</span>
+                              <span>বিদেশী রোগী</span>
+                            </span>
+                          </div>
+                        )}
                         <h3 className="font-bold text-sm sm:text-base text-emerald-950 dark:text-emerald-50 leading-tight">
                           {apt.patientName}
                         </h3>
@@ -5119,6 +5223,11 @@ export default function AdminDashboardPage() {
                 <span className="text-emerald-600 dark:text-emerald-400 block font-semibold text-[11px]">রোগীর নাম ও নম্বর</span>
                 <span className="font-bold text-emerald-950 dark:text-emerald-100 text-sm">{messageModalApt.patientName}</span>
                 <span className="ml-2 font-mono text-emerald-700 dark:text-emerald-300 font-bold">({messageModalApt.phone})</span>
+                {isForeignPatient(messageModalApt) && (
+                  <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
+                    🌍 বিদেশী রোগী
+                  </span>
+                )}
               </div>
               <div>
                 <span className="text-emerald-600 dark:text-emerald-400 block font-semibold text-[11px]">সিরিয়াল ও চেম্বার</span>
@@ -5346,6 +5455,51 @@ export default function AdminDashboardPage() {
 
             {/* Action Buttons */}
             <div className="pt-3.5 border-t border-emerald-900/10 dark:border-emerald-800/40 space-y-2.5">
+              {/* Direct 1-Click Email Section (Particularly for Foreign Patients) */}
+              {messageModalApt && (isForeignPatient(messageModalApt) || messageModalApt.email) && (
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent border border-emerald-500/30 space-y-2">
+                  <div className="flex items-center justify-between text-xs flex-wrap gap-1">
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
+                      <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>রোগীর ইমেইলে বার্তা পাঠান:</span>
+                    </span>
+                    {isForeignPatient(messageModalApt) && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
+                        🌍 বিদেশী রোগী
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <input
+                      type="email"
+                      value={emailRecipientInput}
+                      onChange={(e) => setEmailRecipientInput(e.target.value)}
+                      placeholder="রোগীর ইমেইল এড্রেস..."
+                      className="flex-1 py-2 px-3 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendDirectEmail}
+                      disabled={isSendingEmail || !customMessage.trim()}
+                      className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 active:scale-95 disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer whitespace-nowrap"
+                      title="১-ক্লিকে রোগীর ইমেইলে বার্তা পাঠানো হবে"
+                    >
+                      {isSendingEmail ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>ইমেইল পাঠানো হচ্ছে...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5 text-amber-300" />
+                          <span>সরাসরি ইমেইল পাঠান (১-ক্লিক)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Primary Send Actions: Direct SMS & WhatsApp */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {/* 1. Direct 1-Click SMS */}

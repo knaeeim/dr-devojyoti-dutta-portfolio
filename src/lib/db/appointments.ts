@@ -14,7 +14,7 @@ const TMP_SENT_MESSAGES_FILE = path.join(os.tmpdir(), 'dr_dutta_sent_messages.js
 export interface SentMessageInfo {
   sent: boolean;
   sentAt: string;
-  channel?: 'sms' | 'whatsapp' | 'manual';
+  channel?: 'sms' | 'whatsapp' | 'email' | 'manual';
 }
 
 // Global in-memory sets to survive hot-reloads and ephemeral executions
@@ -239,7 +239,7 @@ export async function saveSentMessagesToDb(map: Record<string, SentMessageInfo>)
 
 export async function markAppointmentMessageSent(
   id: string,
-  channel: 'sms' | 'whatsapp' | 'manual' = 'sms',
+  channel: 'sms' | 'whatsapp' | 'email' | 'manual' = 'sms',
   sent = true
 ): Promise<boolean> {
   const map = await getSentMessagesFromDb();

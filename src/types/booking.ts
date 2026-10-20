@@ -103,7 +103,7 @@ export interface Appointment {
   status: AppointmentStatus;
   messageSent?: boolean;
   messageSentAt?: string;
-  messageChannel?: 'sms' | 'whatsapp' | 'manual';
+  messageChannel?: 'sms' | 'whatsapp' | 'email' | 'manual';
   previousDate?: string;
   previousSlotId?: string;
   previousSlotTimeBn?: string;
