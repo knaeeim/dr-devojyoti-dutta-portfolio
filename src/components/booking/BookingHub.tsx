@@ -76,13 +76,10 @@ export default function BookingHub() {
   const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
   const [copiedSerial, setCopiedSerial] = useState(false);
 
-  // International / Overseas Booking State
-  const [bookingChannel, setBookingChannel] = useState<'local' | 'international'>('local');
-  const [intlCountry, setIntlCountry] = useState('');
-  const [intlPhone, setIntlPhone] = useState('');
-  const [intlSuccessModal, setIntlSuccessModal] = useState(false);
-  const [intlGeneratedMsg, setIntlGeneratedMsg] = useState('');
-  const [intlCopied, setIntlCopied] = useState(false);
+  // Online Mode Patient Origin: 'bangladesh' (SMS OTP) vs 'abroad' (WhatsApp OTP)
+  const [patientOrigin, setPatientOrigin] = useState<'bangladesh' | 'abroad'>('bangladesh');
+  const [abroadCountry, setAbroadCountry] = useState('');
+  const [activeOtpChannel, setActiveOtpChannel] = useState<'sms' | 'whatsapp'>('sms');
 
   // OTP Verification state
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -241,7 +238,7 @@ export default function BookingHub() {
       .filter((g) => g.slots.length > 0);
   }, [availableSlots]);
 
-  // Step 1: User clicks booking -> Trigger OTP dispatch
+  // Step 1: User clicks booking -> Trigger OTP dispatch (SMS for Bangladesh, WhatsApp for Abroad)
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -267,15 +264,37 @@ export default function BookingHub() {
       return;
     }
 
+    const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
+    const channel: 'sms' | 'whatsapp' = isAbroad ? 'whatsapp' : 'sms';
+
     const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     if (!cleanPhone) {
-      setErrorMsg('সচল মোবাইল নম্বর প্রদান করা আবশ্যক।');
+      setErrorMsg(
+        isAbroad
+          ? 'সচল হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।'
+          : 'সচল মোবাইল নম্বর প্রদান করা আবশ্যক।'
+      );
       return;
     }
 
-    if (cleanPhone.startsWith('+') || cleanPhone.startsWith('00') || (cleanPhone.length >= 4 && !cleanPhone.startsWith('01'))) {
-      setErrorMsg('বিদেশি মোবাইল নম্বরে দেশীয় এসএমএস ওটিপি যাবে না। আপনি যদি প্রবাসী হন, অনুগ্রহ করে উপরের "প্রবাসী / আন্তর্জাতিক রোগী" অপশন নির্বাচন করে সরাসরি হোয়াটসঅ্যাপে $১০ ডলার ফি-তে অ্যাপয়েন্টমেন্ট নিশ্চিত করুন।');
-      return;
+    if (!isAbroad) {
+      if (
+        cleanPhone.startsWith('+') ||
+        cleanPhone.startsWith('00') ||
+        (cleanPhone.length >= 4 && !cleanPhone.startsWith('01'))
+      ) {
+        setErrorMsg(
+          'বিদেশি মোবাইল নম্বরে দেশীয় এসএমএস ওটিপি যাবে না। আপনি যদি প্রবাসী হন, অনুগ্রহ করে উপরের নির্বাচন থেকে "বিদেশে অবস্থানরত রোগী (হোয়াটসঅ্যাপ ওটিপি)" সিলেক্ট করুন।'
+        );
+        return;
+      }
+    } else {
+      if (!/^\+?[1-9]\d{6,14}$/.test(cleanPhone)) {
+        setErrorMsg(
+          'অনুগ্রহ করে সঠিক আন্তর্জাতিক হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ, যেমন: +44 7911 123456 বা +1 202 555 0125) লিখুন।'
+        );
+        return;
+      }
     }
 
     // Trigger OTP sending
@@ -285,7 +304,12 @@ export default function BookingHub() {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone, patientName: patientName.trim() })
+        body: JSON.stringify({
+          phone: cleanPhone,
+          patientName: patientName.trim(),
+          channel,
+          patientOrigin
+        })
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -293,6 +317,7 @@ export default function BookingHub() {
         setOtpPending(false);
         return;
       }
+      setActiveOtpChannel(data.channel || channel);
       setOtpChallengeToken(data.challengeToken || null);
       setOtpTimer(60);
       setOtpDebugCode(data.debugCode || null);
@@ -306,70 +331,6 @@ export default function BookingHub() {
       setErrorMsg('সার্ভারে যোগাযোগ করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
       setOtpPending(false);
     }
-  };
-
-  // International WhatsApp message generation
-  const generateInternationalWhatsAppMessage = () => {
-    const formattedDate = activeDateObj?.fullBn || selectedDate;
-    const slotInfo = selectedSlot ? `${selectedSlot.timeBn} (${selectedSlot.timeEn})` : 'যেকোনো উপযুক্ত সময়';
-    const patient = patientName.trim() || 'অনুরোধকারী রোগী';
-    const userCountry = intlCountry.trim() ? `• দেশ / বর্তমান অবস্থান: ${intlCountry.trim()}\n` : '';
-    const userPhone = (intlPhone || phone).trim() ? `• হোয়াটসঅ্যাপ নম্বর: ${(intlPhone || phone).trim()}\n` : '';
-    const userEmail = email.trim() ? `• ইমেইল: ${email.trim()}\n` : '';
-    const userComplaints = complaints.trim() ? `• শারীরিক সমস্যার বিবরণ: ${complaints.trim()}\n` : '';
-
-    return `নমস্কার আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার,
-আমি প্রবাস থেকে অনলাইন ভিডিও কনসালটেশনের জন্য অ্যাপয়েন্টমেন্ট বুকিং করতে আগ্রহী।
-
-📋 অ্যাপয়েন্টমেন্ট বুকিং তথ্য:
-• মাধ্যম: অনলাইন ভিডিও কনসালটেশন (জুম / হোয়াটসঅ্যাপ ভিডিও কল)
-• নির্বাচিত তারিখ: ${formattedDate}
-• বরাদ্দকৃত সময় স্লট: ${slotInfo}
-• রোগীর পূর্ণ নাম: ${patient}
-${userCountry}${userPhone}${userEmail}• আন্তর্জাতিক পরামর্শ ফি: $১০ ডলার (যেকোনো দেশ থেকে)
-${userComplaints}
-যেহেতু আমি দেশের বাইরে অবস্থান করছি এবং বাংলাদেশি সিম নম্বর নেই, অনুগ্রহ করে আমার এই স্লটটি নিশ্চিত করুন ও $১০ ডলার ফি পরিশোধের বিস্তারিত নির্দেশনা/লিংক প্রদান করুন। ধন্যবাদ।`;
-  };
-
-  // Handle direct international booking via WhatsApp
-  const handleInternationalWhatsAppBooking = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setErrorMsg(null);
-
-    if (!selectedDate) {
-      setErrorMsg('অনুগ্রহ করে অ্যাপয়েন্টমেন্টের একটি উন্মুক্ত তারিখ নির্বাচন করুন।');
-      return;
-    }
-
-    if (!selectedSlot) {
-      setErrorMsg('অনুগ্রহ করে একটি সময় স্লট পছন্দ করুন।');
-      return;
-    }
-
-    if (isSlotPastTime(selectedDate, selectedSlot.startMinutes)) {
-      setErrorMsg('দুঃখিত, এই সময় স্লটটির সময় ইতোমধ্যে শেষ (টাইম ওভার) হয়ে গেছে। অনুগ্রহ করে পরবর্তী কোনো উন্মুক্ত স্লট পছন্দ করুন।');
-      setSelectedSlot(null);
-      return;
-    }
-
-    if (!patientName.trim()) {
-      setErrorMsg('রোগীর পূর্ণ নাম প্রদান করা আবশ্যক।');
-      return;
-    }
-
-    const contactPhone = (intlPhone || phone).trim();
-    if (!contactPhone) {
-      setErrorMsg('আপনার সক্রিয় আন্তর্জাতিক হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।');
-      return;
-    }
-
-    const msg = generateInternationalWhatsAppMessage();
-    setIntlGeneratedMsg(msg);
-    setIntlSuccessModal(true);
-
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941';
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Step 2: User verifies OTP and finalizes booking
@@ -422,14 +383,22 @@ ${userComplaints}
     setOtpError(null);
     setOtpPending(true);
     const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
+    const channel: 'sms' | 'whatsapp' = isAbroad ? 'whatsapp' : 'sms';
     try {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone, patientName: patientName.trim() })
+        body: JSON.stringify({
+          phone: cleanPhone,
+          patientName: patientName.trim(),
+          channel,
+          patientOrigin
+        })
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        setActiveOtpChannel(data.channel || channel);
         setOtpChallengeToken(data.challengeToken || null);
         setOtpTimer(60);
         setOtpDebugCode(data.debugCode || null);
@@ -452,6 +421,13 @@ ${userComplaints}
     startTransition(async () => {
       try {
         const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+        const fullComplaints = [
+          abroadCountry.trim() ? `[বর্তমান দেশ/অবস্থান: ${abroadCountry.trim()}]` : null,
+          complaints.trim() || null
+        ]
+          .filter(Boolean)
+          .join('\n');
+
         const payload = {
           patientName: patientName.trim(),
           phone: cleanPhone,
@@ -460,7 +436,7 @@ ${userComplaints}
           appointmentDate: selectedDate,
           slotId: selectedSlot!.id,
           slotTimeBn: selectedSlot!.timeBn,
-          complaints: complaints.trim() || undefined,
+          complaints: fullComplaints || undefined,
           otpToken: token
         };
 
@@ -485,6 +461,7 @@ ${userComplaints}
         setPhone('');
         setEmail('');
         setComplaints('');
+        setAbroadCountry('');
         setSelectedSlot(null);
         setOtpCode('');
         setOtpDebugCode(null);
@@ -520,6 +497,7 @@ ${userComplaints}
     setPhone('');
     setEmail('');
     setComplaints('');
+    setAbroadCountry('');
 
     // Smooth scroll animation to home / top of page
     setTimeout(() => {
@@ -601,7 +579,7 @@ ${userComplaints}
                   </span>
                 </div>
                 <p className="text-emerald-900/90 dark:text-emerald-200/80 text-[11px] sm:text-xs leading-relaxed">
-                  দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কল</strong>-এ অ্যাপয়েন্টমেন্ট নেওয়া যাবে। বাংলাদেশি সিম কার্ড না থাকলে নিচের বিশেষ <strong>হোয়াটসঅ্যাপ</strong> অপশনের মাধ্যমে সহজে সরাসরি বুকিং নিশ্চিত করতে পারবেন।
+                  দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কল</strong>-এ অ্যাপয়েন্টমেন্ট নেওয়া যাবে। প্রবাসীদের সুবিধার্থে সরাসরি <strong>হোয়াটসঅ্যাপে</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে।
                 </p>
               </div>
             </div>
@@ -610,7 +588,8 @@ ${userComplaints}
                 type="button"
                 onClick={() => {
                   setChamberMode('online');
-                  setBookingChannel('international');
+                  setPatientOrigin('abroad');
+                  setActiveOtpChannel('whatsapp');
                 }}
                 className="btn-butter w-full sm:w-auto shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer"
               >
@@ -622,11 +601,15 @@ ${userComplaints}
         </div>
 
         {/* Chamber Mode Switcher Tabs */}
-        <div className="max-w-xl mx-auto mb-10">
+        <div className="max-w-xl mx-auto mb-8">
           <div className="glass-morphism p-1.5 rounded-2xl grid grid-cols-2 gap-2 shadow-inner">
             <button
               type="button"
-              onClick={() => setChamberMode('offline')}
+              onClick={() => {
+                setChamberMode('offline');
+                setPatientOrigin('bangladesh');
+                setActiveOtpChannel('sms');
+              }}
               className={`btn-butter flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition-all ${
                 chamberMode === 'offline'
                   ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-lg ring-1 ring-emerald-500/50'
@@ -651,6 +634,57 @@ ${userComplaints}
             </button>
           </div>
 
+          {/* ONLINE MODE PATIENT ORIGIN SELECTOR (Bangladesh vs Abroad) */}
+          {chamberMode === 'online' && (
+            <div className="glass-card mt-3 p-3.5 sm:p-4 rounded-2xl border-2 border-emerald-500/40 dark:border-emerald-600/40 bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent shadow-xs animate-fade-in space-y-2">
+              <label
+                htmlFor="patient-origin-select"
+                className="block text-xs font-bold text-emerald-950 dark:text-emerald-100 flex items-center justify-between flex-wrap gap-1"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className="text-base">📍</span>
+                  <span>রোগীর অবস্থান নির্বাচন করুন:</span>
+                </span>
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
+                  {patientOrigin === 'abroad' ? 'হোয়াটসঅ্যাপ ওটিপি • ফি: $১০' : 'এসএমএস ওটিপি • ফি: ৮০০ টাকা'}
+                </span>
+              </label>
+
+              <div className="relative">
+                <select
+                  id="patient-origin-select"
+                  value={patientOrigin}
+                  onChange={(e) => {
+                    const val = e.target.value as 'bangladesh' | 'abroad';
+                    setPatientOrigin(val);
+                    setActiveOtpChannel(val === 'abroad' ? 'whatsapp' : 'sms');
+                  }}
+                  className="w-full appearance-none py-2.5 pl-3.5 pr-10 rounded-xl font-semibold text-xs sm:text-sm border border-emerald-400/80 dark:border-emerald-700 bg-white/95 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-100 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                >
+                  <option value="bangladesh">🇧🇩 বাংলাদেশে অবস্থানরত রোগী (এসএমএস ওটিপি • ফি: ৮০০ টাকা)</option>
+                  <option value="abroad">🌍 বিদেশে অবস্থানরত রোগী (হোয়াটসঅ্যাপ ওটিপি • ফি: $১০ ডলার)</option>
+                </select>
+                <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300 text-xs">
+                  ▼
+                </div>
+              </div>
+
+              <div className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-center gap-1.5 pt-0.5">
+                {patientOrigin === 'abroad' ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] shrink-0" />
+                    <span>বিদেশে অবস্থানরতদের জন্য <strong>হোয়াটসঅ্যাপে</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে। আন্তর্জাতিক ফি: <strong>$১০ ডলার</strong>।</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span>বাংলাদেশে অবস্থানরতদের জন্য দেশীয় মোবাইল নম্বরে <strong>এসএমএস ওটিপি</strong> পাঠানো হবে। পরামর্শ ফি: <strong>৮০০ টাকা</strong>।</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Chamber Summary Meta Card */}
           <div className="glass-card mt-3 p-3.5 rounded-2xl text-xs text-emerald-900 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-center gap-y-2 gap-x-4">
             <span className="flex items-center gap-1">
@@ -663,14 +697,20 @@ ${userComplaints}
                 <span className="font-bold text-emerald-800 dark:text-emerald-200">
                   {chamberMode === 'offline'
                     ? '১,০০০ টাকা (বাংলাদেশ)'
-                    : '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী যেকোনো দেশ)'}
+                    : patientOrigin === 'abroad'
+                    ? '$১০ ডলার (যেকোনো দেশ)'
+                    : '৮০০ টাকা (বাংলাদেশ)'}
                 </span>
               </span>
               <span className="text-emerald-400">|</span>
               <span className="text-amber-700 dark:text-amber-300 font-medium">
                 <strong>ফলোআপ ভিজিট:</strong>{' '}
                 <span className="font-bold">
-                  {chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা (বাংলাদেশ) / $৭ ডলার (প্রবাসী)'}
+                  {chamberMode === 'offline'
+                    ? '৬০০ টাকা'
+                    : patientOrigin === 'abroad'
+                    ? '$৭ ডলার (প্রবাসী)'
+                    : '৪০০ টাকা (বাংলাদেশ)'}
                 </span>{' '}
                 (৩ মাসের মধ্যে)
               </span>
@@ -679,7 +719,9 @@ ${userComplaints}
             <span className="text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
               {chamberMode === 'offline'
                 ? '✓ সরাসরি ঢাকা চেম্বার ডিজিটাল সিরিয়াল'
-                : '✓ প্রবাসীদের জন্য সরাসরি হোয়াটসঅ্যাপে বুকিং'}
+                : patientOrigin === 'abroad'
+                ? '✓ প্রবাসী অনলাইন ভিডিও কল (হোয়াটসঅ্যাপ ওটিপি)'
+                : '✓ বাংলাদেশ অনলাইন ভিডিও কল (এসএমএস ওটিপি)'}
             </span>
           </div>
         </div>
@@ -858,7 +900,7 @@ ${userComplaints}
           {selectedSlot && (
             <form
               id="step-3-form"
-              onSubmit={bookingChannel === 'international' ? handleInternationalWhatsAppBooking : handleBookingSubmit}
+              onSubmit={handleBookingSubmit}
               className="space-y-6 pt-4 border-t border-emerald-900/10 dark:border-emerald-800/40 scroll-mt-24 sm:scroll-mt-28 animate-fade-in"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -873,7 +915,7 @@ ${userComplaints}
                 </span>
               </div>
 
-              {/* Selected Booking Summary Card (যা যা সিলেক্ট করেছে সেগুলো প্রদর্শন) */}
+              {/* Selected Booking Summary Card */}
               <div className="glass-card p-4 rounded-2xl border border-emerald-300/80 dark:border-emerald-700/60 shadow-md space-y-3">
                 <div className="flex items-center justify-between border-b border-emerald-200/80 dark:border-emerald-800/60 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
@@ -887,9 +929,13 @@ ${userComplaints}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                   {/* Chamber */}
                   <div className="glass-pill p-2.5 rounded-xl flex flex-col gap-0.5 shadow-2xs">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">চেম্বার / মোড</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">চেম্বার / মাধ্যম</span>
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs">
-                      {chamberMode === 'offline' ? '📍 ঢাকা চেম্বার (সরাসরি)' : '📹 অনলাইন ভিডিও কনসালটেশন'}
+                      {chamberMode === 'offline'
+                        ? '📍 ঢাকা চেম্বার (সরাসরি)'
+                        : patientOrigin === 'abroad'
+                        ? '📹 অনলাইন ভিডিও (প্রবাসী)'
+                        : '📹 অনলাইন ভিডিও কনসালটেশন'}
                     </span>
                   </div>
 
@@ -918,58 +964,21 @@ ${userComplaints}
                       <span>
                         {chamberMode === 'offline'
                           ? '১,০০০ টাকা (বাংলাদেশ)'
-                          : '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী)'}
+                          : patientOrigin === 'abroad'
+                          ? '$১০ ডলার (যেকোনো দেশ)'
+                          : '৮০০ টাকা (বাংলাদেশ)'}
                       </span>
                     </div>
                     <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
                       🔄 ফলোআপ:{' '}
                       {chamberMode === 'offline'
                         ? '৬০০ টাকা'
-                        : '৪০০ টাকা (বাংলাদেশ) / $৭ ডলার (প্রবাসী)'}{' '}
+                        : patientOrigin === 'abroad'
+                        ? '$৭ ডলার (প্রবাসী)'
+                        : '৪০০ টাকা (বাংলাদেশ)'}{' '}
                       (৩ মাসের মধ্যে)
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Patient Origin / Booking Channel Switcher Tabs */}
-              <div className="space-y-2">
-                <span className="text-xs font-semibold text-emerald-950 dark:text-emerald-200 block">
-                  আপনার অবস্থান ও বুকিং চ্যানেল নির্বাচন করুন:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-1.5 rounded-2xl bg-emerald-950/5 dark:bg-emerald-950/60 border border-emerald-300/60 dark:border-emerald-800/60 shadow-inner">
-                  <button
-                    type="button"
-                    onClick={() => setBookingChannel('local')}
-                    className={`btn-butter flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                      bookingChannel === 'local'
-                        ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-md ring-1 ring-emerald-500/50'
-                        : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
-                    }`}
-                  >
-                    <span>🇧🇩 বাংলাদেশে অবস্থানরত রোগী</span>
-                    <span className="text-[10px] opacity-80 font-normal">(এসএমএস ওটিপি)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBookingChannel('international');
-                      if (chamberMode === 'offline') {
-                        setChamberMode('online');
-                      }
-                    }}
-                    className={`btn-butter flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                      bookingChannel === 'international'
-                        ? 'bg-gradient-to-r from-emerald-800 to-emerald-700 text-white shadow-md ring-1 ring-emerald-500/50'
-                        : 'text-emerald-900 dark:text-emerald-200 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40'
-                    }`}
-                  >
-                    <span>🌍 প্রবাসী / আন্তর্জাতিক রোগী</span>
-                    <span className="text-[10px] font-bold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-400/40">
-                      হোয়াটসঅ্যাপ • $১০ ডলার
-                    </span>
-                  </button>
                 </div>
               </div>
 
@@ -980,204 +989,115 @@ ${userComplaints}
                 </div>
               )}
 
-              {/* RENDER FORM BASED ON CHANNEL */}
-              {bookingChannel === 'international' ? (
-                /* INTERNATIONAL / OVERSEAS PATIENT WHATSAPP FORM */
-                <div className="space-y-4 animate-fade-in">
-                  {/* International Guideline Card */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border border-amber-300/60 dark:border-amber-700/60 space-y-2 text-xs">
-                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
-                      <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>প্রবাসী ও আন্তর্জাতিক রোগীদের জন্য বিশেষ নির্দেশনা</span>
-                    </div>
-                    <ul className="space-y-1.5 text-emerald-950 dark:text-emerald-200 text-xs leading-relaxed list-disc list-inside">
-                      <li>দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কনসালটেশন</strong> (জুম বা হোয়াটসঅ্যাপ কল) প্রযোজ্য।</li>
-                      <li>যেকোনো দেশ থেকে আন্তর্জাতিক পরামর্শ ফি: <strong>$১০ ডলার (USD)</strong>।</li>
-                      <li>যেহেতু বিদেশি মোবাইল নম্বরে বাংলাদেশি এসএমএস ওটিপি পৌঁছায় না, নিচের তথ্য পূরণ করে সরাসরি হোয়াটসঅ্যাপে আমাদের সাথে যুক্ত হয়ে সিরিয়াল নিশ্চিত করুন।</li>
-                    </ul>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Patient Name */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        রোগীর পূর্ণ নাম <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          value={patientName}
-                          onChange={(e) => setPatientName(e.target.value)}
-                          placeholder="আপনার পূর্ণ নাম লিখুন"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Country & City */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        বর্তমান দেশ ও শহর <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          value={intlCountry}
-                          onChange={(e) => setIntlCountry(e.target.value)}
-                          placeholder="যেমন: লন্ডন (UK), নিউইয়র্ক (USA), দুবাই (UAE) ইত্যাদি"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Foreign WhatsApp Number */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        বিদেশি হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ) <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          required
-                          value={intlPhone || phone}
-                          onChange={(e) => {
-                            setIntlPhone(e.target.value);
-                            setPhone(e.target.value);
-                          }}
-                          placeholder="যেমন: +44 7911 123456 বা +1 202 555 0125"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
-                        এই নম্বরে ভিডিও কলের লিংক ও ডিজিটাল প্রেসক্রিপশন পাঠানো হবে
-                      </span>
-                    </div>
-
-                    {/* Email (Optional) */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        ইমেইল ঠিকানা <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="যেমন: patient@example.com (যদি থাকে)"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Chief Complaints */}
+              {/* UNIFIED PATIENT FORM FIELDS */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Patient Name */}
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                      প্রধান শারীরিক সমস্যা বা রোগের বিবরণ <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
+                      রোগীর পূর্ণ নাম <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-3" />
-                      <textarea
-                        rows={3}
-                        value={complaints}
-                        onChange={(e) => setComplaints(e.target.value)}
-                        placeholder="যেমন: দীর্ঘদিনের আইবিএস, গ্যাস, ফ্যাটি লিভার বা অনিদ্রা..."
+                      <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={patientName}
+                        onChange={(e) => setPatientName(e.target.value)}
+                        placeholder="আপনার পূর্ণ নাম লিখুন"
                         className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  {/* WhatsApp Direct Submit Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#128C7E] hover:from-[#20bd5a] hover:to-[#128C7E] text-white font-bold text-base shadow-xl shadow-emerald-950/20 flex items-center justify-center gap-2.5 transform active:scale-98 cursor-pointer"
-                    >
-                      <MessageCircle className="w-5 h-5 fill-current" />
-                      <span>হোয়াটসঅ্যাপে $১০ ডলার ফি-তে সিরিয়াল কনফার্ম করুন</span>
-                    </button>
-                    <p className="text-center text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
-                      🔒 ক্লিক করলেই আপনার নির্বাচিত স্লট ও বিবরণ সহ অফিশিয়াল চেম্বার হোয়াটসঅ্যাপে বার্তা প্রস্তুত হবে।
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                /* LOCAL BANGLADESHI PATIENT FORM */
-                <div className="space-y-4 animate-fade-in">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Patient Name */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        রোগীর পূর্ণ নাম <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          value={patientName}
-                          onChange={(e) => setPatientName(e.target.value)}
-                          placeholder="আপনার নাম লিখুন এখানে"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* WhatsApp Phone */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                        মোবাইল নম্বর (বাংলাদেশি সিম) <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
+                  {/* Phone / WhatsApp Input */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                      {chamberMode === 'online' && patientOrigin === 'abroad' ? (
+                        <span className="flex items-center gap-1 text-[#25D366] font-bold">
+                          <MessageCircle className="w-3.5 h-3.5 fill-current" />
+                          <span>হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ ওটিপির জন্য)</span>
+                          <span className="text-red-500">*</span>
+                        </span>
+                      ) : (
+                        <span>
+                          মোবাইল নম্বর (এসএমএস ওটিপির জন্য) <span className="text-red-500">*</span>
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      {chamberMode === 'online' && patientOrigin === 'abroad' ? (
+                        <Phone className="w-4 h-4 text-[#25D366] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      ) : (
                         <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          required
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="যেমন: 017XXXXXXXX"
-                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                        />
-                      </div>
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
-                        সিরিয়াল নম্বর ও কনফার্মেশন স্লিপ এই নম্বরে পাঠানো হবে
-                      </span>
+                      )}
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder={
+                          chamberMode === 'online' && patientOrigin === 'abroad'
+                            ? 'যেমন: +44 7911 123456 বা +1 202 555 0125'
+                            : 'যেমন: 017XXXXXXXX'
+                        }
+                        className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
+                      />
+                    </div>
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
+                      {chamberMode === 'online' && patientOrigin === 'abroad'
+                        ? '💬 ফলস বুকিং রোধে এই নম্বরে সরাসরি হোয়াটসঅ্যাপে ৬ ডিজিটের ওটিপি কোড পাঠানো হবে।'
+                        : '🔒 ফলস বুকিং রোধে এই নম্বরে সরাসরি এসএমএসে ৬ ডিজিটের ওটিপি কোড পাঠানো হবে।'}
+                    </span>
 
-                      {/* Foreign Phone Auto-Detector Callout */}
-                      {(phone.trim().startsWith('+') ||
+                    {/* Quick helper when domestic mode is active but international phone is entered */}
+                    {!(chamberMode === 'online' && patientOrigin === 'abroad') &&
+                      (phone.trim().startsWith('+') ||
                         phone.trim().startsWith('00') ||
                         (phone.trim().length >= 4 && !phone.trim().startsWith('01'))) && (
-                        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 animate-fade-in">
+                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 animate-fade-in">
                           <div className="flex items-center gap-1.5">
                             <span>🌍</span>
-                            <span>এটি একটি আন্তর্জাতিক নম্বর। বিদেশি সিমে দেশীয় এসএমএস ওটিপি যাবে না।</span>
+                            <span>বিদেশি নম্বরে এসএমএস যাবে না। আপনি কি বিদেশে অবস্থান করছেন?</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => {
-                              setIntlPhone(phone);
-                              setBookingChannel('international');
-                              if (chamberMode === 'offline') setChamberMode('online');
+                              setChamberMode('online');
+                              setPatientOrigin('abroad');
+                              setActiveOtpChannel('whatsapp');
                             }}
                             className="btn-butter px-3 py-1 rounded-lg bg-[#25D366] text-white font-bold text-[11px] hover:bg-[#20bd5a] shadow-xs cursor-pointer shrink-0"
                           >
-                            হোয়াটসঅ্যাপ বুকিংয়ে যান ($১০)
+                            বিদেশে অবস্থানরত রোগী সিলেক্ট করুন ($১০)
                           </button>
                         </div>
                       )}
-                    </div>
                   </div>
+                </div>
+
+                {/* Country / City (if abroad) & Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {chamberMode === 'online' && patientOrigin === 'abroad' ? (
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                        বর্তমান দেশ ও শহর <span className="text-emerald-500 font-normal">(টাইমজোনের জন্য)</span>
+                      </label>
+                      <div className="relative">
+                        <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={abroadCountry}
+                          onChange={(e) => setAbroadCountry(e.target.value)}
+                          placeholder="যেমন: যুক্তরাজ্য (লন্ডন), যুক্তরাষ্ট্র (নিউইয়র্ক), দুবাই ইত্যাদি"
+                          className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
 
                   {/* Email (Optional) */}
-                  <div className="space-y-1.5">
+                  <div className={`space-y-1.5 ${!(chamberMode === 'online' && patientOrigin === 'abroad') ? 'sm:col-span-2' : ''}`}>
                     <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
                       ইমেইল ঠিকানা <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
                     </label>
@@ -1187,169 +1107,69 @@ ${userComplaints}
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="যেমন: example@gmail.com (যদি থাকে)"
+                        placeholder="যেমন: patient@example.com (কনফার্মেশন ইমেইলে পেতে চাইলে)"
                         className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                       />
                     </div>
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
-                      কনফার্মেশন স্লিপ ইমেইলে পেতে চাইলে দিতে পারেন (বাধ্যতামূলক নয়)
-                    </span>
-                  </div>
-
-                  {/* Chief Complaints */}
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                      প্রধান শারীরিক সমস্যা বা রোগের বিবরণ <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
-                    </label>
-                    <div className="relative">
-                      <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-3" />
-                      <textarea
-                        rows={3}
-                        value={complaints}
-                        onChange={(e) => setComplaints(e.target.value)}
-                        placeholder="যেমন: দীর্ঘদিনের আইবিএস, গ্যাস, ফ্যাটি লিভার বা অনিদ্রা..."
-                        className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit CTA Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={otpPending || isPending}
-                      className="btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-base shadow-xl shadow-emerald-950/25 flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer"
-                    >
-                      {otpPending || isPending ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>যাচাইকরণ কোড পাঠানো হচ্ছে...</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShieldCheck className="w-5 h-5 text-amber-300" />
-                          <span>ওটিপি যাচাই ও ডিজিটাল সিরিয়াল গ্রহণ করুন</span>
-                        </>
-                      )}
-                    </button>
-                    <p className="text-center text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
-                      🔒 ফলস বুকিং রোধে প্রদত্ত মোবাইল নম্বরে ৬-সংখ্যার ওটিপি (OTP) পাঠানো হবে।
-                    </p>
                   </div>
                 </div>
-              )}
+
+                {/* Chief Complaints */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                    প্রধান শারীরিক সমস্যা বা রোগের বিবরণ <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
+                  </label>
+                  <div className="relative">
+                    <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-3" />
+                    <textarea
+                      rows={3}
+                      value={complaints}
+                      onChange={(e) => setComplaints(e.target.value)}
+                      placeholder="যেমন: দীর্ঘদিনের আইবিএস, গ্যাস, ফ্যাটি লিভার বা অনিদ্রা..."
+                      className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Submit CTA Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={otpPending || isPending}
+                    className={`btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-xl flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer ${
+                      chamberMode === 'online' && patientOrigin === 'abroad'
+                        ? 'bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#128C7E] shadow-emerald-950/20'
+                        : 'bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 shadow-emerald-950/25'
+                    }`}
+                  >
+                    {otpPending || isPending ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>যাচাইকরণ কোড পাঠানো হচ্ছে...</span>
+                      </>
+                    ) : chamberMode === 'online' && patientOrigin === 'abroad' ? (
+                      <>
+                        <MessageCircle className="w-5 h-5 fill-current" />
+                        <span>হোয়াটসঅ্যাপে ওটিপি পাঠান ও সিরিয়াল নিন ($১০ ডলার ফি)</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-5 h-5 text-amber-300" />
+                        <span>এসএমএস ওটিপি পাঠান ও ডিজিটাল সিরিয়াল নিন</span>
+                      </>
+                    )}
+                  </button>
+                  <p className="text-center text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
+                    {chamberMode === 'online' && patientOrigin === 'abroad'
+                      ? '🔒 ফলস বুকিং রোধে প্রদত্ত হোয়াটসঅ্যাপ নম্বরে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
+                      : '🔒 ফলস বুকিং রোধে প্রদত্ত মোবাইল নম্বরে এসএমএসের মাধ্যমে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'}
+                  </p>
+                </div>
+              </div>
             </form>
           )}
         </div>
       </div>
-
-      {/* INTERNATIONAL WHATSAPP CONFIRMATION MODAL */}
-      {intlSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xl animate-fade-in overflow-y-auto">
-          <div className="glass-card relative w-full max-w-lg rounded-3xl border border-emerald-500/40 shadow-2xl p-5 sm:p-7 space-y-5 animate-scale-up max-h-[92vh] overflow-y-auto my-auto">
-            {/* Close Button */}
-            <button
-              onClick={() => setIntlSuccessModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Modal Header */}
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-[#25D366]/20 text-[#25D366] mx-auto flex items-center justify-center shadow-inner">
-                <MessageCircle className="w-7 h-7 fill-current" />
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-900 dark:text-amber-300 text-xs font-bold border border-amber-400/30">
-                <span>🌍 প্রবাসী অনলাইন কনসালটেশন</span>
-                <span>•</span>
-                <span>ফি: $১০ ডলার (যেকোনো দেশ)</span>
-              </div>
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-emerald-950 dark:text-emerald-50">
-                হোয়াটসঅ্যাপে বুকিং বার্তা প্রস্তুত!
-              </h3>
-              <p className="text-xs text-emerald-800 dark:text-emerald-300 max-w-sm mx-auto leading-relaxed">
-                আপনার ব্রাউজারে হোয়াটসঅ্যাপ ওপেন করা হয়েছে। যদি স্বয়ংক্রিয়ভাবে চালু না হয়, নিচের বাটনটিতে ক্লিক করে সরাসরি বার্তা পাঠান।
-              </p>
-            </div>
-
-            {/* Booking Details Summary Card */}
-            <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60 space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                <span className="text-zinc-500 dark:text-zinc-400">পরামর্শ মাধ্যম:</span>
-                <span className="font-bold text-emerald-950 dark:text-emerald-100">অনলাইন ভিডিও কল</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                <span className="text-zinc-500 dark:text-zinc-400">তারিখ:</span>
-                <span className="font-bold text-emerald-950 dark:text-emerald-100">{activeDateObj?.fullBn || selectedDate}</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                <span className="text-zinc-500 dark:text-zinc-400">বরাদ্দকৃত সময়:</span>
-                <span className="font-bold text-amber-700 dark:text-amber-400">{selectedSlot?.timeBn} ({selectedSlot?.timeEn})</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                <span className="text-zinc-500 dark:text-zinc-400">রোগীর নাম:</span>
-                <span className="font-bold text-emerald-950 dark:text-emerald-100">{patientName}</span>
-              </div>
-              {intlCountry && (
-                <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                  <span className="text-zinc-500 dark:text-zinc-400">দেশ / বর্তমান অবস্থান:</span>
-                  <span className="font-bold text-emerald-950 dark:text-emerald-100">{intlCountry}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center py-1 border-b border-emerald-200/50 dark:border-emerald-800/40">
-                <span className="text-zinc-500 dark:text-zinc-400">হোয়াটসঅ্যাপ নম্বর:</span>
-                <span className="font-bold text-emerald-950 dark:text-emerald-100 font-mono">{intlPhone || phone}</span>
-              </div>
-              <div className="flex justify-between items-center pt-1 text-sm">
-                <span className="font-bold text-emerald-900 dark:text-emerald-200">পরামর্শ ফি:</span>
-                <span className="font-extrabold text-amber-700 dark:text-amber-300">$১০ ডলার (যেকোনো দেশ)</span>
-              </div>
-            </div>
-
-            {/* Instruction */}
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-300/40 dark:border-amber-700/40 text-[11px] text-amber-950 dark:text-amber-200 leading-relaxed">
-              💡 <strong>পরবর্তী ধাপ:</strong> আয়ুর্বেদাচার্য দেবজ্যোতি দত্তের চেম্বার সমন্বয়ক দল হোয়াটসঅ্যাপে বার্তা প্রাপ্তির পর আপনার সিরিয়াল নিশ্চিত করবেন এবং $১০ ডলার ফি পরিশোধের জন্য নিরাপদ আন্তর্জাতিক পেমেন্ট নির্দেশনা প্রদান করবেন।
-            </div>
-
-            {/* CTAs */}
-            <div className="space-y-2 pt-1">
-              <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801712854941'}?text=${encodeURIComponent(intlGeneratedMsg)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-butter w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm shadow-md flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4 fill-current" />
-                <span>সরাসরি হোয়াটসঅ্যাপে মেসেজ পাঠান</span>
-                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-              </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(intlGeneratedMsg);
-                  setIntlCopied(true);
-                  setTimeout(() => setIntlCopied(false), 2500);
-                }}
-                className="w-full py-2.5 px-4 rounded-xl border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-semibold text-xs hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                {intlCopied ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>মেসেজের লেখা কপি করা হয়েছে!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>মেসেজের পুরো লেখা কপি করুন</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* OTP VERIFICATION MODAL */}
       {showOtpModal && (
@@ -1414,15 +1234,36 @@ ${userComplaints}
               <>
                 {/* Header */}
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 mx-auto flex items-center justify-center shadow-inner">
-                    <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
-                    মোবাইল নম্বর যাচাইকরণ (OTP)
-                  </h3>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                    ফলস বুকিং রোধে আপনার নম্বরে একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
-                  </p>
+                  {activeOtpChannel === 'whatsapp' ? (
+                    <>
+                      <div className="w-12 h-12 rounded-2xl bg-[#25D366]/20 text-[#25D366] mx-auto flex items-center justify-center shadow-inner">
+                        <MessageCircle className="w-6 h-6 fill-current" />
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-[#25D366] text-xs font-bold border border-emerald-300 dark:border-emerald-800">
+                        <span>🌍 প্রবাসী অনলাইন রোগী</span>
+                        <span>•</span>
+                        <span>ফি: $১০ ডলার</span>
+                      </div>
+                      <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
+                        হোয়াটসঅ্যাপ ওটিপি যাচাইকরণ
+                      </h3>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                        ফলস বুকিং রোধে আপনার হোয়াটসঅ্যাপ নম্বরে একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 mx-auto flex items-center justify-center shadow-inner">
+                        <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
+                        মোবাইল নম্বর যাচাইকরণ (SMS OTP)
+                      </h3>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                        ফলস বুকিং রোধে আপনার মোবাইল নম্বরে একটি ৬-সংখ্যার এসএমএস কোড পাঠানো হয়েছে:
+                      </p>
+                    </>
+                  )}
                   <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
                     {phone}
                   </div>

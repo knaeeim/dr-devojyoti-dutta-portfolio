@@ -18,23 +18,36 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, patientName } = body;
+    const { phone, patientName, channel, patientOrigin } = body;
 
     if (!phone || typeof phone !== 'string') {
       return NextResponse.json(
-        { error: 'মোবাইল নম্বর প্রদান করা আবশ্যক।' },
+        { error: 'মোবাইল বা হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।' },
         { status: 400 }
       );
     }
 
-    if (!phoneRegex.test(phone.trim())) {
-      return NextResponse.json(
-        { error: 'সঠিক বাংলাদেশী মোবাইল নম্বর (যেমন: 017XXXXXXXX) প্রদান করুন।' },
-        { status: 400 }
-      );
+    const isInternational = channel === 'whatsapp' || patientOrigin === 'abroad' || patientOrigin === 'international';
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+
+    if (!isInternational) {
+      if (!phoneRegex.test(cleanPhone)) {
+        return NextResponse.json(
+          { error: 'সঠিক বাংলাদেশী মোবাইল নম্বর (যেমন: 017XXXXXXXX) প্রদান করুন।' },
+          { status: 400 }
+        );
+      }
+    } else {
+      if (!/^\+?[1-9]\d{6,14}$/.test(cleanPhone)) {
+        return NextResponse.json(
+          { error: 'সঠিক আন্তর্জাতিক হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ, যেমন: +44 7911 123456) প্রদান করুন।' },
+          { status: 400 }
+        );
+      }
     }
 
-    const result = await sendOtp(phone, patientName);
+    const selectedChannel = isInternational ? 'whatsapp' : 'sms';
+    const result = await sendOtp(cleanPhone, patientName, selectedChannel);
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
@@ -42,10 +55,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: result.message,
+      channel: result.channel,
       expiresInSeconds: result.expiresInSeconds,
       challengeToken: result.challengeToken,
       debugCode: result.debugCode,
       smsSent: result.smsSent,
+      whatsappSent: result.whatsappSent,
       gatewayError: result.gatewayError
     });
   } catch (error: any) {

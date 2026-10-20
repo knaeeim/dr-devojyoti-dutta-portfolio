@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { sendDirectSms } from '@/lib/sms/service';
+import { sendWhatsAppMessage } from '@/lib/whatsapp/service';
 
 const OTP_SECRET =
   process.env.ADMIN_SESSION_SECRET ||
@@ -33,6 +34,8 @@ export function normalizePhoneNumber(rawPhone: string): string {
     cleaned = '+88' + cleaned;
   } else if (cleaned.startsWith('8801') && cleaned.length === 13) {
     cleaned = '+' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.length >= 7) {
+    cleaned = '+' + cleaned;
   }
   return cleaned;
 }
@@ -62,15 +65,21 @@ export function createVerifiedPhoneToken(phone: string): string {
 }
 
 /**
- * Generates a 6-digit OTP code and dispatches SMS if provider credentials exist
+ * Generates a 6-digit OTP code and dispatches SMS or WhatsApp if provider credentials exist
  */
-export async function sendOtp(phone: string, patientName?: string): Promise<{
+export async function sendOtp(
+  phone: string,
+  patientName?: string,
+  channel: 'sms' | 'whatsapp' = 'sms'
+): Promise<{
   success: boolean;
   message: string;
   expiresInSeconds: number;
   challengeToken?: string;
   debugCode?: string;
   smsSent?: boolean;
+  whatsappSent?: boolean;
+  channel: 'sms' | 'whatsapp';
   gatewayError?: string;
 }> {
   const normalized = normalizePhoneNumber(phone);
@@ -83,7 +92,8 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
     return {
       success: false,
       message: `অনুগ্রহ করে ${waitSec} সেকেন্ড পর পুনরায় ওটিপি কোডের জন্য চেষ্টা করুন।`,
-      expiresInSeconds: Math.ceil((existing.expiresAt - now) / 1000)
+      expiresInSeconds: Math.ceil((existing.expiresAt - now) / 1000),
+      channel
     };
   }
 
@@ -97,6 +107,33 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
     attempts: 0,
     verified: false
   });
+
+  // Handle WhatsApp channel for international patients
+  if (channel === 'whatsapp') {
+    const waText = `নমস্কার ${patientName ? patientName + ', ' : ''}আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের জন্য আপনার ওটিপি (OTP) কোড হলো: *${code}*। কোডটি আগামী ৫ মিনিটের জন্য কার্যকর থাকবে।`;
+    const waResult = await sendWhatsAppMessage(normalized, waText);
+    const whatsappSent = waResult.success && waResult.provider !== 'sandbox';
+
+    console.log(`\n============================================================`);
+    console.log(`💬 [WHATSAPP OTP GENERATED] -> ${normalized}`);
+    console.log(`🔢 OTP Code: ${code}`);
+    console.log(`👤 Patient: ${patientName || 'New Patient'}`);
+    console.log(`📡 Status: ${whatsappSent ? `Delivered via WhatsApp (${waResult.provider})` : 'Sandbox Simulator'}`);
+    console.log(`============================================================\n`);
+
+    const challengeToken = createOtpChallenge(normalized, code, expiresAt);
+
+    return {
+      success: true,
+      message: `আপনার হোয়াটসঅ্যাপ নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`,
+      expiresInSeconds: 300,
+      challengeToken,
+      channel: 'whatsapp',
+      debugCode: !whatsappSent ? code : undefined,
+      whatsappSent,
+      gatewayError: !whatsappSent ? waResult.error : undefined
+    };
+  }
 
   const smsText = `Your OTP for Devojyoti Dutta chamber appointment is ${code}. Valid for 5 minutes. Do not share with anyone.`;
 
@@ -151,10 +188,11 @@ export async function sendOtp(phone: string, patientName?: string): Promise<{
   return {
     success: true,
     message: smsSent
-      ? `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`
-      : `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি পাঠানো হয়েছে।`,
+      ? `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`
+      : `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`,
     expiresInSeconds: 300,
     challengeToken,
+    channel: 'sms',
     // Provide debugCode for instant demo/testing if real SMS provider isn't configured
     debugCode: !smsSent ? code : undefined,
     smsSent,
