@@ -401,3 +401,140 @@ function logEmail(
     emailDispatchHistory.pop();
   }
 }
+
+/**
+ * Sends a 6-digit OTP verification email for international patients
+ */
+export async function sendOtpEmail(params: {
+  to: string;
+  code: string;
+  patientName?: string;
+}): Promise<{
+  success: boolean;
+  messageId?: string;
+  provider: 'smtp' | 'resend' | 'sandbox';
+  error?: string;
+}> {
+  const subject = `আপনার ওটিপি (OTP) যাচাইকরণ কোড: ${params.code} — দেবজ্যোতি দত্ত চেম্বার`;
+  const patientDisplayName = params.patientName ? params.patientName : 'সুধী';
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <title>আপনার ওটিপি কোড</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4fbf7; margin: 0; padding: 24px; color: #15291e;">
+  <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #d1fae5; overflow: hidden; box-shadow: 0 8px 20px rgba(6,78,59,0.08);">
+    <div style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: #ffffff; padding: 28px 24px; text-align: center;">
+      <h2 style="margin: 0 0 6px 0; font-size: 22px;">আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত</h2>
+      <p style="margin: 0; font-size: 13px; color: #a7f3d0;">অনলাইন ভিডিও কনসালটেশন অ্যাপয়েন্টমেন্ট যাচাইকরণ</p>
+    </div>
+    <div style="padding: 28px 24px; text-align: center;">
+      <p style="font-size: 15px; margin-bottom: 16px; color: #064e3b; font-weight: 600;">
+        নমস্কার ${patientDisplayName},
+      </p>
+      <p style="font-size: 13px; color: #374151; line-height: 1.6; margin-bottom: 24px;">
+        আয়ুর্বেদাচার্য দেবজ্যোতি দত্তের চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের ডিজিটাল সিরিয়াল নিশ্চিত করতে নিচের ৬-সংখ্যার ওটিপি (OTP) কোডটি ব্যবহার করুন:
+      </p>
+      <div style="background: #f0fdf4; border: 2px dashed #059669; border-radius: 12px; padding: 18px 28px; margin: 0 auto 24px auto; display: inline-block;">
+        <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #064e3b; font-family: monospace;">${params.code}</span>
+      </div>
+      <p style="font-size: 12px; color: #6b7280; margin: 0;">
+        ⚠️ এই কোডটির মেয়াদ আগামী <strong>৫ মিনিট</strong> পর্যন্ত কার্যকর থাকবে। কারো সাথে কোডটি শেয়ার করবেন না।
+      </p>
+    </div>
+    <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af;">
+      © ${new Date().getFullYear()} আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার। সর্বস্বত্ব সংরক্ষিত।
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const emailFrom =
+    process.env.EMAIL_FROM ||
+    process.env.RESEND_FROM_EMAIL ||
+    (smtpUser ? `দেবজ্যোতি দত্ত চেম্বার <${smtpUser}>` : 'দেবজ্যোতি দত্ত চেম্বার <onboarding@resend.dev>');
+
+  // 1. Try SMTP if configured
+  if (smtpHost && smtpUser && smtpPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass
+        }
+      });
+
+      const info = await transporter.sendMail({
+        from: emailFrom,
+        to: params.to,
+        subject,
+        html: htmlContent
+      });
+
+      console.log(`[Email OTP - SMTP] Dispatched OTP email to ${params.to}, messageId: ${info.messageId}`);
+      return {
+        success: true,
+        messageId: info.messageId,
+        provider: 'smtp'
+      };
+    } catch (err: any) {
+      console.error('[Email OTP] SMTP dispatch failed:', err?.message || err);
+    }
+  }
+
+  // 2. Try Resend API if configured
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${resendApiKey}`
+        },
+        body: JSON.stringify({
+          from: emailFrom,
+          to: [params.to],
+          subject,
+          html: htmlContent
+        })
+      });
+
+      const resData = await response.json();
+      if (response.ok && resData.id) {
+        console.log(`[Email OTP - Resend] Dispatched OTP email to ${params.to}, id: ${resData.id}`);
+        return {
+          success: true,
+          messageId: resData.id,
+          provider: 'resend'
+        };
+      }
+    } catch (err: any) {
+      console.error('[Email OTP] Resend API dispatch failed:', err?.message || err);
+    }
+  }
+
+  // 3. Fallback Sandbox Simulator
+  console.log(`\n============================================================`);
+  console.log(`📧 [EMAIL OTP SIMULATOR / DEMO MODE]`);
+  console.log(`✉️ Recipient: ${params.to}`);
+  console.log(`🔢 OTP Code: ${params.code}`);
+  console.log(`👤 Patient: ${patientDisplayName}`);
+  console.log(`ℹ️ Notice: To dispatch live emails, configure SMTP_HOST, SMTP_USER, SMTP_PASS or RESEND_API_KEY in .env.local`);
+  console.log(`============================================================\n`);
+
+  return {
+    success: true,
+    messageId: `otp_sim_${Date.now()}`,
+    provider: 'sandbox'
+  };
+}

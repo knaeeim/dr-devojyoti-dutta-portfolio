@@ -17,16 +17,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, code, challengeToken } = body;
+    const { phone, email, target, code, challengeToken } = body;
+    const verifyTarget = (email || target || phone || '').trim();
 
-    if (!phone || !code) {
+    if (!verifyTarget || !code) {
       return NextResponse.json(
-        { error: 'ফোন নম্বর এবং ওটিপি কোড উভয়ই আবশ্যক।' },
+        { error: 'যাচাইকরণ নম্বর বা ইমেইল এবং ওটিপি কোড উভয়ই আবশ্যক।' },
         { status: 400 }
       );
     }
 
-    const result = verifyOtpCode(phone, code, challengeToken);
+    const result = verifyOtpCode(verifyTarget, code, challengeToken);
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }

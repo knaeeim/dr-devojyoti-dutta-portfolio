@@ -5,7 +5,7 @@ import {
   createAppointment,
   getBookedSlotsForDate
 } from '@/lib/db/appointments';
-import { isPhoneVerified } from '@/lib/security/otp';
+import { isOtpTargetVerified } from '@/lib/security/otp';
 import { ChamberMode } from '@/types/booking';
 import { isSlotPastTime } from '@/lib/booking/utils';
 
@@ -76,14 +76,14 @@ export async function POST(request: NextRequest) {
     const { patientName, phone, email, chamberMode, appointmentDate, slotId, complaints } =
       parsed.data;
 
-    // Validate OTP verification to prevent fake bookings
+    // Validate OTP verification to prevent fake bookings (supports Phone SMS or Email OTP)
     const otpToken = body.otpToken;
-    const isVerified = isPhoneVerified(phone, otpToken);
+    const isVerified = isOtpTargetVerified(phone, email, otpToken);
     if (!isVerified) {
       return NextResponse.json(
         {
           error:
-            'ফলস বুকিং রোধে মোবাইল নম্বরে প্রেরিত ওটিপি (OTP) যাচাই করা বাধ্যতামূলক। অনুগ্রহ করে ওটিপি ভেরিফাই করে পুনরায় চেষ্টা করুন।'
+            'ফলস বুকিং রোধে ওটিপি (OTP) যাচাই করা বাধ্যতামূলক। অনুগ্রহ করে ওটিপি ভেরিফাই করে পুনরায় চেষ্টা করুন।'
         },
         { status: 403 }
       );

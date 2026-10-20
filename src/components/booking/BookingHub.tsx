@@ -76,10 +76,10 @@ export default function BookingHub() {
   const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
   const [copiedSerial, setCopiedSerial] = useState(false);
 
-  // Online Mode Patient Origin: 'bangladesh' (SMS OTP) vs 'abroad' (WhatsApp OTP)
+  // Online Mode Patient Origin: 'bangladesh' (SMS OTP) vs 'abroad' (Email OTP)
   const [patientOrigin, setPatientOrigin] = useState<'bangladesh' | 'abroad'>('bangladesh');
   const [abroadCountry, setAbroadCountry] = useState('');
-  const [activeOtpChannel, setActiveOtpChannel] = useState<'sms' | 'whatsapp'>('sms');
+  const [activeOtpChannel, setActiveOtpChannel] = useState<'sms' | 'email' | 'whatsapp'>('sms');
 
   // OTP Verification state
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -265,33 +265,34 @@ export default function BookingHub() {
     }
 
     const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
-    const channel: 'sms' | 'whatsapp' = isAbroad ? 'whatsapp' : 'sms';
+    const channel: 'sms' | 'email' = isAbroad ? 'email' : 'sms';
 
     const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     if (!cleanPhone) {
       setErrorMsg(
         isAbroad
-          ? 'সচল হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।'
+          ? 'যোগাযোগ ও ভিডিও কলের জন্য মোবাইল বা হোয়াটসঅ্যাপ নম্বর প্রদান আবশ্যক।'
           : 'সচল মোবাইল নম্বর প্রদান করা আবশ্যক।'
       );
       return;
     }
 
-    if (!isAbroad) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (isAbroad) {
+      if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        setErrorMsg(
+          'বিদেশে অবস্থানরত রোগীদের জন্য সঠিক ইমেইল ঠিকানা প্রদান করা আবশ্যক (ওটিপি পাঠানো হবে)।'
+        );
+        return;
+      }
+    } else {
       if (
         cleanPhone.startsWith('+') ||
         cleanPhone.startsWith('00') ||
         (cleanPhone.length >= 4 && !cleanPhone.startsWith('01'))
       ) {
         setErrorMsg(
-          'বিদেশি মোবাইল নম্বরে দেশীয় এসএমএস ওটিপি যাবে না। আপনি যদি প্রবাসী হন, অনুগ্রহ করে উপরের নির্বাচন থেকে "বিদেশে অবস্থানরত রোগী (হোয়াটসঅ্যাপ ওটিপি)" সিলেক্ট করুন।'
-        );
-        return;
-      }
-    } else {
-      if (!/^\+?[1-9]\d{6,14}$/.test(cleanPhone)) {
-        setErrorMsg(
-          'অনুগ্রহ করে সঠিক আন্তর্জাতিক হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ, যেমন: +44 7911 123456 বা +1 202 555 0125) লিখুন।'
+          'বিদেশি মোবাইল নম্বরে দেশীয় এসএমএস ওটিপি যাবে না। আপনি যদি প্রবাসী হন, অনুগ্রহ করে উপরের নির্বাচন থেকে "বিদেশে অবস্থানরত রোগী (ইমেইল ওটিপি)" সিলেক্ট করুন।'
         );
         return;
       }
@@ -306,6 +307,7 @@ export default function BookingHub() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: cleanPhone,
+          email: cleanEmail,
           patientName: patientName.trim(),
           channel,
           patientOrigin
@@ -343,14 +345,20 @@ export default function BookingHub() {
       return;
     }
 
+    const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
     const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    const cleanEmail = email.trim().toLowerCase();
+    const verifyTarget = isAbroad ? cleanEmail : cleanPhone;
+
     setOtpPending(true);
     try {
       const res = await fetch('/api/appointments/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          target: verifyTarget,
           phone: cleanPhone,
+          email: cleanEmail,
           code: otpCode.trim(),
           challengeToken: otpChallengeToken
         })
@@ -382,15 +390,17 @@ export default function BookingHub() {
     if (otpTimer > 0) return;
     setOtpError(null);
     setOtpPending(true);
-    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
-    const channel: 'sms' | 'whatsapp' = isAbroad ? 'whatsapp' : 'sms';
+    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    const cleanEmail = email.trim().toLowerCase();
+    const channel: 'sms' | 'email' = isAbroad ? 'email' : 'sms';
     try {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: cleanPhone,
+          email: cleanEmail,
           patientName: patientName.trim(),
           channel,
           patientOrigin
@@ -579,7 +589,7 @@ export default function BookingHub() {
                   </span>
                 </div>
                 <p className="text-emerald-900/90 dark:text-emerald-200/80 text-[11px] sm:text-xs leading-relaxed">
-                  দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কল</strong>-এ অ্যাপয়েন্টমেন্ট নেওয়া যাবে। প্রবাসীদের সুবিধার্থে সরাসরি <strong>হোয়াটসঅ্যাপে</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে।
+                  দেশের বাইরে থেকে শুধুমাত্র <strong>অনলাইন ভিডিও কল</strong>-এ অ্যাপয়েন্টমেন্ট নেওয়া যাবে। প্রবাসীদের সুবিধার্থে সরাসরি <strong>ইমেইলে (Email)</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে।
                 </p>
               </div>
             </div>
@@ -589,7 +599,7 @@ export default function BookingHub() {
                 onClick={() => {
                   setChamberMode('online');
                   setPatientOrigin('abroad');
-                  setActiveOtpChannel('whatsapp');
+                  setActiveOtpChannel('email');
                 }}
                 className="btn-butter w-full sm:w-auto shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-xs cursor-pointer"
               >
@@ -646,7 +656,7 @@ export default function BookingHub() {
                   <span>রোগীর অবস্থান নির্বাচন করুন:</span>
                 </span>
                 <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
-                  {patientOrigin === 'abroad' ? 'হোয়াটসঅ্যাপ ওটিপি • ফি: $১০' : 'এসএমএস ওটিপি • ফি: ৮০০ টাকা'}
+                  {patientOrigin === 'abroad' ? 'ইমেইল ওটিপি • ফি: $১০' : 'এসএমএস ওটিপি • ফি: ৮০০ টাকা'}
                 </span>
               </label>
 
@@ -657,12 +667,12 @@ export default function BookingHub() {
                   onChange={(e) => {
                     const val = e.target.value as 'bangladesh' | 'abroad';
                     setPatientOrigin(val);
-                    setActiveOtpChannel(val === 'abroad' ? 'whatsapp' : 'sms');
+                    setActiveOtpChannel(val === 'abroad' ? 'email' : 'sms');
                   }}
                   className="w-full appearance-none py-2.5 pl-3.5 pr-10 rounded-xl font-semibold text-xs sm:text-sm border border-emerald-400/80 dark:border-emerald-700 bg-white/95 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-100 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
                   <option value="bangladesh">🇧🇩 বাংলাদেশে অবস্থানরত রোগী (এসএমএস ওটিপি • ফি: ৮০০ টাকা)</option>
-                  <option value="abroad">🌍 বিদেশে অবস্থানরত রোগী (হোয়াটসঅ্যাপ ওটিপি • ফি: $১০ ডলার)</option>
+                  <option value="abroad">🌍 বিদেশে অবস্থানরত রোগী (ইমেইল ওটিপি • ফি: $১০ ডলার)</option>
                 </select>
                 <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300 text-xs">
                   ▼
@@ -672,8 +682,8 @@ export default function BookingHub() {
               <div className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-center gap-1.5 pt-0.5">
                 {patientOrigin === 'abroad' ? (
                   <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] shrink-0" />
-                    <span>বিদেশে অবস্থানরতদের জন্য <strong>হোয়াটসঅ্যাপে</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে। আন্তর্জাতিক ফি: <strong>$১০ ডলার</strong>।</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span>বিদেশে অবস্থানরতদের জন্য <strong>ইমেইলে (Email)</strong> ৬ ডিজিটের ওটিপি পাঠিয়ে সিরিয়াল নিশ্চিত করা হবে। আন্তর্জাতিক ফি: <strong>$১০ ডলার</strong>।</span>
                   </>
                 ) : (
                   <>
@@ -720,7 +730,7 @@ export default function BookingHub() {
               {chamberMode === 'offline'
                 ? '✓ সরাসরি ঢাকা চেম্বার ডিজিটাল সিরিয়াল'
                 : patientOrigin === 'abroad'
-                ? '✓ প্রবাসী অনলাইন ভিডিও কল (হোয়াটসঅ্যাপ ওটিপি)'
+                ? '✓ প্রবাসী অনলাইন ভিডিও কল (ইমেইল ওটিপি)'
                 : '✓ বাংলাদেশ অনলাইন ভিডিও কল (এসএমএস ওটিপি)'}
             </span>
           </div>
@@ -1010,13 +1020,13 @@ export default function BookingHub() {
                     </div>
                   </div>
 
-                  {/* Phone / WhatsApp Input */}
+                  {/* Phone Input */}
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
                       {chamberMode === 'online' && patientOrigin === 'abroad' ? (
-                        <span className="flex items-center gap-1 text-[#25D366] font-bold">
-                          <MessageCircle className="w-3.5 h-3.5 fill-current" />
-                          <span>হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ ওটিপির জন্য)</span>
+                        <span className="flex items-center gap-1 text-emerald-900 dark:text-emerald-200 font-semibold">
+                          <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>মোবাইল বা হোয়াটসঅ্যাপ নম্বর (ভিডিও কলের জন্য)</span>
                           <span className="text-red-500">*</span>
                         </span>
                       ) : (
@@ -1026,11 +1036,7 @@ export default function BookingHub() {
                       )}
                     </label>
                     <div className="relative">
-                      {chamberMode === 'online' && patientOrigin === 'abroad' ? (
-                        <Phone className="w-4 h-4 text-[#25D366] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      ) : (
-                        <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      )}
+                      <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="tel"
                         required
@@ -1046,7 +1052,7 @@ export default function BookingHub() {
                     </div>
                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
                       {chamberMode === 'online' && patientOrigin === 'abroad'
-                        ? '💬 ফলস বুকিং রোধে এই নম্বরে সরাসরি হোয়াটসঅ্যাপে ৬ ডিজিটের ওটিপি কোড পাঠানো হবে।'
+                        ? '📹 ডাক্তারের সাথে সরাসরি অনলাইন ভিডিও কনসালটেশনের সমন্বয়ে এই নম্বরটি ব্যবহৃত হবে।'
                         : '🔒 ফলস বুকিং রোধে এই নম্বরে সরাসরি এসএমএসে ৬ ডিজিটের ওটিপি কোড পাঠানো হবে।'}
                     </span>
 
@@ -1065,9 +1071,9 @@ export default function BookingHub() {
                             onClick={() => {
                               setChamberMode('online');
                               setPatientOrigin('abroad');
-                              setActiveOtpChannel('whatsapp');
+                              setActiveOtpChannel('email');
                             }}
-                            className="btn-butter px-3 py-1 rounded-lg bg-[#25D366] text-white font-bold text-[11px] hover:bg-[#20bd5a] shadow-xs cursor-pointer shrink-0"
+                            className="btn-butter px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] shadow-xs cursor-pointer shrink-0"
                           >
                             বিদেশে অবস্থানরত রোগী সিলেক্ট করুন ($১০)
                           </button>
@@ -1096,21 +1102,41 @@ export default function BookingHub() {
                     </div>
                   ) : null}
 
-                  {/* Email (Optional) */}
+                  {/* Email Input */}
                   <div className={`space-y-1.5 ${!(chamberMode === 'online' && patientOrigin === 'abroad') ? 'sm:col-span-2' : ''}`}>
                     <label className="block text-xs font-semibold text-emerald-900 dark:text-emerald-200">
-                      ইমেইল ঠিকানা <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
+                      {chamberMode === 'online' && patientOrigin === 'abroad' ? (
+                        <span className="flex items-center gap-1 text-emerald-800 dark:text-emerald-300 font-bold">
+                          <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>ইমেইল ঠিকানা (ওটিপি পাঠানো হবে)</span>
+                          <span className="text-red-500">*</span>
+                        </span>
+                      ) : (
+                        <span>
+                          ইমেইল ঠিকানা <span className="text-emerald-500 font-normal">(ঐচ্ছিক)</span>
+                        </span>
+                      )}
                     </label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="email"
+                        required={chamberMode === 'online' && patientOrigin === 'abroad'}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="যেমন: patient@example.com (কনফার্মেশন ইমেইলে পেতে চাইলে)"
+                        placeholder={
+                          chamberMode === 'online' && patientOrigin === 'abroad'
+                            ? 'যেমন: patient@example.com (এখানে ওটিপি কোড যাবে)'
+                            : 'যেমন: patient@example.com (কনফার্মেশন ইমেইলে পেতে চাইলে)'
+                        }
                         className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-emerald-950 dark:text-emerald-100 text-sm focus:outline-none"
                       />
                     </div>
+                    {chamberMode === 'online' && patientOrigin === 'abroad' && (
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 block">
+                        📧 ফলস বুকিং রোধে এই ইমেইল ঠিকানায় ৬ ডিজিটের নিরাপত্তা ওটিপি কোড পাঠানো হবে।
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -1136,11 +1162,7 @@ export default function BookingHub() {
                   <button
                     type="submit"
                     disabled={otpPending || isPending}
-                    className={`btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-xl flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer ${
-                      chamberMode === 'online' && patientOrigin === 'abroad'
-                        ? 'bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#128C7E] shadow-emerald-950/20'
-                        : 'bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 shadow-emerald-950/25'
-                    }`}
+                    className="btn-butter hover-glow-emerald w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-xl flex items-center justify-center gap-2 transform active:scale-98 disabled:opacity-60 cursor-pointer bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 shadow-emerald-950/25"
                   >
                     {otpPending || isPending ? (
                       <>
@@ -1149,8 +1171,8 @@ export default function BookingHub() {
                       </>
                     ) : chamberMode === 'online' && patientOrigin === 'abroad' ? (
                       <>
-                        <MessageCircle className="w-5 h-5 fill-current" />
-                        <span>হোয়াটসঅ্যাপে ওটিপি পাঠান ও সিরিয়াল নিন ($১০ ডলার ফি)</span>
+                        <Mail className="w-5 h-5 text-amber-300" />
+                        <span>ইমেইলে ওটিপি পাঠান ও সিরিয়াল নিন ($১০ ডলার ফি)</span>
                       </>
                     ) : (
                       <>
@@ -1161,7 +1183,7 @@ export default function BookingHub() {
                   </button>
                   <p className="text-center text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
                     {chamberMode === 'online' && patientOrigin === 'abroad'
-                      ? '🔒 ফলস বুকিং রোধে প্রদত্ত হোয়াটসঅ্যাপ নম্বরে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
+                      ? '🔒 ফলস বুকিং রোধে প্রদত্ত ইমেইল ঠিকানায় ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
                       : '🔒 ফলস বুকিং রোধে প্রদত্ত মোবাইল নম্বরে এসএমএসের মাধ্যমে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'}
                   </p>
                 </div>
@@ -1234,7 +1256,27 @@ export default function BookingHub() {
               <>
                 {/* Header */}
                 <div className="text-center space-y-2">
-                  {activeOtpChannel === 'whatsapp' ? (
+                  {activeOtpChannel === 'email' ? (
+                    <>
+                      <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 mx-auto flex items-center justify-center shadow-inner">
+                        <Mail className="w-6 h-6" />
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 text-xs font-bold border border-emerald-300 dark:border-emerald-800">
+                        <span>🌍 প্রবাসী অনলাইন রোগী</span>
+                        <span>•</span>
+                        <span>ফি: $১০ ডলার</span>
+                      </div>
+                      <h3 className="font-serif text-xl font-bold text-emerald-950 dark:text-emerald-50">
+                        ইমেইল ওটিপি যাচাইকরণ (Email OTP)
+                      </h3>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                        ফলস বুকিং রোধে আপনার ইমেইল ঠিকানায় একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
+                      </p>
+                      <div className="inline-block px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
+                        {email}
+                      </div>
+                    </>
+                  ) : activeOtpChannel === 'whatsapp' ? (
                     <>
                       <div className="w-12 h-12 rounded-2xl bg-[#25D366]/20 text-[#25D366] mx-auto flex items-center justify-center shadow-inner">
                         <MessageCircle className="w-6 h-6 fill-current" />
@@ -1250,6 +1292,9 @@ export default function BookingHub() {
                       <p className="text-xs text-emerald-700 dark:text-emerald-300">
                         ফলস বুকিং রোধে আপনার হোয়াটসঅ্যাপ নম্বরে একটি ৬-সংখ্যার নিরাপত্তা কোড পাঠানো হয়েছে:
                       </p>
+                      <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
+                        {phone}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -1262,11 +1307,11 @@ export default function BookingHub() {
                       <p className="text-xs text-emerald-700 dark:text-emerald-300">
                         ফলস বুকিং রোধে আপনার মোবাইল নম্বরে একটি ৬-সংখ্যার এসএমএস কোড পাঠানো হয়েছে:
                       </p>
+                      <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
+                        {phone}
+                      </div>
                     </>
                   )}
-                  <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 font-mono font-bold text-emerald-900 dark:text-emerald-200 text-sm">
-                    {phone}
-                  </div>
                 </div>
 
                 {/* Demo / Sandbox Helper Badge if real SMS gateway is not configured */}

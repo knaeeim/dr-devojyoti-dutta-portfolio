@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { sendDirectSms } from '@/lib/sms/service';
 import { sendWhatsAppMessage } from '@/lib/whatsapp/service';
+import { sendOtpEmail } from '@/lib/email/service';
 
 const OTP_SECRET =
   process.env.ADMIN_SESSION_SECRET ||
@@ -40,11 +41,18 @@ export function normalizePhoneNumber(rawPhone: string): string {
   return cleaned;
 }
 
+export function normalizeOtpTarget(rawTarget: string): string {
+  if (rawTarget.includes('@')) {
+    return rawTarget.trim().toLowerCase();
+  }
+  return normalizePhoneNumber(rawTarget);
+}
+
 /**
  * Creates a stateless HMAC challenge token for serverless multi-container verification
  */
-export function createOtpChallenge(phone: string, code: string, expiresAt: number): string {
-  const normalized = normalizePhoneNumber(phone);
+export function createOtpChallenge(target: string, code: string, expiresAt: number): string {
+  const normalized = normalizeOtpTarget(target);
   const payload = `${normalized}:${expiresAt}`;
   const hmac = crypto
     .createHmac('sha256', OTP_SECRET)
@@ -54,10 +62,10 @@ export function createOtpChallenge(phone: string, code: string, expiresAt: numbe
 }
 
 /**
- * Creates a stateless signed token proving the phone was verified via OTP
+ * Creates a stateless signed token proving the target was verified via OTP
  */
-export function createVerifiedPhoneToken(phone: string): string {
-  const normalized = normalizePhoneNumber(phone);
+export function createVerifiedPhoneToken(target: string): string {
+  const normalized = normalizeOtpTarget(target);
   const validUntil = Date.now() + 25 * 60 * 1000; // 25 mins validity for booking completion
   const payload = `verified:${normalized}:${validUntil}`;
   const hmac = crypto.createHmac('sha256', OTP_SECRET).update(payload).digest('hex');
@@ -65,12 +73,12 @@ export function createVerifiedPhoneToken(phone: string): string {
 }
 
 /**
- * Generates a 6-digit OTP code and dispatches SMS or WhatsApp if provider credentials exist
+ * Generates a 6-digit OTP code and dispatches SMS, Email, or WhatsApp
  */
 export async function sendOtp(
-  phone: string,
+  target: string,
   patientName?: string,
-  channel: 'sms' | 'whatsapp' = 'sms'
+  channel: 'sms' | 'email' | 'whatsapp' = 'sms'
 ): Promise<{
   success: boolean;
   message: string;
@@ -78,13 +86,14 @@ export async function sendOtp(
   challengeToken?: string;
   debugCode?: string;
   smsSent?: boolean;
+  emailSent?: boolean;
   whatsappSent?: boolean;
-  channel: 'sms' | 'whatsapp';
+  channel: 'sms' | 'email' | 'whatsapp';
   gatewayError?: string;
 }> {
-  const normalized = normalizePhoneNumber(phone);
+  const normalized = normalizeOtpTarget(target);
   
-  // Rate check: prevent sending more than once every 30 seconds for the same number
+  // Rate check: prevent sending more than once every 30 seconds for the same recipient
   const existing = otpStore.get(normalized);
   const now = Date.now();
   if (existing && existing.expiresAt - now > 4.5 * 60 * 1000) {
@@ -108,24 +117,47 @@ export async function sendOtp(
     verified: false
   });
 
-  // Handle WhatsApp channel for international patients
-  if (channel === 'whatsapp') {
-    const waText = `নমস্কার ${patientName ? patientName + ', ' : ''}আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের জন্য আপনার ওটিপি (OTP) কোড হলো: *${code}*। কোডটি আগামী ৫ মিনিটের জন্য কার্যকর থাকবে।`;
-    const waResult = await sendWhatsAppMessage(normalized, waText);
-    const whatsappSent = waResult.success && waResult.provider !== 'sandbox';
+  // Handle Email channel for international patients
+  if (channel === 'email') {
+    const emailResult = await sendOtpEmail({
+      to: normalized,
+      code,
+      patientName
+    });
+    const emailSent = emailResult.success && emailResult.provider !== 'sandbox';
 
     console.log(`\n============================================================`);
-    console.log(`💬 [WHATSAPP OTP GENERATED] -> ${normalized}`);
+    console.log(`📧 [EMAIL OTP GENERATED] -> ${normalized}`);
     console.log(`🔢 OTP Code: ${code}`);
-    console.log(`👤 Patient: ${patientName || 'New Patient'}`);
-    console.log(`📡 Status: ${whatsappSent ? `Delivered via WhatsApp (${waResult.provider})` : 'Sandbox Simulator'}`);
+    console.log(`👤 Patient: ${patientName || 'Foreign Patient'}`);
+    console.log(`📡 Status: ${emailSent ? `Delivered via Email (${emailResult.provider})` : 'Sandbox Simulator'}`);
     console.log(`============================================================\n`);
 
     const challengeToken = createOtpChallenge(normalized, code, expiresAt);
 
     return {
       success: true,
-      message: `আপনার হোয়াটসঅ্যাপ নম্বর ${phone}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`,
+      message: `আপনার ইমেইল ${target}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`,
+      expiresInSeconds: 300,
+      challengeToken,
+      channel: 'email',
+      debugCode: !emailSent ? code : undefined,
+      emailSent,
+      gatewayError: !emailSent ? emailResult.error : undefined
+    };
+  }
+
+  // Handle WhatsApp channel
+  if (channel === 'whatsapp') {
+    const waText = `নমস্কার ${patientName ? patientName + ', ' : ''}আয়ুর্বেদাচার্য দেবজ্যোতি দত্ত চেম্বার অনলাইন অ্যাপয়েন্টমেন্টের জন্য আপনার ওটিপি (OTP) কোড হলো: *${code}*। কোডটি আগামী ৫ মিনিটের জন্য কার্যকর থাকবে।`;
+    const waResult = await sendWhatsAppMessage(normalized, waText);
+    const whatsappSent = waResult.success && waResult.provider !== 'sandbox';
+
+    const challengeToken = createOtpChallenge(normalized, code, expiresAt);
+
+    return {
+      success: true,
+      message: `আপনার হোয়াটসঅ্যাপ নম্বর ${target}-এ ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে।`,
       expiresInSeconds: 300,
       challengeToken,
       channel: 'whatsapp',
@@ -188,8 +220,8 @@ export async function sendOtp(
   return {
     success: true,
     message: smsSent
-      ? `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`
-      : `আপনার মোবাইল নম্বর ${phone}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`,
+      ? `আপনার মোবাইল নম্বর ${target}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`
+      : `আপনার মোবাইল নম্বর ${target}-এ ৬-সংখ্যার এসএমএস ওটিপি পাঠানো হয়েছে।`,
     expiresInSeconds: 300,
     challengeToken,
     channel: 'sms',
@@ -204,7 +236,7 @@ export async function sendOtp(
  * Validates the entered OTP code with stateless HMAC token support
  */
 export function verifyOtpCode(
-  phone: string,
+  targetOrPhone: string,
   inputCode: string,
   challengeToken?: string
 ): {
@@ -212,7 +244,7 @@ export function verifyOtpCode(
   message: string;
   token?: string;
 } {
-  const normalized = normalizePhoneNumber(phone);
+  const normalized = normalizeOtpTarget(targetOrPhone);
   const trimmedCode = inputCode.trim();
 
   // 1. Try stateless cryptographic challenge token verification (100% serverless safe)
@@ -220,10 +252,10 @@ export function verifyOtpCode(
     try {
       const [b64Data, hmac] = challengeToken.split('.');
       const payload = Buffer.from(b64Data, 'base64url').toString('utf-8');
-      const [tokenPhone, expStr] = payload.split(':');
+      const [tokenTarget, expStr] = payload.split(':');
       const expTime = Number(expStr);
 
-      if (tokenPhone === normalized && expTime > Date.now()) {
+      if (tokenTarget === normalized && expTime > Date.now()) {
         const expectedHmac = crypto
           .createHmac('sha256', OTP_SECRET)
           .update(`${normalized}:${trimmedCode}:${expStr}`)
@@ -242,7 +274,9 @@ export function verifyOtpCode(
 
           return {
             success: true,
-            message: 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
+            message: normalized.includes('@')
+              ? 'ইমেইল ঠিকানা সফলভাবে যাচাই করা হয়েছে!'
+              : 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
             token
           };
         }
@@ -292,31 +326,33 @@ export function verifyOtpCode(
 
   return {
     success: true,
-    message: 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
+    message: normalized.includes('@')
+      ? 'ইমেইল ঠিকানা সফলভাবে যাচাই করা হয়েছে!'
+      : 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
     token
   };
 }
 
 /**
- * Checks if a phone was verified via OTP (supports stateless HMAC token)
+ * Checks if a phone or email target was verified via OTP (supports stateless HMAC token)
  */
-export function isPhoneVerified(phone: string, token?: string): boolean {
+export function isPhoneVerified(phoneOrTarget: string, token?: string): boolean {
   if (!token) return false;
-  const normalized = normalizePhoneNumber(phone);
+  const normalized = normalizeOtpTarget(phoneOrTarget);
 
   // 1. Verify stateless HMAC cryptographic token (survives any serverless cold-start)
   if (token.includes('.')) {
     try {
       const [b64Data, signature] = token.split('.');
       const payload = Buffer.from(b64Data, 'base64url').toString('utf-8');
-      const [prefix, tokenPhone, validUntilStr] = payload.split(':');
+      const [prefix, tokenTarget, validUntilStr] = payload.split(':');
 
-      if (prefix === 'verified' && tokenPhone === normalized) {
+      if (prefix === 'verified' && tokenTarget === normalized) {
         const validUntil = Number(validUntilStr);
         if (validUntil > Date.now()) {
           const expected = crypto
             .createHmac('sha256', OTP_SECRET)
-            .update(`verified:${tokenPhone}:${validUntilStr}`)
+            .update(`verified:${tokenTarget}:${validUntilStr}`)
             .digest('hex');
 
           if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
@@ -333,5 +369,19 @@ export function isPhoneVerified(phone: string, token?: string): boolean {
     if (!token || !entry.token || entry.token === token) return true;
   }
 
+  return false;
+}
+
+/**
+ * Validates verification for either phone OR email (e.g. for international patients)
+ */
+export function isOtpTargetVerified(
+  phone: string,
+  email?: string | null,
+  token?: string
+): boolean {
+  if (!token) return false;
+  if (phone && isPhoneVerified(phone, token)) return true;
+  if (email && isPhoneVerified(email, token)) return true;
   return false;
 }

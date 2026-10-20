@@ -18,36 +18,46 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, patientName, channel, patientOrigin } = body;
+    const { phone, email, patientName, channel, patientOrigin } = body;
 
-    if (!phone || typeof phone !== 'string') {
-      return NextResponse.json(
-        { error: 'মোবাইল বা হোয়াটসঅ্যাপ নম্বর প্রদান করা আবশ্যক।' },
-        { status: 400 }
-      );
-    }
+    const isAbroad =
+      channel === 'email' ||
+      patientOrigin === 'abroad' ||
+      patientOrigin === 'international';
 
-    const isInternational = channel === 'whatsapp' || patientOrigin === 'abroad' || patientOrigin === 'international';
-    const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
+    let target = '';
+    let selectedChannel: 'sms' | 'email' | 'whatsapp' = 'sms';
 
-    if (!isInternational) {
+    if (isAbroad) {
+      const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+      if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        return NextResponse.json(
+          { error: 'বিদেশে অবস্থানরত রোগীদের জন্য সঠিক ইমেইল ঠিকানা প্রদান করা আবশ্যক (ওটিপি পাঠানোর জন্য)।' },
+          { status: 400 }
+        );
+      }
+      target = cleanEmail;
+      selectedChannel = 'email';
+    } else {
+      if (!phone || typeof phone !== 'string') {
+        return NextResponse.json(
+          { error: 'সচল মোবাইল নম্বর প্রদান করা আবশ্যক।' },
+          { status: 400 }
+        );
+      }
+
+      const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
       if (!phoneRegex.test(cleanPhone)) {
         return NextResponse.json(
           { error: 'সঠিক বাংলাদেশী মোবাইল নম্বর (যেমন: 017XXXXXXXX) প্রদান করুন।' },
           { status: 400 }
         );
       }
-    } else {
-      if (!/^\+?[1-9]\d{6,14}$/.test(cleanPhone)) {
-        return NextResponse.json(
-          { error: 'সঠিক আন্তর্জাতিক হোয়াটসঅ্যাপ নম্বর (কান্ট্রি কোড সহ, যেমন: +44 7911 123456) প্রদান করুন।' },
-          { status: 400 }
-        );
-      }
+      target = cleanPhone;
+      selectedChannel = 'sms';
     }
 
-    const selectedChannel = isInternational ? 'whatsapp' : 'sms';
-    const result = await sendOtp(cleanPhone, patientName, selectedChannel);
+    const result = await sendOtp(target, patientName, selectedChannel);
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
@@ -56,9 +66,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: result.message,
       channel: result.channel,
+      target,
       expiresInSeconds: result.expiresInSeconds,
       challengeToken: result.challengeToken,
       debugCode: result.debugCode,
+      emailSent: result.emailSent,
       smsSent: result.smsSent,
       whatsappSent: result.whatsappSent,
       gatewayError: result.gatewayError
