@@ -5886,7 +5886,7 @@ export default function AdminDashboardPage() {
                             </span>
                           </td>
                           <td className="py-2.5 px-3 border-r border-zinc-200 text-right font-bold text-zinc-800 font-mono">
-                            {apt.chamberMode === 'offline' ? '১,০০০ ৳' : '৮০০ ৳'}
+                            {apt.chamberMode === 'offline' ? '১,০০০ ৳' : isForeignPatient(apt) ? '$১০ ডলার' : '৮০০ ৳'}
                           </td>
                           <td className="py-2.5 px-3 min-w-[120px]"></td>
                         </tr>

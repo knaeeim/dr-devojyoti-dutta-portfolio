@@ -21,8 +21,23 @@ export function printSinglePageSerialSlip(apt: Appointment) {
       : apt.status === 'completed'
       ? 'সম্পন্ন (Completed)'
       : 'যাচাইকৃত (Verified)';
+  const isForeign =
+    apt.chamberMode === 'online' &&
+    ((apt.complaints &&
+      (apt.complaints.includes('বিদেশী') ||
+        apt.complaints.includes('প্রবাসী') ||
+        apt.complaints.includes('বর্তমান দেশ/অবস্থান') ||
+        apt.complaints.includes('বিদেশে অবস্থানরত'))) ||
+      Boolean(
+        apt.phone &&
+          !apt.phone.trim().replace(/[\s\-()]/g, '').startsWith('01') &&
+          !apt.phone.trim().replace(/[\s\-()]/g, '').startsWith('+8801') &&
+          !apt.phone.trim().replace(/[\s\-()]/g, '').startsWith('8801') &&
+          !apt.phone.trim().replace(/[\s\-()]/g, '').startsWith('008801')
+      ));
 
-  const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী)';
+  const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : isForeign ? '১০ ডলার' : '৮০০ টাকা';
+  const followUpFee = apt.chamberMode === 'offline' ? '৬০০ টাকা' : isForeign ? '৭ ডলার' : '৪০০ টাকা';
 
   container.innerHTML = `
     <div style="font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif; color: #064e3b; background: #ffffff; padding: 12px; line-height: 1.45; font-size: 12px; max-width: 540px; margin: 0 auto;">
@@ -79,7 +94,7 @@ export function printSinglePageSerialSlip(apt: Appointment) {
           </tr>
           <tr>
             <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #4b5563; font-weight: 600;">ফলোআপ ভিজিট:</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #047857; font-weight: bold;">${apt.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11.5px; color: #047857; font-weight: bold;">${followUpFee} (৩ মাসের মধ্যে)</td>
           </tr>
           ${
             apt.chamberMode === 'offline'

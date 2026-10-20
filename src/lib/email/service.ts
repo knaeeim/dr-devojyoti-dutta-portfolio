@@ -32,7 +32,24 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
   }
 
   const subject = `আপনার অ্যাপয়েন্টমেন্ট নিশ্চিত করা হয়েছে — দেবজ্যোতি দত্ত (সিরিয়াল: ${appointment.serialNo})`;
-  const fee = appointment.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
+
+  const isForeign =
+    appointment.chamberMode === 'online' &&
+    ((appointment.complaints &&
+      (appointment.complaints.includes('বিদেশী') ||
+        appointment.complaints.includes('প্রবাসী') ||
+        appointment.complaints.includes('বর্তমান দেশ/অবস্থান') ||
+        appointment.complaints.includes('বিদেশে অবস্থানরত'))) ||
+      Boolean(
+        appointment.phone &&
+          !appointment.phone.trim().replace(/[\s\-()]/g, '').startsWith('01') &&
+          !appointment.phone.trim().replace(/[\s\-()]/g, '').startsWith('+8801') &&
+          !appointment.phone.trim().replace(/[\s\-()]/g, '').startsWith('8801') &&
+          !appointment.phone.trim().replace(/[\s\-()]/g, '').startsWith('008801')
+      ));
+
+  const fee = appointment.chamberMode === 'offline' ? '১,০০০ টাকা' : isForeign ? '১০ ডলার' : '৮০০ টাকা';
+  const followUpFee = appointment.chamberMode === 'offline' ? '৬০০ টাকা' : isForeign ? '৭ ডলার' : '৪০০ টাকা';
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -85,7 +102,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
       <table class="details-table">
         <tr>
           <td class="label">রোগীর নাম:</td>
-          <td class="value">${appointment.patientName}</td>
+          <td class="value">${appointment.patientName}${isForeign ? ' <span style="display:inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">🌍 বিদেশী রোগী</span>' : ''}</td>
         </tr>
         <tr>
           <td class="label">মোবাইল নম্বর:</td>
@@ -109,7 +126,7 @@ export async function sendAppointmentConfirmationEmail(appointment: Appointment)
         </tr>
         <tr>
           <td class="label">ফলোআপ ভিজিট:</td>
-          <td class="value" style="color: #047857; font-weight: bold;">${appointment.chamberMode === 'offline' ? '৬০০ টাকা' : '৪০০ টাকা'} (৩ মাসের মধ্যে)</td>
+          <td class="value" style="color: #047857; font-weight: bold;">${followUpFee} (৩ মাসের মধ্যে)</td>
         </tr>
       </table>
 
