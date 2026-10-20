@@ -301,6 +301,7 @@ export default function BookingHub() {
     // Trigger OTP sending
     setOtpPending(true);
     setOtpError(null);
+    setOtpCode('');
     try {
       const res = await fetch('/api/appointments/otp/send', {
         method: 'POST',
@@ -322,11 +323,9 @@ export default function BookingHub() {
       setActiveOtpChannel(data.channel || channel);
       setOtpChallengeToken(data.challengeToken || null);
       setOtpTimer(60);
-      setOtpDebugCode(data.debugCode || null);
+      setOtpDebugCode(null);
       setOtpGatewayNotice(data.gatewayError || null);
-      if (process.env.NODE_ENV === 'development' && data.debugCode) {
-        setOtpCode(data.debugCode);
-      }
+      setOtpCode('');
       setShowOtpModal(true);
       setOtpPending(false);
     } catch (err) {
@@ -390,6 +389,7 @@ export default function BookingHub() {
     if (otpTimer > 0) return;
     setOtpError(null);
     setOtpPending(true);
+    setOtpCode('');
     const isAbroad = chamberMode === 'online' && patientOrigin === 'abroad';
     const cleanPhone = phone.trim().replace(/[\s\-()]/g, '');
     const cleanEmail = email.trim().toLowerCase();
@@ -411,11 +411,9 @@ export default function BookingHub() {
         setActiveOtpChannel(data.channel || channel);
         setOtpChallengeToken(data.challengeToken || null);
         setOtpTimer(60);
-        setOtpDebugCode(data.debugCode || null);
+        setOtpDebugCode(null);
         setOtpGatewayNotice(data.gatewayError || null);
-        if (process.env.NODE_ENV === 'development' && data.debugCode) {
-          setOtpCode(data.debugCode);
-        }
+        setOtpCode('');
       } else {
         setOtpError(data.error || 'পুনরায় ওটিপি পাঠাতে ব্যর্থ হয়েছে।');
       }
@@ -1191,7 +1189,11 @@ export default function BookingHub() {
             {/* Close Button (Hidden while finalizing booking) */}
             {!isFinalizingBooking && (
               <button
-                onClick={() => setShowOtpModal(false)}
+                onClick={() => {
+                  setShowOtpModal(false);
+                  setOtpCode('');
+                  setOtpError(null);
+                }}
                 className="absolute top-4 right-4 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -1303,29 +1305,6 @@ export default function BookingHub() {
                   )}
                 </div>
 
-                {/* Demo / Sandbox Helper Badge (Development Environment Only) */}
-                {process.env.NODE_ENV === 'development' && otpDebugCode && (
-                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-center space-y-1.5">
-                    <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 block">
-                      🧪 টেস্ট মোড ওটিপি (Sandbox Demo):
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setOtpCode(otpDebugCode)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-200 dark:bg-amber-900 text-amber-950 dark:text-amber-100 font-mono font-bold text-sm hover:bg-amber-300 cursor-pointer transition-colors"
-                      title="ক্লিক করে কোড বসান"
-                    >
-                      <span>{otpDebugCode}</span>
-                      <span className="text-[10px] font-normal underline">(ক্লিক করে বসান)</span>
-                    </button>
-                    {otpGatewayNotice && (
-                      <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed px-1">
-                        {otpGatewayNotice}
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 {/* OTP Error message */}
                 {otpError && (
                   <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
@@ -1347,6 +1326,7 @@ export default function BookingHub() {
                       maxLength={6}
                       required
                       autoFocus
+                      autoComplete="off"
                       value={otpCode}
                       onChange={(e) => {
                         const val = e.target.value;

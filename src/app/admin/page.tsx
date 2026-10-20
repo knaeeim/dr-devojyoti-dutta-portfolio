@@ -2520,16 +2520,16 @@ export default function AdminDashboardPage() {
 
                         {/* Patient */}
                         <td className="py-3 px-3.5 align-middle">
-                          {isForeignPatient(apt) && (
-                            <div className="mb-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {isForeignPatient(apt) && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs whitespace-nowrap">
                                 <span>🌍</span>
                                 <span>বিদেশী রোগী</span>
                               </span>
-                            </div>
-                          )}
-                          <div className="font-bold text-emerald-950 dark:text-emerald-100 text-xs sm:text-[13px] leading-snug">
-                            {apt.patientName}
+                            )}
+                            <span className="font-bold text-emerald-950 dark:text-emerald-100 text-xs sm:text-[13px] leading-snug">
+                              {apt.patientName}
+                            </span>
                           </div>
                           <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-medium mt-0.5">
                             {apt.phone}
@@ -2966,17 +2966,17 @@ export default function AdminDashboardPage() {
                     {/* Patient Name & Quick Dial/WhatsApp Direct Touch Buttons */}
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="min-w-0">
-                        {isForeignPatient(apt) && (
-                          <div className="mb-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {isForeignPatient(apt) && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs whitespace-nowrap">
                               <span>🌍</span>
                               <span>বিদেশী রোগী</span>
                             </span>
-                          </div>
-                        )}
-                        <h3 className="font-bold text-sm sm:text-base text-emerald-950 dark:text-emerald-50 leading-tight">
-                          {apt.patientName}
-                        </h3>
+                          )}
+                          <h3 className="font-bold text-sm sm:text-base text-emerald-950 dark:text-emerald-50 leading-tight">
+                            {apt.patientName}
+                          </h3>
+                        </div>
                         <div className="flex items-center gap-1.5 mt-0.5 text-xs text-emerald-700 dark:text-emerald-400 font-mono font-medium">
                           <a href={`tel:${apt.phone}`} className="hover:underline flex items-center gap-1">
                             <Phone className="w-3 h-3" />

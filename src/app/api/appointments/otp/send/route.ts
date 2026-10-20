@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
       target,
       expiresInSeconds: result.expiresInSeconds,
       challengeToken: result.challengeToken,
-      debugCode: result.debugCode,
       emailSent: result.emailSent,
       smsSent: result.smsSent,
       whatsappSent: result.whatsappSent,
