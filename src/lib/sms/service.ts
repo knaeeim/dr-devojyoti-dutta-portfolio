@@ -106,7 +106,7 @@ export function splitMessageForSms(text: string, maxLen: number = 640): string[]
  * Checks current SMS credit balance from BulkSMSBD API
  */
 export async function getSmsBalance(): Promise<{ success: boolean; balance?: number; error?: string }> {
-  const apiKey = (process.env.SMS_API_KEY || 'BYlhH7cFVn46tY8lvlcY').trim();
+  const apiKey = (process.env.SMS_API_KEY || 'XvyiOXv693TSwQQrW5wk').trim();
   try {
     const res = await fetch(`https://bulksmsbd.net/api/getBalanceApi?api_key=${encodeURIComponent(apiKey)}`, {
       method: 'GET',
@@ -205,7 +205,7 @@ export async function sendDirectSms(
 ): Promise<SendSmsResult> {
   let apiKey = (process.env.SMS_API_KEY || '').trim();
   if (!apiKey || apiKey === 'YOUR_SMS_API_KEY') {
-    apiKey = 'BYlhH7cFVn46tY8lvlcY';
+    apiKey = 'XvyiOXv693TSwQQrW5wk';
   }
 
   // Ensure the verified BulkSMSBD Sender ID 8809617643375 is always used.
