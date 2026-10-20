@@ -225,8 +225,8 @@ export const defaultSchedules: Record<ChamberMode, ChamberSchedule> = {
       6: { enabled: false, dayNameBn: 'শনিবার', startTime: '20:00', endTime: '23:00', breakStart: '21:30', breakDuration: 15, slotDuration: 15 }
     },
     addressBn: 'জুম (Zoom) অথবা হোয়াটসঅ্যাপ ভিডিও কল',
-    feeBn: '৮০০ টাকা',
-    followUpFeeBn: '৪০০ টাকা (৩ মাসের মধ্যে)'
+    feeBn: '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী যেকোনো দেশ)',
+    followUpFeeBn: '৪০০ টাকা (বাংলাদেশ) / $৭ ডলার (প্রবাসী)'
   }
 };
 

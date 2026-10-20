@@ -42,12 +42,12 @@ export default function Footer() {
                 <p className="text-xs text-emerald-400">২/১ জাহেদা ভিলা, ১ নং রোড, শ্যামলী কল্যাণ সমিতি, শ্যামলী, ঢাকা-১২০৭</p>
               </li>
               <li className="p-2.5 rounded-lg bg-emerald-900/40 border border-emerald-800/40 space-y-1">
-                <strong className="text-white block font-medium">🌐 অনলাইন ভিডিও কনসালটেশন:</strong>
-                <span>রবি থেকে বৃহস্পতিবার</span>
+                <strong className="text-white block font-medium">🌐 অনলাইন ভিডিও কনসালটেশন (দেশ ও বিদেশ):</strong>
+                <span>রবি, মঙ্গল ও বৃহস্পতিবার (সন্ধ্যা ৭:০০ - ১০:৩০)</span>
                 <p className="text-xs text-amber-300 font-semibold">
-                  পরামর্শ ফি: ৮০০ টাকা • ফলোআপ: ৪০০ টাকা (৩ মাসের মধ্যে)
+                  ফি: ৮০০ টাকা (বাংলাদেশ) • $১০ ডলার (প্রবাসী যেকোনো দেশ)
                 </p>
-                <p className="text-xs text-emerald-400">জুম বা হোয়াটসঅ্যাপ ভিডিও কল</p>
+                <p className="text-xs text-emerald-400">জুম বা হোয়াটসঅ্যাপ কল • প্রবাসীদের জন্য সরাসরি হোয়াটসঅ্যাপ বুকিং</p>
               </li>
             </ul>
           </div>

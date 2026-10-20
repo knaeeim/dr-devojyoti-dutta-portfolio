@@ -22,7 +22,7 @@ export function printSinglePageSerialSlip(apt: Appointment) {
       ? 'সম্পন্ন (Completed)'
       : 'যাচাইকৃত (Verified)';
 
-  const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
+  const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা (বাংলাদেশ) / $১০ ডলার (প্রবাসী)';
 
   container.innerHTML = `
     <div style="font-family: 'Anek Bangla', 'Noto Sans Bengali', 'Kohinoor Bangla', 'Segoe UI', Arial, sans-serif; color: #064e3b; background: #ffffff; padding: 12px; line-height: 1.45; font-size: 12px; max-width: 540px; margin: 0 auto;">
@@ -171,7 +171,7 @@ export function printReceptionSheet(appointments: Appointment[], isPdfMode = fal
                 ? '<span style="display:inline-block; padding: 2px 8px; border-radius: 9999px; background: #eff6ff; color: #1d4ed8; font-weight: 700; border: 1px solid #bfdbfe;">সম্পন্ন</span>'
                 : '<span style="display:inline-block; padding: 2px 8px; border-radius: 9999px; background: #fffbeb; color: #b45309; font-weight: 700; border: 1px solid #fde68a;">অপেক্ষমাণ</span>';
 
-            const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা';
+            const fee = apt.chamberMode === 'offline' ? '১,০০০ টাকা' : '৮০০ টাকা / $১০';
 
             return `
               <tr>
