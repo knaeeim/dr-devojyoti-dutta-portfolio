@@ -5480,17 +5480,23 @@ export default function AdminDashboardPage() {
 
             {/* Action Buttons */}
             <div className="pt-3.5 border-t border-emerald-900/10 dark:border-emerald-800/40 space-y-2.5">
-              {/* Direct 1-Click Email Section (Available for all patients - domestic and foreign) */}
-              {messageModalApt && (
+              {/* Direct 1-Click Email Section:
+                  For foreign patients: always available.
+                  For domestic patients: ONLY active/shown if the patient provided an email */}
+              {messageModalApt && (isForeignPatient(messageModalApt) || Boolean(messageModalApt.email?.trim())) && (
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent border border-emerald-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
                       <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>রোগীর ইমেইলে বার্তা পাঠান:</span>
                     </span>
-                    {isForeignPatient(messageModalApt) && (
+                    {isForeignPatient(messageModalApt) ? (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
                         🌍 বিদেশী রোগী
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 border border-emerald-400/40">
+                        ✉️ নিবন্ধিত ইমেইল
                       </span>
                     )}
                   </div>
@@ -5505,7 +5511,7 @@ export default function AdminDashboardPage() {
                     <button
                       type="button"
                       onClick={handleSendDirectEmail}
-                      disabled={isSendingEmail || !customMessage.trim()}
+                      disabled={isSendingEmail || !customMessage.trim() || !emailRecipientInput.trim()}
                       className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 active:scale-95 disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer whitespace-nowrap"
                       title="১-ক্লিকে রোগীর ইমেইলে বার্তা পাঠানো হবে"
                     >
