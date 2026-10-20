@@ -5481,22 +5481,26 @@ export default function AdminDashboardPage() {
             {/* Action Buttons */}
             <div className="pt-3.5 border-t border-emerald-900/10 dark:border-emerald-800/40 space-y-2.5">
               {/* Direct 1-Click Email Section:
-                  For foreign patients: always available.
-                  For domestic patients: ONLY active/shown if the patient provided an email */}
-              {messageModalApt && (isForeignPatient(messageModalApt) || Boolean(messageModalApt.email?.trim())) && (
+                  Always visible so admin can see and use email option.
+                  Active when email is present (prefilled or typed), disabled if empty. */}
+              {messageModalApt && (
                 <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent border border-emerald-500/30 space-y-2">
                   <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                     <span className="font-bold text-emerald-950 dark:text-emerald-100 flex items-center gap-1.5">
                       <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>রোগীর ইমেইলে বার্তা পাঠান:</span>
+                      <span>ইমেইলে বার্তা পাঠান (১-ক্লিক Gmail):</span>
                     </span>
                     {isForeignPatient(messageModalApt) ? (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40">
                         🌍 বিদেশী রোগী
                       </span>
-                    ) : (
+                    ) : messageModalApt.email ? (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 border border-emerald-400/40">
-                        ✉️ নিবন্ধিত ইমেইল
+                        ✓ নিবন্ধিত ইমেইল পাওয়া গেছে
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100/70 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                        রোগী বুকিংয়ে ইমেইল দেননি (পাঠাতে চাইলে নিচে টাইপ করুন)
                       </span>
                     )}
                   </div>
@@ -5505,20 +5509,37 @@ export default function AdminDashboardPage() {
                       type="email"
                       value={emailRecipientInput}
                       onChange={(e) => setEmailRecipientInput(e.target.value)}
-                      placeholder="রোগীর ইমেইল এড্রেস..."
+                      placeholder={
+                        messageModalApt.email
+                          ? 'রোগীর ইমেইল এড্রেস...'
+                          : 'রোগীর ইমেইল নেই (ইমেইল পাঠাতে চাইলে এখানে লিখুন)...'
+                      }
                       className="flex-1 py-2 px-3 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#192a23] text-emerald-950 dark:text-emerald-100 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <button
                       type="button"
                       onClick={handleSendDirectEmail}
                       disabled={isSendingEmail || !customMessage.trim() || !emailRecipientInput.trim()}
-                      className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 active:scale-95 disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer whitespace-nowrap"
-                      title="১-ক্লিকে রোগীর ইমেইলে বার্তা পাঠানো হবে"
+                      className={`inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-xl text-xs font-bold shadow-md transition-all whitespace-nowrap cursor-pointer ${
+                        !emailRecipientInput.trim()
+                          ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed opacity-60 border border-zinc-300 dark:border-zinc-700'
+                          : 'bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-white active:scale-95 shadow-emerald-700/20'
+                      }`}
+                      title={
+                        !emailRecipientInput.trim()
+                          ? 'রোগী বুকিংয়ে ইমেইল দেননি। ইমেইল লিখলে বাটন সক্রিয় হবে।'
+                          : '১-ক্লিকে রোগীর ইমেইলে বার্তা পাঠানো হবে'
+                      }
                     >
                       {isSendingEmail ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           <span>ইমেইল পাঠানো হচ্ছে...</span>
+                        </>
+                      ) : !emailRecipientInput.trim() ? (
+                        <>
+                          <Mail className="w-3.5 h-3.5 opacity-60" />
+                          <span>ইমেইল নেই (নিষ্ক্রিয়)</span>
                         </>
                       ) : (
                         <>
