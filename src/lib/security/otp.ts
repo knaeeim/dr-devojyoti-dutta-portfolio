@@ -30,7 +30,11 @@ setInterval(() => {
 }, 60 * 1000);
 
 export function normalizePhoneNumber(rawPhone: string): string {
-  let cleaned = rawPhone.replace(/[^0-9+]/g, '');
+  const bnMap: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+  };
+  let cleaned = (rawPhone || '').replace(/[০-৯]/g, (d) => bnMap[d] || d).replace(/[^0-9+]/g, '');
   if (cleaned.startsWith('01') && cleaned.length === 11) {
     cleaned = '+88' + cleaned;
   } else if (cleaned.startsWith('8801') && cleaned.length === 13) {
@@ -255,33 +259,60 @@ export async function sendOtp(
 export function verifyOtpCode(
   targetOrPhone: string,
   inputCode: string,
-  challengeToken?: string
+  challengeToken?: string,
+  fallbackTarget?: string
 ): {
   success: boolean;
   message: string;
   token?: string;
 } {
-  const normalized = normalizeOtpTarget(targetOrPhone);
-  const trimmedCode = inputCode.trim();
+  const bnMap: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+  };
+  const trimmedCode = (inputCode || '')
+    .toString()
+    .trim()
+    .replace(/[০-৯]/g, (d) => bnMap[d] || d)
+    .replace(/\D/g, '');
 
-  // 1. Try stateless cryptographic challenge token verification (100% serverless safe)
+  const normalized = normalizeOtpTarget(targetOrPhone);
+  const normalizedFallback = fallbackTarget ? normalizeOtpTarget(fallbackTarget) : '';
+
+  // 1. Try stateless cryptographic challenge token verification (100% serverless safe across all containers)
   if (challengeToken && challengeToken.includes('.')) {
     try {
       const [b64Data, hmac] = challengeToken.split('.');
       const payload = Buffer.from(b64Data, 'base64url').toString('utf-8');
-      const [tokenTarget, expStr] = payload.split(':');
+      const lastColon = payload.lastIndexOf(':');
+      const tokenTarget = payload.slice(0, lastColon);
+      const expStr = payload.slice(lastColon + 1);
       const expTime = Number(expStr);
 
-      if (tokenTarget === normalized && expTime > Date.now()) {
+      // Match against normalized primary target or fallback target
+      let activeTarget: string | null = null;
+      if (tokenTarget === normalized) {
+        activeTarget = normalized;
+      } else if (normalizedFallback && tokenTarget === normalizedFallback) {
+        activeTarget = tokenTarget;
+      }
+
+      if (activeTarget) {
+        if (expTime <= Date.now()) {
+          return {
+            success: false,
+            message: 'ওটিপি কোডের মেয়াদ শেষ হয়ে গেছে (৫ মিনিট অতিক্রান্ত)। অনুগ্রহ করে পুনরায় কোড পাঠান।'
+          };
+        }
+
         const expectedHmac = crypto
           .createHmac('sha256', OTP_SECRET)
-          .update(`${normalized}:${trimmedCode}:${expStr}`)
+          .update(`${activeTarget}:${trimmedCode}:${expStr}`)
           .digest('hex');
 
         if (crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
-          const token = createVerifiedPhoneToken(normalized);
-          // Also set in local map for warm container fallback
-          otpStore.set(normalized, {
+          const token = createVerifiedPhoneToken(activeTarget);
+          otpStore.set(activeTarget, {
             code: trimmedCode,
             expiresAt: Date.now() + 25 * 60 * 1000,
             attempts: 0,
@@ -291,10 +322,15 @@ export function verifyOtpCode(
 
           return {
             success: true,
-            message: normalized.includes('@')
+            message: activeTarget.includes('@')
               ? 'ইমেইল ঠিকানা সফলভাবে যাচাই করা হয়েছে!'
               : 'ফোন নম্বর সফলভাবে যাচাই করা হয়েছে!',
             token
+          };
+        } else {
+          return {
+            success: false,
+            message: 'ভুল ওটিপি কোড! অনুগ্রহ করে আপনার মোবাইলে আসা সঠিক ৬-সংখ্যার কোডটি দিন।'
           };
         }
       }
@@ -303,17 +339,21 @@ export function verifyOtpCode(
     }
   }
 
-  // 2. Fallback to in-memory store
-  const entry = otpStore.get(normalized);
+  // 2. Fallback to in-memory store (for warm containers and local dev)
+  const entry =
+    otpStore.get(normalized) ||
+    (normalizedFallback ? otpStore.get(normalizedFallback) : undefined);
+
   if (!entry) {
     return {
       success: false,
-      message: 'কোনো সক্রিয় ওটিপি কোড পাওয়া যায়নি। অনুগ্রহ করে পুনরায় কোড পাঠান।'
+      message: 'কোনো সক্রিয় ওটিপি কোড পাওয়া যায়নি। অনুগ্রহ করে পুনরায় কোড পাঠান।'
     };
   }
 
   if (Date.now() > entry.expiresAt) {
     otpStore.delete(normalized);
+    if (normalizedFallback) otpStore.delete(normalizedFallback);
     return {
       success: false,
       message: 'ওটিপি কোডের মেয়াদ শেষ হয়ে গেছে। অনুগ্রহ করে পুনরায় কোড পাঠান।'
@@ -323,6 +363,7 @@ export function verifyOtpCode(
   entry.attempts += 1;
   if (entry.attempts > 5) {
     otpStore.delete(normalized);
+    if (normalizedFallback) otpStore.delete(normalizedFallback);
     return {
       success: false,
       message: 'অতিরিক্ত সংখ্যক ভুল চেষ্টা। অনুগ্রহ করে নতুন ওটিপি পাঠান।'
@@ -332,11 +373,11 @@ export function verifyOtpCode(
   if (entry.code.trim() !== trimmedCode) {
     return {
       success: false,
-      message: 'ভুল ওটিপি কোড! অনুগ্রহ করে সঠিক ৬-সংখ্যার কোডটি দিন।'
+      message: 'ভুল ওটিপি কোড! অনুগ্রহ করে আপনার মোবাইলে আসা সঠিক ৬-সংখ্যার কোডটি দিন।'
     };
   }
 
-  const token = createVerifiedPhoneToken(normalized);
+  const token = createVerifiedPhoneToken(entry === otpStore.get(normalized) ? normalized : (normalizedFallback || normalized));
   entry.verified = true;
   entry.token = token;
   entry.expiresAt = Date.now() + 25 * 60 * 1000;

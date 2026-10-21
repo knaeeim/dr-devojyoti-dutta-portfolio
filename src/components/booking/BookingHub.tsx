@@ -322,6 +322,12 @@ export default function BookingHub() {
       }
       setActiveOtpChannel(data.channel || channel);
       setOtpChallengeToken(data.challengeToken || null);
+      if (typeof window !== 'undefined' && data.challengeToken) {
+        try {
+          sessionStorage.setItem('dr_dutta_otp_challenge', data.challengeToken);
+          sessionStorage.setItem('dr_dutta_otp_target', isAbroad ? cleanEmail : cleanPhone);
+        } catch {}
+      }
       setOtpTimer(60);
       setOtpDebugCode(null);
       setOtpGatewayNotice(data.gatewayError || null);
@@ -349,6 +355,17 @@ export default function BookingHub() {
     const cleanEmail = email.trim().toLowerCase();
     const verifyTarget = isAbroad ? cleanEmail : cleanPhone;
 
+    let tokenToSend = otpChallengeToken;
+    if (!tokenToSend && typeof window !== 'undefined') {
+      try {
+        const storedToken = sessionStorage.getItem('dr_dutta_otp_challenge');
+        const storedTarget = sessionStorage.getItem('dr_dutta_otp_target');
+        if (storedToken && storedTarget === verifyTarget) {
+          tokenToSend = storedToken;
+        }
+      } catch {}
+    }
+
     setOtpPending(true);
     try {
       const res = await fetch('/api/appointments/otp/verify', {
@@ -359,7 +376,7 @@ export default function BookingHub() {
           phone: cleanPhone,
           email: cleanEmail,
           code: otpCode.trim(),
-          challengeToken: otpChallengeToken
+          challengeToken: tokenToSend
         })
       });
       const data = await res.json();
@@ -368,6 +385,13 @@ export default function BookingHub() {
         setOtpError(data.error || 'ভুল ওটিপি কোড! সঠিক কোডটি লিখুন।');
         setOtpPending(false);
         return;
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem('dr_dutta_otp_challenge');
+          sessionStorage.removeItem('dr_dutta_otp_target');
+        } catch {}
       }
 
       const verifiedToken = data.token;
@@ -410,6 +434,12 @@ export default function BookingHub() {
       if (res.ok && data.success) {
         setActiveOtpChannel(data.channel || channel);
         setOtpChallengeToken(data.challengeToken || null);
+        if (typeof window !== 'undefined' && data.challengeToken) {
+          try {
+            sessionStorage.setItem('dr_dutta_otp_challenge', data.challengeToken);
+            sessionStorage.setItem('dr_dutta_otp_target', isAbroad ? cleanEmail : cleanPhone);
+          } catch {}
+        }
         setOtpTimer(60);
         setOtpDebugCode(null);
         setOtpGatewayNotice(data.gatewayError || null);

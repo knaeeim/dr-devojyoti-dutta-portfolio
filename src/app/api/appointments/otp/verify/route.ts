@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { phone, email, target, code, challengeToken } = body;
-    const verifyTarget = (email || target || phone || '').trim();
+    const verifyTarget = (target || phone || email || '').trim();
+    const fallbackTarget = (phone || target || email || '').trim();
 
     if (!verifyTarget || !code) {
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = verifyOtpCode(verifyTarget, code, challengeToken);
+    const result = verifyOtpCode(verifyTarget, code, challengeToken, fallbackTarget);
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
